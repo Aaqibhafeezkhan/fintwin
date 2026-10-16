@@ -137,6 +137,7 @@ def test_stats_pipeline_recovers_planted_signal(tmp_path, monkeypatch):
     sb = res["panel"]["severe_burn"]
     assert sb["univariate"]["twin"]["auc"] > 0.8
     assert sb["out_of_sample"]["benchmarks_plus_twin"]["auc"] > sb["out_of_sample"]["benchmarks"]["auc"]
+    assert "composite" in c and "robustness" in c
     assert res["forecasts"]["revenue"]["ets"]["skill_scaled"] > 0
     assert (tmp_path / "research.json").exists()
 

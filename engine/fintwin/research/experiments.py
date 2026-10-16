@@ -172,6 +172,20 @@ def covid(ticker: str, full: pd.DataFrame | None) -> dict | None:
     return out
 
 
+def _abnormal_burn(pre: pd.DataFrame, window: pd.DataFrame, rev_ttm: float) -> float:
+    """Worst cumulative free cash flow *relative to the company's own pre-cutoff run-rate*, % of revenue.
+
+    Raw cumulative FCF mostly measures a persistent propensity to burn cash (capex-heavy utilities, growth companies
+    burn every year); a stress test claims to predict the deterioration a shock causes, so the outcome subtracts the
+    trailing four-quarter FCF run-rate from every quarter of the window.
+    """
+    run_rate = (_ttm(pre, "cfo") - _ttm(pre, "capex")) / 4
+    if not np.isfinite(run_rate):
+        return np.nan
+    gap = ((window["cfo"] - window["capex"]).fillna(run_rate) - run_rate).cumsum()
+    return float(min(gap.min(), 0.0) / rev_ttm * 100)
+
+
 def covid_outcomes(hist: CompanyData, full: pd.DataFrame) -> dict:
     pre = hist.quarters
     rev_ttm = _ttm(pre, "revenue")
@@ -187,6 +201,7 @@ def covid_outcomes(hist: CompanyData, full: pd.DataFrame) -> dict:
     div_post = float(post["dividends"].fillna(0).sum())
     return {
         "burn": _f(fcf.min() / rev_ttm * 100),
+        "abn_burn": _f(_abnormal_burn(pre, win, rev_ttm)),
         "rev_drop": _f(yoy.min() * 100),
         "debt_raise": _f((win["total_debt"].max() - pre["total_debt"].iloc[-1]) / rev_ttm * 100),
         "cash_min_ratio": _f(cash_like.min() / cash_pre) if cash_pre > 0 else None,
@@ -212,6 +227,7 @@ def _distress(hist: CompanyData, full: pd.DataFrame) -> dict:
     div_post = float(nxt["dividends"].head(4).fillna(0).sum())
     return {
         "burn8": _f(fcf.min() / rev_ttm * 100),
+        "abn_burn8": _f(_abnormal_burn(pre, nxt, rev_ttm)),
         "icr0": _f(icr0),
         "icr_min": _f(icr.min()) if len(icr) else None,
         "div_payer": bool(div_pre > 0),

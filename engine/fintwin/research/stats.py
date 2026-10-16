@@ -33,6 +33,8 @@ BENCH = {
     "rev_vol": ("rev_vol", 1),
     "fixed_share": ("fixed_share", 1),
     "size": ("log_rev", -1),
+    "fcf_margin": ("fcf_margin", -1),
+    "capex_rev": ("capex_rev", 1),
 }
 LABELS = {
     "twin": "Twin (stress health)",
@@ -48,6 +50,10 @@ LABELS = {
     "rev_vol": "Revenue volatility",
     "fixed_share": "Fixed-cost share",
     "size": "Size (revenue)",
+    "fcf_margin": "Trailing FCF margin",
+    "capex_rev": "Capex / revenue",
+    "formula": "Health formula, no simulation",
+    "twin_base": "Twin (baseline health)",
 }
 
 
@@ -104,14 +110,43 @@ def pct(x: np.ndarray) -> np.ndarray:
     return out
 
 
+def _col(df: pd.DataFrame, c: str) -> pd.Series:
+    return df[c].astype(float) if c in df else pd.Series(np.nan, index=df.index)
+
+
 def risk_frame(df: pd.DataFrame, twin_health: str, twin_pb: str | None = None) -> pd.DataFrame:
+    """Risk-oriented predictors. `formula` is the twin's health formula on the opening balance sheet (no simulation),
+    the control that separates what simulation adds from what the score's ingredients already know."""
     r = pd.DataFrame(index=df.index)
     r["twin"] = -df[twin_health].astype(float)
     if twin_pb:
         r["twin_pb"] = df[twin_pb].astype(float)
+    r["formula"] = -_col(df, "health_t0")
     for k, (col, sign) in BENCH.items():
-        r[k] = sign * df[col].astype(float)
+        r[k] = sign * _col(df, col)
     return r
+
+
+def paired(stat, a: np.ndarray, b: np.ndarray, y: np.ndarray, firms: np.ndarray | None = None, b_: int = B) -> dict:
+    """Paired bootstrap of stat(a, y) - stat(b, y) on the observations where both predictors exist."""
+    m = np.isfinite(a) & np.isfinite(b) & np.isfinite(y)
+    d = boot(lambda u, v, t: stat(u, t) - stat(v, t), [a[m], b[m], y[m]], None if firms is None else firms[m], b=b_)
+    return {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d), "n": int(m.sum())}
+
+
+def _cv_composite(R: pd.DataFrame, sector: pd.Series, y: np.ndarray, k: int = 10) -> np.ndarray:
+    """Out-of-fold predictions of y from the percentile ranks of the predictors in R plus sector effects."""
+    X = pd.DataFrame({c: pct(R[c].to_numpy(float)) for c in R.columns}, index=R.index).fillna(0.5)
+    X = pd.concat([X, pd.get_dummies(sector, drop_first=True, dtype=float)], axis=1)
+    X.insert(0, "const", 1.0)
+    A, n = X.to_numpy(float), len(X)
+    fold = np.random.default_rng(7).permutation(n) % k
+    pred = np.full(n, np.nan)
+    for f in range(k):
+        tr, te = fold != f, fold == f
+        beta = np.linalg.lstsq(A[tr], y[tr], rcond=None)[0]
+        pred[te] = A[te] @ beta
+    return pred
 
 
 def resid_on_sector(x: np.ndarray, sector: np.ndarray) -> np.ndarray:
@@ -169,32 +204,47 @@ def covid_section(xs: pd.DataFrame) -> dict:
     sector = sp["sector"].to_numpy()
     out: dict = {"n": int(len(sp)), "n_severe": int(severe.sum())}
 
-    preds = {}
+    R.insert(1, "twin_base", -sp["h_base"].astype(float))
+    preds: dict[str, dict] = {}
     twin = R["twin"].to_numpy(float)
     for k in R.columns:
         x = R[k].to_numpy(float)
-        bt = boot(rho, [x, sev])
-        d = boot(lambda a, b, c: rho(a, c) - rho(b, c), [twin, x, sev]) if k != "twin" else None
+        if np.isfinite(x).sum() < 20:  # predictor not available in this run
+            continue
         rs = rho(resid_on_sector(pct(x), sector), resid_on_sector(pct(sev), sector))
         preds[k] = {
             "label": LABELS[k],
             "n": int(np.isfinite(x).sum()),
             "rho": rho(x, sev),
-            "rho_ci": ci(bt),
+            "rho_ci": ci(boot(rho, [x, sev])),
             "auc_severe": auc(x, severe),
             "rho_within_sector": rs,
-            "twin_minus": None if d is None else {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)},
+            "twin_minus": None if k == "twin" else paired(rho, twin, x, sev),
         }
     out["predictors"] = preds
     out["within_sector_ci_twin"] = ci(
         boot(lambda a, b, s: rho(resid_on_sector(pct(a), s), resid_on_sector(pct(b), s)), [twin, sev, sector])
     )
+    bench_avail = [k for k in BENCH if k in preds]
+    best = max(bench_avail, key=lambda k: preds[k]["rho"])
+    out["best_benchmark"] = best
+    out["baseline_minus_best"] = paired(rho, R["twin_base"].to_numpy(float), R[best].to_numpy(float), sev)
 
-    # incremental value: rank regression of burn severity on the twin and all benchmarks, sector fixed effects
+    # a fitted composite of all benchmarks (10-fold cross-validated, sector effects), the fair "all ratios" rival
+    comp = _cv_composite(R[bench_avail], sp["sector"], pct(sev))
+    comp_f = _cv_composite(R[[*bench_avail, "formula"]], sp["sector"], pct(sev)) if "formula" in preds else comp
+    out["composite"] = {
+        "rho": rho(comp, sev),
+        "rho_with_formula": rho(comp_f, sev),
+        "twin_minus": paired(rho, twin, comp, sev),
+        "twin_minus_with_formula": paired(rho, twin, comp_f, sev),
+    }
+
+    # incremental value: rank regression of burn severity on the twin, the no-simulation formula and all benchmarks
     import statsmodels.api as sm
 
-    X = pd.DataFrame({k: pct(R[k].to_numpy(float)) for k in ["twin", *BENCH]})
-    X = X.fillna(0.5)  # missing benchmark -> median rank
+    cols = ["twin", *(["formula"] if "formula" in preds else []), *bench_avail]
+    X = pd.DataFrame({k: pct(R[k].to_numpy(float)) for k in cols}).fillna(0.5)  # missing -> median rank
     fe = pd.get_dummies(sp["sector"], drop_first=True, dtype=float)
     yv = pct(sev)
     full = sm.OLS(yv, sm.add_constant(pd.concat([X, fe], axis=1))).fit(cov_type="HC3")
@@ -207,6 +257,24 @@ def covid_section(xs: pd.DataFrame) -> dict:
         "r2_without_twin": float(restr.rsquared),
         "n": int(full.nobs),
     }
+
+    # robustness: drop the five companies added because they mattered in 2020; drop capex-heavy utilities
+    extras = {"AAL", "M", "KSS", "WYNN", "INTC"}
+    subsets = {
+        "without_added_companies": ~sp["ticker"].isin(extras).to_numpy(),
+        "without_utilities": (sp["sector"] != "Utilities").to_numpy(),
+    }
+    out["robustness"] = {}
+    for name, keep in subsets.items():
+        b_sub = max(bench_avail, key=lambda k: rho(R[k].to_numpy(float)[keep], sev[keep]))
+        out["robustness"][name] = {
+            "n": int(keep.sum()),
+            "rho_twin": rho(twin[keep], sev[keep]),
+            "rho_baseline": rho(R["twin_base"].to_numpy(float)[keep], sev[keep]),
+            "best_benchmark": b_sub,
+            "rho_best": rho(R[b_sub].to_numpy(float)[keep], sev[keep]),
+            "twin_minus_best": paired(rho, twin[keep], R[b_sub].to_numpy(float)[keep], sev[keep]),
+        }
 
     # exposure: the twin ranks fragility; realized burn needs fragility AND a hit
     drop = sp["real_rev_drop"].to_numpy(float)
@@ -276,6 +344,7 @@ def covid_section(xs: pd.DataFrame) -> dict:
     out["quintiles"] = {
         "severe_share": [float(severe[q == i].mean()) for i in range(5)],  # 0 = most robust
         "median_burn": [float(np.median(-sev[q == i])) for i in range(5)],
+        "top_quintile_share_of_severe": float(severe[q == 4].sum() / max(severe.sum(), 1)),
     }
     z = R["altman_z2"].to_numpy(float)
     zq = pd.qcut(pd.Series(z).rank(method="first"), 5, labels=False).to_numpy()
@@ -296,13 +365,14 @@ def bankruptcy_section(xs: pd.DataFrame) -> dict:
     for k in R.columns:
         x = R[k].to_numpy(float)
         both = np.isfinite(x)
-        d = boot(lambda a, b, t: auc(a, t) - auc(b, t), [twin[both], x[both], y[both]]) if k not in ("twin",) else None
+        if both.sum() < 20:
+            continue
         res[k] = {
-            "label": LABELS.get(k, "Twin (baseline health)"),
+            "label": LABELS[k],
             "auc": auc(x, y),
             "auc_ci": ci(boot(auc, [x, y])),
             "n_bankrupt": int((both & (y == 1)).sum()),
-            "twin_minus": None if d is None else {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)},
+            "twin_minus": None if k == "twin" else paired(auc, twin, x, y),
         }
     out["predictors"] = res
     sp = df[~df["bankrupt"]]
@@ -328,10 +398,15 @@ def bankruptcy_section(xs: pd.DataFrame) -> dict:
         "max_log_rev": float(cap),
         "n_survivors": int((small & (y == 0)).sum()),
         "n_bankrupt": int((small & (y == 1)).sum()),
-        "auc": {
-            k: auc(R[k].to_numpy(float)[small], y[small]) for k in ("twin", "twin_base", "altman_z2", "icr", "size")
+        "auc": {k: auc(R[k].to_numpy(float)[small], y[small]) for k in R.columns if k in res},
+        "auc_ci": {k: ci(boot(auc, [R[k].to_numpy(float)[small], y[small]])) for k in ("twin", "twin_base")},
+        "paired": {
+            f"{a}_minus_{b}": paired(auc, R[a].to_numpy(float)[small], R[b].to_numpy(float)[small], y[small])
+            for a in ("twin", "twin_base")
+            for b in ("altman_z2", "icr", "size", *(["formula"] if "formula" in res else []))
         },
     }
+    out["stress_minus_baseline"] = paired(auc, twin, R["twin_base"].to_numpy(float), y)
     import statsmodels.api as sm
 
     X = pd.DataFrame({"twin": pct(R["twin_base"].to_numpy(float)), "size": pct(R["size"].to_numpy(float))})
@@ -363,26 +438,38 @@ def _events(p: pd.DataFrame) -> dict[str, np.ndarray]:
     }
 
 
-def _design(p: pd.DataFrame, cols: list[str], med: pd.Series | None = None) -> tuple[pd.DataFrame, pd.Series]:
+def _raw(p: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
+    """Feature sets: `health` is the twin's baseline health only; `twin` adds its baseline breach probability and its
+    recession-scenario health; `formula` is the health formula on the opening balance sheet (no simulation)."""
     X = pd.DataFrame(index=p.index)
     for k in cols:
-        if k == "twin":
+        if k == "health":
+            X["h_base"] = -p["h_base"]
+        elif k == "twin":
             X["h_base"], X["pb_base"], X["h_rec"] = -p["h_base"], p["pb_base"], -p["h_rec"]
+        elif k == "formula":
+            X["formula"] = -_col(p, "health_t0")
         else:
             col, sign = BENCH[k]
-            X[k] = sign * p[col].astype(float)
-    X = X.clip(X.quantile(0.01), X.quantile(0.99), axis=1)
-    med = X.median() if med is None else med
+            X[k] = sign * _col(p, col)
+    return X
+
+
+def _design(X: pd.DataFrame, lo: pd.Series, hi: pd.Series, med: pd.Series) -> pd.DataFrame:
+    X = X.clip(lo, hi, axis=1)
     for c in list(X.columns):
         X[c + "_na"] = X[c].isna().astype(float)
-    return X.fillna(med), med
+    return X.fillna(med)
 
 
 def _fit_predict(train: pd.DataFrame, test: pd.DataFrame, ytr: np.ndarray, cols: list[str]) -> np.ndarray:
     import statsmodels.api as sm
 
-    Xtr, med = _design(train, cols)
-    Xte, _ = _design(test, cols, med)
+    raw_tr, raw_te = _raw(train, cols), _raw(test, cols)
+    lo, hi = raw_tr.quantile(0.01), raw_tr.quantile(0.99)  # winsorize with training-set limits only
+    med = raw_tr.clip(lo, hi, axis=1).median()
+    Xtr, Xte = _design(raw_tr, lo, hi, med), _design(raw_te, lo, hi, med)
+    Xtr = Xtr.loc[:, Xtr.notna().all() & (Xtr.std() > 0)]  # drop features that are absent in this run
     Xte = Xte.reindex(columns=Xtr.columns, fill_value=0.0)
     mu, sd = Xtr.mean(), Xtr.std().replace(0, 1)
     Xtr, Xte = (Xtr - mu) / sd, (Xte - mu) / sd
@@ -419,11 +506,7 @@ def panel_section(p: pd.DataFrame) -> dict:
             if name == "severe_burn":
                 entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=B_PANEL))
                 if k != "twin":
-                    both = sel & np.isfinite(twin)
-                    d = boot(
-                        lambda a, b, t: auc(a, t) - auc(b, t), [twin[both], x[both], y[both]], firms[both], b=B_PANEL
-                    )
-                    entry["twin_minus"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
+                    entry["twin_minus"] = paired(auc, twin, x, y, firms, B_PANEL)
             uni[k] = entry
         res["univariate"] = uni
         res["auc_by_year"] = {
@@ -433,22 +516,28 @@ def panel_section(p: pd.DataFrame) -> dict:
                 )
                 for yr in out["years"]
             }
-            for k in ("twin", "altman_z2", "nd_ebitda", "icr", "static_stress")
+            for k in ("twin", "formula", "altman_z2", "icr", "fcf_margin", "static_stress")
+            if k in uni
         }
         # out-of-sample logistic models: test year Y, train on origins <= Y-3 (their 8-quarter outcomes are known)
         bench = list(BENCH)
-        preds: dict[str, list] = {"benchmarks": [], "benchmarks_plus_twin": [], "twin_only": []}
+        models = {
+            "benchmarks": bench,
+            "benchmarks_plus_twin": [*bench, "twin"],
+            "benchmarks_formula": [*bench, "formula"],
+            "benchmarks_formula_health": [*bench, "formula", "health"],
+            "benchmarks_formula_twin": [*bench, "formula", "twin"],
+            "health_only": ["health"],
+            "twin_only": ["twin"],
+        }
+        preds: dict[str, list] = {k: [] for k in models}
         ys, fs = [], []
         for yr in out["years"]:
             tr = (p["year"] <= yr - 3).to_numpy() & m
             te = (p["year"] == yr).to_numpy() & m
             if tr.sum() < 300 or te.sum() < 30 or np.nansum(y[tr]) < 10:
                 continue
-            for key, cols in (
-                ("benchmarks", bench),
-                ("benchmarks_plus_twin", [*bench, "twin"]),
-                ("twin_only", ["twin"]),
-            ):
+            for key, cols in models.items():
                 preds[key].append(_fit_predict(p[tr], p[te], y[tr], cols))
             ys.append(y[te])
             fs.append(firms[te])
@@ -464,10 +553,13 @@ def panel_section(p: pd.DataFrame) -> dict:
                         -np.mean(yy * np.log(np.clip(v, 1e-6, 1)) + (1 - yy) * np.log(np.clip(1 - v, 1e-6, 1)))
                     ),
                 }
-            d = boot(
-                lambda a, b, t: auc(a, t) - auc(b, t), [P["benchmarks_plus_twin"], P["benchmarks"], yy], ff, b=B_PANEL
+            oos["delta_auc_twin_added"] = paired(auc, P["benchmarks_plus_twin"], P["benchmarks"], yy, ff, B_PANEL)
+            oos["delta_health_beyond_formula"] = paired(
+                auc, P["benchmarks_formula_health"], P["benchmarks_formula"], yy, ff, B_PANEL
             )
-            oos["delta_auc_twin_added"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
+            oos["delta_twin_beyond_formula"] = paired(
+                auc, P["benchmarks_formula_twin"], P["benchmarks_formula"], yy, ff, B_PANEL
+            )
             oos["n_test"] = int(len(yy))
             oos["test_years"] = [yr for yr in out["years"] if ((p["year"] <= yr - 3).to_numpy() & m).sum() >= 300]
             res["out_of_sample"] = oos
@@ -480,9 +572,9 @@ def panel_section(p: pd.DataFrame) -> dict:
 def _clustered_logit(p: pd.DataFrame, y: np.ndarray) -> dict:
     import statsmodels.api as sm
 
-    X = pd.DataFrame({k: pct(sign * p[col].to_numpy(float)) for k, (col, sign) in BENCH.items()}, index=p.index).fillna(
-        0.5
-    )
+    X = pd.DataFrame({k: pct(sign * _col(p, col).to_numpy(float)) for k, (col, sign) in BENCH.items()}, index=p.index)
+    X.insert(0, "formula", pct(-_col(p, "health_t0").to_numpy(float)))
+    X = X.loc[:, X.notna().any()].fillna(0.5)
     X.insert(0, "twin", pct(-p["h_base"].to_numpy(float)))
     yr = pd.get_dummies(p["year"], prefix="y", drop_first=True, dtype=float)
     try:
@@ -512,8 +604,11 @@ def forecast_section(fc: pd.DataFrame) -> dict:
         for base in ("rw", "ets"):
             c_t, c_b = g["crps_twin"] / g["scale"], g[f"crps_{base}"] / g["scale"]
             d = (c_t - c_b).to_numpy(float)
-            # Diebold-Mariano style test on scaled CRPS differentials, standard errors clustered by firm
-            m = sm.OLS(d, np.ones(len(d))).fit(cov_type="cluster", cov_kwds={"groups": pd.factorize(g["ticker"])[0]})
+            # Diebold-Mariano style test on scaled CRPS differentials, with standard errors clustered two ways: by
+            # firm (repeated forecasts) and by origin (common shocks such as 2020)
+            firm_ids, origin_ids = pd.factorize(g["ticker"])[0], pd.factorize(g["origin"])[0]
+            groups = np.column_stack([firm_ids, origin_ids]) if origin_ids.max() > 0 else firm_ids
+            m = sm.OLS(d, np.ones(len(d))).fit(cov_type="cluster", cov_kwds={"groups": groups})
             res[base] = {
                 "skill_pooled": float(1 - g["crps_twin"].sum() / g[f"crps_{base}"].sum()),
                 "skill_scaled": float(1 - c_t.mean() / c_b.mean()),
