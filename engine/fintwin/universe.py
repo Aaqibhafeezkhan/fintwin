@@ -46,6 +46,10 @@ def tickers() -> list[str]:
 
 def classify(ticker: str) -> tuple[str, str]:
     """(GICS sector, GICS sub-industry) for a ticker; empty strings if unknown (live API tickers)."""
+    if "~" in ticker:  # delisted 2020 Chapter 11 filers used in the research sample
+        bk = pd.read_csv(Path(__file__).with_name("data") / "bankruptcies_2020.csv")
+        hit = bk[bk["key"] == ticker.upper()]
+        return (str(hit["sector"].iloc[0]), "") if len(hit) else ("", "")
     u = universe()
     row = u[u["ticker"] == ticker.upper()]
     if row.empty:

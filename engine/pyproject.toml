@@ -9,6 +9,7 @@ dependencies = [
   "requests>=2.31",
   "scipy>=1.11",
   "python-dotenv>=1.0",
+  "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]

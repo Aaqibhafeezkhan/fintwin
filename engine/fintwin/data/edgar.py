@@ -51,7 +51,14 @@ def _get_json(url: str, cache_name: str, max_age_hours: float) -> dict:
 
 
 def ticker_to_cik(ticker: str) -> tuple[int, str]:
-    """Return (cik, company title) for a ticker."""
+    """Return (cik, company title) for a ticker. Keys like ``HTZ~2020`` name delisted 2020 Chapter 11 filers."""
+    if "~" in ticker:
+        import csv
+
+        with open(Path(__file__).with_name("bankruptcies_2020.csv"), encoding="utf-8") as fh:
+            for r in csv.DictReader(fh):
+                if r["key"] == ticker.upper():
+                    return int(r["cik"]), r["name"]
     data = _get_json("https://www.sec.gov/files/company_tickers.json", "company_tickers.json", 24 * 7)
     t = ticker.upper()
     for row in data.values():
