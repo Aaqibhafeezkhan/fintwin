@@ -138,6 +138,8 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             row |= {f"pb_{k}": v["p_breach"] for k, v in c["scenarios"].items()}
             row |= {f"abl_{k}": v["health"] for k, v in c["ablations"].items()}
             row |= {f"ablpb_{k}": v["p_breach"] for k, v in c["ablations"].items()}
+            for k, v in (c.get("ablations_h12") or {}).items():
+                row |= {f"abl12_{k}": v["health"], f"abl12pb_{k}": v["p_breach"]}
             row["h_sector_adj"] = c["sector_adjusted"]["health"]
             row |= c["features"]
             row |= {f"real_{k}": v for k, v in (c.get("realized") or {}).items()}
@@ -148,6 +150,7 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
                 "h_base": pr["base"]["health"],
                 "pb_base": pr["base"]["p_breach"],
                 "h_rec": pr["recession"]["health"],
+                "h_base_no_loops": pr.get("base_no_loops", {}).get("health", np.nan),
             }
             row |= pr["features"]
             row |= {f"y_{k}": v for k, v in (pr.get("outcome") or {}).items()}
@@ -236,6 +239,27 @@ def covid_section(xs: pd.DataFrame) -> dict:
             "loss": None if d is None else {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)},
         }
     out["ablations"] = abl
+    # breach probability is where the loops act: paired differences in rank correlation with burn severity
+    pb_full = sp["ablpb_full"].to_numpy(float)
+    out["ablations_pb_loss"] = {}
+    for k in ("no_r1", "no_r2", "no_b1", "no_b2", "no_loops"):
+        d = boot(lambda a, b, c: rho(a, c) - rho(b, c), [pb_full, sp[f"ablpb_{k}"].to_numpy(float), sev])
+        out["ablations_pb_loss"][k] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
+    if "abl12_full" in sp:
+        h12 = {}
+        full12, pb12 = -sp["abl12_full"].to_numpy(float), sp["abl12pb_full"].to_numpy(float)
+        for k in ("full", "no_r1", "no_r2", "no_b1", "no_b2", "no_loops"):
+            x, xp = -sp[f"abl12_{k}"].to_numpy(float), sp[f"abl12pb_{k}"].to_numpy(float)
+            e: dict = {"rho": rho(x, sev), "rho_pb": rho(xp, sev)}
+            if k != "full":
+                d = boot(lambda a, b, c: rho(a, c) - rho(b, c), [full12, x, sev])
+                dp = boot(lambda a, b, c: rho(a, c) - rho(b, c), [pb12, xp, sev])
+                e["loss"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
+                e["loss_pb"] = {"diff": float(np.nanmean(dp)), "ci": ci(dp), "p": p_two_sided(dp)}
+            h12[k] = e
+        out["ablations_h12"] = h12
+    d = boot(lambda a, b, c: rho(a, c) - rho(b, c), [twin, -sp["h_base"].to_numpy(float), sev])
+    out["stress_minus_baseline"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
     out["sector_adjusted_rho"] = rho(-sp["h_sector_adj"].to_numpy(float), sev)
 
     # secondary outcomes
@@ -293,7 +317,35 @@ def bankruptcy_section(xs: pd.DataFrame) -> dict:
         "auc_altman": auc(R["altman_z2"].to_numpy(float)[sec.to_numpy()], y[sec.to_numpy()]),
         "n": int(sec.sum()),
     }
-    out["firms"] = df.loc[df["bankrupt"], ["ticker", "name", "sector", "h_pandemic", "h_base", "z2"]].to_dict("records")
+    out["firms"] = df.loc[
+        df["bankrupt"], ["ticker", "name", "sector", "h_pandemic", "h_base", "z2", "log_rev"]
+    ].to_dict("records")
+    # S&P 500 members are large, so size alone separates them from 2020 bankrupts: compare like with like
+    size = df["log_rev"].to_numpy(float)
+    cap = np.nanpercentile(size[y == 1], 90)
+    small = size <= cap
+    out["size_matched"] = {
+        "max_log_rev": float(cap),
+        "n_survivors": int((small & (y == 0)).sum()),
+        "n_bankrupt": int((small & (y == 1)).sum()),
+        "auc": {
+            k: auc(R[k].to_numpy(float)[small], y[small]) for k in ("twin", "twin_base", "altman_z2", "icr", "size")
+        },
+    }
+    import statsmodels.api as sm
+
+    X = pd.DataFrame({"twin": pct(R["twin_base"].to_numpy(float)), "size": pct(R["size"].to_numpy(float))})
+    X["altman_z2"] = pct(R["altman_z2"].to_numpy(float))
+    X = X.fillna(0.5)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            m = sm.Logit(y, sm.add_constant(X)).fit(disp=False, cov_type="HC1")
+        out["logit_with_size"] = {
+            k: {"coef": float(m.params[k]), "z": float(m.tvalues[k]), "p": float(m.pvalues[k])} for k in X.columns
+        }
+    except Exception as e:
+        out["logit_with_size"] = {"error": f"{type(e).__name__}: {e}"}
     return out
 
 
@@ -347,6 +399,7 @@ def panel_section(p: pd.DataFrame) -> dict:
     firms = p["ticker"].to_numpy()
     R = risk_frame(p, "h_base", "pb_base")
     R["twin_rec"] = -p["h_rec"].astype(float)
+    R["twin_no_loops"] = -p["h_base_no_loops"].astype(float)
     out: dict = {
         "n_firm_years": int(len(p)),
         "n_firms": int(p["ticker"].nunique()),
@@ -360,6 +413,8 @@ def panel_section(p: pd.DataFrame) -> dict:
         for k in R.columns:
             x = R[k].to_numpy(float)
             sel = m & np.isfinite(x)
+            if sel.sum() < 20:  # predictor not available in this run
+                continue
             entry: dict = {"auc": auc(x[sel], y[sel]), "n": int(sel.sum())}
             if name == "severe_burn":
                 entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=B_PANEL))

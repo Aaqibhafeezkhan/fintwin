@@ -135,6 +135,9 @@ def covid(ticker: str, full: pd.DataFrame | None) -> dict | None:
     }
     out["scenarios"] = {k: _run(raw, PRESETS[k]["knobs"], {}, 2000, 8, 7) for k in SCENARIOS}
     out["ablations"] = {k: _run(raw, FREEZE, lv, 2000, 8, 7) for k, lv in ABLATIONS.items()}
+    # loops act through trailing coverage and the maturity wall, so they get more room over three years
+    p12 = {**calibrate(hist, macro_quarterly(COVID_CUT), 12), "sector_tol": 1.0}
+    out["ablations_h12"] = {k: _run(p12, FREEZE, lv, 2000, 12, 7) for k, lv in ABLATIONS.items()}
     out["sector_adjusted"] = _run({**p, "sector_tol": tol}, FREEZE, {}, 2000, 8, 7)
     out["features"] = features(hist, p)
     out["realized"] = covid_outcomes(hist, full) if full is not None else {}
@@ -209,7 +212,7 @@ def _ets_samples(y: np.ndarray, h: int, log: bool, seasonal: bool, n: int = 2000
                 seasonal="add" if seasonal else None,
                 seasonal_periods=4 if seasonal else None,
             ).fit(disp=False)
-            sims = np.asarray(m.simulate(h, repetitions=n, rng=np.random.default_rng(3))).reshape(h, n)
+            sims = np.asarray(m.simulate(h, anchor="end", repetitions=n, rng=np.random.default_rng(3))).reshape(h, n)
     except Exception:
         return None
     return np.exp(sims) if log else sims
@@ -217,45 +220,54 @@ def _ets_samples(y: np.ndarray, h: int, log: bool, seasonal: bool, n: int = 2000
 
 def forecasts(ticker: str, full_data: CompanyData, hists: dict[str, CompanyData]) -> list[dict]:
     full = full_data.quarters
-    rows = []
+    rows: list[dict] = []
     for origin in FORECAST_ORIGINS:
         hist = hists.get(origin)
         if hist is None or len(hist.quarters) < 16:
             continue
-        real = _realized(full, hist.quarters.index[-1])
-        if len(real) < H_FC:
+        try:
+            rows += _forecast_origin(origin, hist, full)
+        except Exception:  # one unusable vintage must not drop the company's other forecasts
             continue
-        p = calibrate(hist, macro_quarterly(origin), H_FC)
-        out = simulate(p, build_scenario({}, H_FC), draw_shocks(p, 2000, H_FC, seed=11), DEFAULT_LEVERS)
-        q = hist.quarters
-        scale = _ttm(q, "revenue") / 4
-        series = {
-            "revenue": q["revenue"].to_numpy(float),
-            "cash_like": (q["cash"] + q["short_investments"].fillna(0)).to_numpy(float),
-        }
-        ets = {
-            "revenue": _ets_samples(series["revenue"], H_FC, log=True, seasonal=True),
-            "cash_like": _ets_samples(series["cash_like"], H_FC, log=False, seasonal=False),
-        }
-        for var, key in (("revenue", "revenue"), ("cash_like", "cash")):
-            for h in range(H_FC):
-                y = float(real[var].iloc[h])
-                if not np.isfinite(y):
-                    continue
-                mu_b, sd_b = _baseline(q, var, h + 1)
-                e = ets[var]
-                rows.append(
-                    {
-                        "origin": origin,
-                        "var": var,
-                        "h": h + 1,
-                        "scale": _f(scale),
-                        "crps_twin": crps_samples(out[key][:, h], y),
-                        "crps_rw": crps_gaussian(mu_b, sd_b, y),
-                        "crps_ets": crps_samples(e[h], y) if e is not None else None,
-                        "pit_ets": float(np.mean(e[h] <= y)) if e is not None else None,
-                    }
-                )
+    return rows
+
+
+def _forecast_origin(origin: str, hist: CompanyData, full: pd.DataFrame) -> list[dict]:
+    rows: list[dict] = []
+    real = _realized(full, hist.quarters.index[-1])
+    if len(real) < H_FC:
+        return rows
+    p = calibrate(hist, macro_quarterly(origin), H_FC)
+    out = simulate(p, build_scenario({}, H_FC), draw_shocks(p, 2000, H_FC, seed=11), DEFAULT_LEVERS)
+    q = hist.quarters
+    scale = _ttm(q, "revenue") / 4
+    series = {
+        "revenue": q["revenue"].to_numpy(float),
+        "cash_like": (q["cash"] + q["short_investments"].fillna(0)).to_numpy(float),
+    }
+    ets = {
+        "revenue": _ets_samples(series["revenue"], H_FC, log=True, seasonal=True),
+        "cash_like": _ets_samples(series["cash_like"], H_FC, log=False, seasonal=False),
+    }
+    for var, key in (("revenue", "revenue"), ("cash_like", "cash")):
+        for h in range(H_FC):
+            y = float(real[var].iloc[h])
+            if not np.isfinite(y):
+                continue
+            mu_b, sd_b = _baseline(q, var, h + 1)
+            e = ets[var]
+            rows.append(
+                {
+                    "origin": origin,
+                    "var": var,
+                    "h": h + 1,
+                    "scale": _f(scale),
+                    "crps_twin": crps_samples(out[key][:, h], y),
+                    "crps_rw": crps_gaussian(mu_b, sd_b, y),
+                    "crps_ets": crps_samples(e[h], y) if e is not None else None,
+                    "pit_ets": float(np.mean(e[h] <= y)) if e is not None else None,
+                }
+            )
     return rows
 
 
@@ -288,6 +300,7 @@ def company(ticker: str) -> dict:
                     "origin": origin,
                     "base": _run(raw, {}, {}, 1500, 12, 5),
                     "recession": _run(raw, PRESETS["recession"]["knobs"], {}, 1500, 12, 5),
+                    "base_no_loops": _run(raw, {}, ABLATIONS["no_loops"], 1500, 12, 5),
                     "features": features(hist, p),
                     "outcome": _distress(hist, full_data.quarters),
                 }
