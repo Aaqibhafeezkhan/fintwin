@@ -14,6 +14,7 @@ export type Params = {
   equity0: number; other_net0: number; other_liab0: number; wc_other0: number; retained0: number;
   ebit_ttm0: number[]; ebitda_ttm0: number[]; interest_ttm0: number[];
   _sources: Record<string, string>;
+  sector_tol?: number;
 };
 
 export type Knobs = Partial<{
@@ -34,7 +35,7 @@ export type Scenario = {
 export const OUTPUT_KEYS = [
   "revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver", "liquidity",
   "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity", "issued", "fixed_cost_mult",
-  "debt_issued", "recession",
+  "debt_issued", "recession", "h_liq", "h_cov", "h_lev", "h_solv",
 ] as const;
 export type OutputKey = (typeof OUTPUT_KEYS)[number];
 /** Each output is a row-major [N * T] matrix (path-major). */

@@ -43,5 +43,9 @@ def summarize(out: dict) -> dict:
         "min_liquidity_bands": np.percentile(min_liq, BANDS).tolist(),
         "median_quarters_to_breach": float(np.median(first_breach[first_breach >= 0])) if (first_breach >= 0).any() else None,
         "equity_needed_median": float(np.median(out["issued"].sum(1))),
+        # mean component scores (paths x quarters) for the health waterfall; health_mean is their weighted
+        # sum, minus the cap applied to paths that ran out of cash
+        "components": {k: float(out[f"h_{k}"].mean()) for k in ("liq", "cov", "lev", "solv")},
+        "health_mean": float(out["health"].mean()),
         "horizon": T,
     }

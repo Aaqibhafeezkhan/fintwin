@@ -15,7 +15,14 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from .edgar import company_facts, ticker_to_cik
+from functools import lru_cache
+
+from .edgar import company_facts as _company_facts, ticker_to_cik
+
+
+@lru_cache(maxsize=2)
+def company_facts(cik: int) -> dict:
+    return _company_facts(cik)
 
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "10-KT", "20-F", "40-F"}
 QUARTER_DAYS = (75, 105)

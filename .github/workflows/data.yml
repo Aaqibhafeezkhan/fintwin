@@ -1,0 +1,102 @@
+# Weekly refresh: pull the latest SEC filings and FRED data, rebuild every twin, re-run the large-sample
+# validation and the time machine, then redeploy the site. Runs on free GitHub-hosted runners.
+name: data
+on:
+  schedule: [{ cron: "0 6 * * 1" }]   # Mondays 06:00 UTC
+  workflow_dispatch: {}
+concurrency: { group: data, cancel-in-progress: false }
+permissions: { contents: read, pages: write, id-token: write, actions: read }
+env:
+  SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+  OPENBLAS_NUM_THREADS: "2"
+  PYTHONWARNINGS: ignore
+  SHARDS: 16
+
+jobs:
+  norms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults: { run: { working-directory: engine } }
+    outputs: { week: "${{ steps.week.outputs.week }}" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - id: week
+        run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        with: { path: engine/.cache/edgar, key: "edgar-${{ steps.week.outputs.week }}", restore-keys: "edgar-" }
+      - run: uv sync
+      - name: Sector leverage norms (also warms the EDGAR cache)
+        run: uv run python -m fintwin.pipeline norms
+      - uses: actions/cache/save@v4
+        with: { path: engine/.cache/edgar, key: "edgar-${{ steps.week.outputs.week }}" }
+      - uses: actions/upload-artifact@v4
+        with: { name: norms, path: engine/fintwin/data/sector_norms.json }
+
+  shard:
+    needs: norms
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix: { i: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] }
+    defaults: { run: { working-directory: engine } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/cache/restore@v4
+        with: { path: engine/.cache/edgar, key: "edgar-${{ needs.norms.outputs.week }}", restore-keys: "edgar-" }
+      - uses: actions/download-artifact@v4
+        with: { name: norms, path: engine/fintwin/data }
+      - run: uv sync
+      - name: Start from empty output folders (only this shard's files are uploaded)
+        run: rm -rf ../web/public/data/companies ../web/public/data/timeline .cache/batch .cache/failed
+      - name: Company twins, validation and time machine (shard ${{ matrix.i }})
+        run: uv run python -m fintwin.pipeline shard ${{ matrix.i }} $SHARDS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.i }}
+          include-hidden-files: true
+          path: |
+            web/public/data/companies/
+            web/public/data/timeline/
+            engine/.cache/batch/
+            engine/.cache/failed/
+
+  aggregate:
+    needs: [norms, shard]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/cache/restore@v4
+        with: { path: engine/.cache/edgar, key: "edgar-${{ needs.norms.outputs.week }}", restore-keys: "edgar-" }
+      - uses: actions/download-artifact@v4
+        with: { name: norms, path: engine/fintwin/data }
+      - uses: actions/download-artifact@v4
+        with: { pattern: "shard-*", merge-multiple: true, path: . }
+      - name: Index, calibration, backtests, goldens, analyst notes
+        working-directory: engine
+        run: |
+          uv sync
+          uv run python -m fintwin.pipeline aggregate
+      - name: Parity check against the fresh goldens
+        working-directory: web
+        run: npm ci && npm test
+      - name: Build site
+        working-directory: web
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: web/dist }
+      - uses: actions/upload-artifact@v4
+        with: { name: site-data, path: web/public/data/, retention-days: 30 }
+
+  deploy:
+    needs: aggregate
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.d.outputs.page_url }}" }
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

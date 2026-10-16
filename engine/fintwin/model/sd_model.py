@@ -22,7 +22,7 @@ from .ratings import ICR_LOWER, SPREADS
 DAYS_Q = 91.25
 OUTPUTS = ["revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver",
            "liquidity", "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity",
-           "issued", "fixed_cost_mult", "debt_issued", "recession"]
+           "issued", "fixed_cost_mult", "debt_issued", "recession", "h_liq", "h_cov", "h_lev", "h_solv"]
 
 
 def _rank(icr):
@@ -216,8 +216,12 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         # --- health score 0-100 ---
         burn = np.maximum(fixed + interest + ladder[min(t + 1, T - 1)] * (1 - access), 1e-9)
         s_liq = np.clip(liquidity / burn / 8.0, 0.0, 1.0) * 100
-        s_cov = rank / 14.0 * 100
-        s_lev = np.where(ebitda_ttm > 0, np.clip((6.0 - nd_ebitda) / 6.0, 0.0, 1.0), 0.0) * 100
+        # sector tolerance: sectors that structurally carry more leverage (utilities, telecom, rail) are scored
+        # against their own norms; the dynamics (spreads, market access) still use the raw coverage
+        tol = p.get("sector_tol", 1.0)
+        s_cov = _rank(icr * tol) / 14.0 * 100
+        lev_cap = 6.0 * tol
+        s_lev = np.where(ebitda_ttm > 0, np.clip((lev_cap - nd_ebitda) / lev_cap, 0.0, 1.0), 0.0) * 100
         s_solv = np.clip((z - 1.1) / 1.5, 0.0, 1.0) * 100
         health = 0.3 * s_liq + 0.3 * s_cov + 0.2 * s_lev + 0.2 * s_solv
         health = np.where(breached, np.minimum(health, 25.0), health)
@@ -227,7 +231,8 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
                        ("revolver", revolver), ("liquidity", liquidity), ("interest", interest), ("icr", icr),
                        ("nd_ebitda", nd_ebitda), ("rating", rank), ("zscore", z), ("health", health),
                        ("breach", breached), ("equity", equity), ("issued", issued), ("fixed_cost_mult", cut_mult),
-                       ("debt_issued", issued_debt), ("recession", regime)):
+                       ("debt_issued", issued_debt), ("recession", regime),
+                       ("h_liq", s_liq), ("h_cov", s_cov), ("h_lev", s_lev), ("h_solv", s_solv)):
             out[k][:, t] = val
 
         # identity residual: assets - liabilities - equity must stay at its initial value (zero by construction)

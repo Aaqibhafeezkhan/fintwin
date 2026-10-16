@@ -295,4 +295,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     bad += [k for k, val in p.items() if isinstance(val, list) and not np.all(np.isfinite(np.asarray(val, float)))]
     if bad:
         raise ValueError(f"{c.ticker}: non-finite calibrated parameters {bad}")
+    from ..universe import classify, sector_tolerance
+    p["sector_tol"] = sector_tolerance(c.ticker)
+    src["sector_tol"] = (f"{classify(c.ticker)[0]} sector leverage norm (median net debt/EBITDA vs universe)"
+                         if p["sector_tol"] != 1.0 else "no sector adjustment")
     return {k: (float(val) if isinstance(val, np.floating) else val) for k, val in p.items()}

@@ -27,6 +27,7 @@ from .scenarios.reverse_stress import reverse_stress
 from .sensitivity.sobol import sobol
 from .sensitivity.tornado import tornado
 from .backtest.batch import UNIVERSE_XL
+from .universe import classify
 from .stochastic.calibrate import calibrate
 from .stochastic.mc import run, summarize
 from .stochastic.shocks import draw_shocks
@@ -118,12 +119,14 @@ def company_block(ticker: str, macro: pd.DataFrame, n_paths: int = 5000, with_so
     for key, preset in PRESETS.items():
         sm = summarize(run(p, preset["knobs"], eps=eps))
         presets[key] = {k: sm[k] for k in ("health_score", "health_p10", "p_breach", "p_icr_below_1_5",
-                                          "p_downgrade_below_ig", "median_quarters_to_breach", "rating_dist")}
+                                          "p_downgrade_below_ig", "median_quarters_to_breach", "rating_dist",
+                                          "components", "health_mean")}
         if key == "base":
             presets[key]["bands"] = sm["bands"]
             presets[key]["p_breach_by_q"] = sm["p_breach_by_q"]
     return {
-        "ticker": c.ticker, "name": c.name, "cik": c.cik, "sector": SECTORS.get(c.ticker, ""),
+        "ticker": c.ticker, "name": c.name, "cik": c.cik, "sector": classify(c.ticker)[1] or SECTORS.get(c.ticker, ""),
+        "gics": classify(c.ticker)[0],
         "edgar_url": f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={c.cik}&type=10-",
         "quality": quality_report(c), "params": p, "history": history_block(c), "presets": presets,
         "reverse_stress": reverse_stress(p), "tornado": tornado(p),

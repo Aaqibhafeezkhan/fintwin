@@ -18,7 +18,12 @@ ai = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8", "hypothesis>=6.100", "matplotlib>=3.8"]
+dev = [
+    "pytest>=8",
+    "hypothesis>=6.100",
+    "matplotlib>=3.8",
+    "lxml>=6.1.3",
+]
 
 [build-system]
 requires = ["hatchling"]

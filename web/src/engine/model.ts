@@ -159,8 +159,11 @@ export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number,
       // health score 0-100
       const burn = Math.max(fixed + interest + ladder[Math.min(t + 1, T - 1)] * (1 - access), 1e-9);
       const sLiq = clip(liquidity / burn / 8, 0, 1) * 100;
-      const sCov = (rank / 14) * 100;
-      const sLev = (ebitdaTtm > 0 ? clip((6 - ndEbitda) / 6, 0, 1) : 0) * 100;
+      // sector tolerance: score leverage-heavy sectors against their own norms (dynamics use raw coverage)
+      const tol = p.sector_tol ?? 1;
+      const sCov = (ratingRank(icr * tol) / 14) * 100;
+      const levCap = 6 * tol;
+      const sLev = (ebitdaTtm > 0 ? clip((levCap - ndEbitda) / levCap, 0, 1) : 0) * 100;
       const sSolv = clip((z - 1.1) / 1.5, 0, 1) * 100;
       let health = 0.3 * sLiq + 0.3 * sCov + 0.2 * sLev + 0.2 * sSolv;
       if (breached) health = Math.min(health, 25);
@@ -172,6 +175,7 @@ export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number,
       out.nd_ebitda[i] = ndEbitda; out.rating[i] = rank; out.zscore[i] = z; out.health[i] = health;
       out.breach[i] = breached ? 1 : 0; out.equity[i] = equity; out.issued[i] = issued;
       out.fixed_cost_mult[i] = cutMult; out.debt_issued[i] = issuedDebt; out.recession[i] = regime;
+      out.h_liq[i] = sLiq; out.h_cov[i] = sCov; out.h_lev[i] = sLev; out.h_solv[i] = sSolv;
     }
   }
   return out;

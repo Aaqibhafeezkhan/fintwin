@@ -1,0 +1,395 @@
+ticker,name,sector,industry,cik
+A,Agilent Technologies,Health Care,Life Sciences Tools & Services,1090872
+AAPL,Apple Inc.,Information Technology,"Technology Hardware, Storage & Peripherals",320193
+ABBV,AbbVie,Health Care,Biotechnology,1551152
+ABNB,Airbnb,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1559720
+ABT,Abbott Laboratories,Health Care,Health Care Equipment,1800
+ACN,Accenture,Information Technology,IT Consulting & Other Services,1467373
+ADBE,Adobe Inc.,Information Technology,Application Software,796343
+ADI,Analog Devices,Information Technology,Semiconductors,6281
+ADM,Archer Daniels Midland,Consumer Staples,Agricultural Products & Services,7084
+ADP,Automatic Data Processing,Industrials,Human Resource & Employment Services,8670
+ADSK,Autodesk,Information Technology,Application Software,769397
+AEE,Ameren,Utilities,Multi-Utilities,1002910
+AEP,American Electric Power,Utilities,Electric Utilities,4904
+AES,AES Corporation,Utilities,Independent Power Producers & Energy Traders,874761
+AKAM,Akamai Technologies,Information Technology,Internet Services & Infrastructure,1086222
+ALB,Albemarle Corporation,Materials,Specialty Chemicals,915913
+ALGN,Align Technology,Health Care,Health Care Supplies,1097149
+ALLE,Allegion,Industrials,Building Products,1579241
+AMAT,Applied Materials,Information Technology,Semiconductor Materials & Equipment,6951
+AMCR,Amcor,Materials,Paper & Plastic Packaging Products & Materials,1748790
+AMD,Advanced Micro Devices,Information Technology,Semiconductors,2488
+AME,Ametek,Industrials,Electrical Components & Equipment,1037868
+AMGN,Amgen,Health Care,Biotechnology,318154
+AMZN,Amazon,Consumer Discretionary,Broadline Retail,1018724
+ANET,Arista Networks,Information Technology,Communications Equipment,1596532
+AOS,A. O. Smith,Industrials,Building Products,91142
+APA,APA Corporation,Energy,Oil & Gas Exploration & Production,1841666
+APD,Air Products,Materials,Industrial Gases,2969
+APH,Amphenol,Information Technology,Electronic Components,820313
+APP,AppLovin,Communication Services,Advertising,1751008
+APTV,Aptiv,Consumer Discretionary,Automotive Parts & Equipment,1521332
+ATO,Atmos Energy,Utilities,Gas Utilities,731802
+AVGO,Broadcom,Information Technology,Semiconductors,1730168
+AVY,Avery Dennison,Materials,Paper & Plastic Packaging Products & Materials,8818
+AWK,American Water Works,Utilities,Water Utilities,1410636
+AXON,Axon Enterprise,Industrials,Aerospace & Defense,1069183
+AZO,AutoZone,Consumer Discretionary,Automotive Retail,866787
+BA,Boeing,Industrials,Aerospace & Defense,12927
+BALL,Ball Corporation,Materials,"Metal, Glass & Plastic Containers",9389
+BAX,Baxter International,Health Care,Health Care Equipment,10456
+BBY,Best Buy,Consumer Discretionary,Computer & Electronics Retail,764478
+BDX,Becton Dickinson,Health Care,Health Care Equipment,10795
+BE,Bloom Energy,Industrials,Electrical Components & Equipment,1664703
+BF-B,Brown–Forman,Consumer Staples,Distillers & Vintners,14693
+BG,Bunge Global,Consumer Staples,Agricultural Products & Services,1996862
+BIIB,Biogen,Health Care,Biotechnology,875045
+BKNG,Booking Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1075531
+BKR,Baker Hughes,Energy,Oil & Gas Equipment & Services,1701605
+BMY,Bristol Myers Squibb,Health Care,Pharmaceuticals,14272
+BR,Broadridge Financial Solutions,Industrials,Data Processing & Outsourced Services,1383312
+BSX,Boston Scientific,Health Care,Health Care Equipment,885725
+CAH,Cardinal Health,Health Care,Health Care Distributors,721371
+CARR,Carrier Global,Industrials,Building Products,1783180
+CASY,Casey's,Consumer Staples,Food Retail,726958
+CAT,Caterpillar Inc.,Industrials,Construction Machinery & Heavy Transportation Equipment,18230
+CCL,Carnival Corporation,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",815097
+CDNS,Cadence Design Systems,Information Technology,Application Software,813672
+CDW,CDW Corporation,Information Technology,Technology Distributors,1402057
+CEG,Constellation Energy,Utilities,Electric Utilities,1868275
+CF,CF Industries,Materials,Fertilizers & Agricultural Chemicals,1324404
+CHD,Church & Dwight,Consumer Staples,Household Products,313927
+CHRW,C.H. Robinson,Industrials,Air Freight & Logistics,1043277
+CHTR,Charter Communications,Communication Services,Cable & Satellite,1091667
+CI,Cigna,Health Care,Health Care Services,1739940
+CIEN,Ciena,Information Technology,Communications Equipment,936395
+CL,Colgate-Palmolive,Consumer Staples,Household Products,21665
+CLX,Clorox,Consumer Staples,Household Products,21076
+CMCSA,Comcast,Communication Services,Cable & Satellite,1166691
+CMG,Chipotle Mexican Grill,Consumer Discretionary,Restaurants,1058090
+CMI,Cummins,Industrials,Construction Machinery & Heavy Transportation Equipment,26172
+CMS,CMS Energy,Utilities,Multi-Utilities,811156
+CNC,Centene Corporation,Health Care,Managed Health Care,1071739
+CNP,CenterPoint Energy,Utilities,Multi-Utilities,1130310
+COHR,Coherent Corp.,Information Technology,Electronic Components,820318
+COO,Cooper Companies (The),Health Care,Health Care Supplies,711404
+COP,ConocoPhillips,Energy,Oil & Gas Exploration & Production,1163165
+COR,Cencora,Health Care,Health Care Distributors,1140859
+COST,Costco,Consumer Staples,Consumer Staples Merchandise Retail,909832
+CPRT,Copart,Industrials,Diversified Support Services,900075
+CRH,CRH plc,Materials,Construction Materials,849395
+CRL,Charles River Laboratories,Health Care,Life Sciences Tools & Services,1100682
+CRM,Salesforce,Information Technology,Application Software,1108524
+CRWD,CrowdStrike,Information Technology,Systems Software,1535527
+CSCO,Cisco,Information Technology,Communications Equipment,858877
+CSX,CSX Corporation,Industrials,Rail Transportation,277948
+CTAS,Cintas,Industrials,Diversified Support Services,723254
+CTSH,Cognizant,Information Technology,IT Consulting & Other Services,1058290
+CVNA,Carvana,Consumer Discretionary,Automotive Retail,1690820
+CVS,CVS Health,Health Care,Health Care Services,64803
+CVX,Chevron Corporation,Energy,Integrated Oil & Gas,93410
+D,Dominion Energy,Utilities,Multi-Utilities,715957
+DAL,Delta Air Lines,Industrials,Passenger Airlines,27904
+DASH,DoorDash,Consumer Discretionary,Specialized Consumer Services,1792789
+DD,DuPont,Industrials,Industrial Conglomerates,1666700
+DDOG,Datadog,Information Technology,Application Software,1561550
+DE,Deere & Company,Industrials,Agricultural & Farm Machinery,315189
+DECK,Deckers Brands,Consumer Discretionary,Footwear,910521
+DELL,Dell Technologies,Information Technology,"Technology Hardware, Storage & Peripherals",1571996
+DG,Dollar General,Consumer Staples,Consumer Staples Merchandise Retail,29534
+DGX,Quest Diagnostics,Health Care,Health Care Services,1022079
+DHI,D. R. Horton,Consumer Discretionary,Homebuilding,882184
+DHR,Danaher Corporation,Health Care,Life Sciences Tools & Services,313616
+DIS,Walt Disney Company (The),Communication Services,Movies & Entertainment,1744489
+DLTR,Dollar Tree,Consumer Staples,Consumer Staples Merchandise Retail,935703
+DOV,Dover Corporation,Industrials,Industrial Machinery & Supplies & Components,29905
+DOW,Dow Inc.,Materials,Commodity Chemicals,1751788
+DPZ,Domino's,Consumer Discretionary,Restaurants,1286681
+DRI,Darden Restaurants,Consumer Discretionary,Restaurants,940944
+DTE,DTE Energy,Utilities,Multi-Utilities,936340
+DUK,Duke Energy,Utilities,Electric Utilities,1326160
+DVA,DaVita,Health Care,Health Care Services,927066
+DVN,Devon Energy,Energy,Oil & Gas Exploration & Production,1090012
+DXCM,Dexcom,Health Care,Health Care Equipment,1093557
+EBAY,eBay Inc.,Consumer Discretionary,Broadline Retail,1065088
+ECHO,EchoStar,Communication Services,Wireless Telecommunication Services,1415404
+ECL,Ecolab,Materials,Specialty Chemicals,31462
+ED,Consolidated Edison,Utilities,Multi-Utilities,1047862
+EFX,Equifax,Industrials,Research & Consulting Services,33185
+EIX,Edison International,Utilities,Electric Utilities,827052
+EL,Estée Lauder Companies (The),Consumer Staples,Personal Care Products,1001250
+ELV,Elevance Health,Health Care,Managed Health Care,1156039
+EME,Emcor,Industrials,Construction & Engineering,105634
+EMR,Emerson Electric,Industrials,Electrical Components & Equipment,32604
+EOG,EOG Resources,Energy,Oil & Gas Exploration & Production,821189
+EQT,EQT Corporation,Energy,Oil & Gas Exploration & Production,33213
+ES,Eversource Energy,Utilities,Electric Utilities,72741
+ETN,Eaton Corporation,Industrials,Electrical Components & Equipment,1551182
+ETR,Entergy,Utilities,Electric Utilities,65984
+EVRG,Evergy,Utilities,Electric Utilities,1711269
+EW,Edwards Lifesciences,Health Care,Health Care Equipment,1099800
+EXC,Exelon,Utilities,Electric Utilities,1109357
+EXE,Expand Energy,Energy,Oil & Gas Exploration & Production,895126
+EXPD,Expeditors International,Industrials,Air Freight & Logistics,746515
+EXPE,Expedia Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1324424
+F,Ford Motor Company,Consumer Discretionary,Automobile Manufacturers,37996
+FANG,Diamondback Energy,Energy,Oil & Gas Exploration & Production,1539838
+FAST,Fastenal,Industrials,Trading Companies & Distributors,815556
+FCX,Freeport-McMoRan,Materials,Copper,831259
+FDX,FedEx,Industrials,Air Freight & Logistics,1048911
+FDXF,FedEx Freight,Industrials,Cargo Ground Transportation,2082247
+FE,FirstEnergy,Utilities,Electric Utilities,1031296
+FERG,Ferguson Enterprises,Industrials,Trading Companies & Distributors,2011641
+FFIV,"F5, Inc.",Information Technology,Communications Equipment,1048695
+FICO,Fair Isaac,Information Technology,Application Software,814547
+FIX,Comfort Systems USA,Industrials,Construction & Engineering,1035983
+FLEX,Flex Ltd.,Information Technology,Electronic Manufacturing Services,866374
+FOXA,Fox Corporation (Class A),Communication Services,Broadcasting,1754301
+FSLR,First Solar,Information Technology,Semiconductors,1274494
+FTNT,Fortinet,Information Technology,Systems Software,1262039
+FTV,Fortive,Industrials,Industrial Machinery & Supplies & Components,1659166
+GD,General Dynamics,Industrials,Aerospace & Defense,40533
+GDDY,GoDaddy,Information Technology,Internet Services & Infrastructure,1609711
+GE,GE Aerospace,Industrials,Aerospace & Defense,40545
+GEHC,GE HealthCare,Health Care,Health Care Equipment,1932393
+GEN,Gen Digital,Information Technology,Systems Software,849399
+GEV,GE Vernova,Industrials,Heavy Electrical Equipment,1996810
+GILD,Gilead Sciences,Health Care,Biotechnology,882095
+GIS,General Mills,Consumer Staples,Packaged Foods & Meats,40704
+GLW,Corning Inc.,Information Technology,Electronic Components,24741
+GM,General Motors,Consumer Discretionary,Automobile Manufacturers,1467858
+GNRC,Generac,Industrials,Heavy Electrical Equipment,1474735
+GOOGL,Alphabet Inc. (Class A),Communication Services,Interactive Media & Services,1652044
+GPC,Genuine Parts Company,Consumer Discretionary,Distributors,40987
+GRMN,Garmin,Consumer Discretionary,Consumer Electronics,1121788
+GWW,W. W. Grainger,Industrials,Industrial Machinery & Supplies & Components,277135
+HAL,Halliburton,Energy,Oil & Gas Equipment & Services,45012
+HAS,Hasbro,Consumer Discretionary,Leisure Products,46080
+HCA,HCA Healthcare,Health Care,Health Care Facilities,860730
+HD,Home Depot (The),Consumer Discretionary,Home Improvement Retail,354950
+HII,Huntington Ingalls Industries,Industrials,Aerospace & Defense,1501585
+HLT,Hilton Worldwide,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1585689
+HON,Honeywell Technologies,Industrials,Industrial Conglomerates,773840
+HONA,Honeywell Aerospace,Industrials,Aerospace & Defense,2089271
+HPE,Hewlett Packard Enterprise,Information Technology,"Technology Hardware, Storage & Peripherals",1645590
+HPQ,HP Inc.,Information Technology,"Technology Hardware, Storage & Peripherals",47217
+HRL,Hormel Foods,Consumer Staples,Packaged Foods & Meats,48465
+HSIC,Henry Schein,Health Care,Health Care Distributors,1000228
+HSY,Hershey Company (The),Consumer Staples,Packaged Foods & Meats,47111
+HUBB,Hubbell Incorporated,Industrials,Industrial Machinery & Supplies & Components,48898
+HUM,Humana,Health Care,Managed Health Care,49071
+HWM,Howmet Aerospace,Industrials,Aerospace & Defense,4281
+IBM,IBM,Information Technology,IT Consulting & Other Services,51143
+IDXX,Idexx Laboratories,Health Care,Health Care Equipment,874716
+IEX,IDEX Corporation,Industrials,Industrial Machinery & Supplies & Components,832101
+IFF,International Flavors & Fragrances,Materials,Specialty Chemicals,51253
+ILMN,"Illumina, Inc.",Health Care,Life Sciences Tools & Services,1110803
+INCY,Incyte,Health Care,Biotechnology,879169
+INTC,Intel,Information Technology,Semiconductors,50863
+INTU,Intuit,Information Technology,Application Software,896878
+IP,International Paper,Materials,Paper & Plastic Packaging Products & Materials,51434
+IQV,IQVIA,Health Care,Life Sciences Tools & Services,1478242
+IR,Ingersoll Rand,Industrials,Industrial Machinery & Supplies & Components,1699150
+ISRG,Intuitive Surgical,Health Care,Health Care Equipment,1035267
+IT,Gartner,Information Technology,IT Consulting & Other Services,749251
+ITW,Illinois Tool Works,Industrials,Industrial Machinery & Supplies & Components,49826
+J,Jacobs Solutions,Industrials,Construction & Engineering,52988
+JBHT,J.B. Hunt,Industrials,Cargo Ground Transportation,728535
+JBL,Jabil,Information Technology,Electronic Manufacturing Services,898293
+JCI,Johnson Controls,Industrials,Building Products,833444
+JNJ,Johnson & Johnson,Health Care,Pharmaceuticals,200406
+KDP,Keurig Dr Pepper,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,1418135
+KEYS,Keysight Technologies,Information Technology,Electronic Equipment & Instruments,1601046
+KHC,Kraft Heinz,Consumer Staples,Packaged Foods & Meats,1637459
+KLAC,KLA Corporation,Information Technology,Semiconductor Materials & Equipment,319201
+KMB,Kimberly-Clark,Consumer Staples,Household Products,55785
+KMI,Kinder Morgan,Energy,Oil & Gas Storage & Transportation,1506307
+KO,Coca-Cola Company (The),Consumer Staples,Soft Drinks & Non-alcoholic Beverages,21344
+KR,Kroger,Consumer Staples,Food Retail,56873
+KVUE,Kenvue,Consumer Staples,Personal Care Products,1944048
+LDOS,Leidos,Industrials,Diversified Support Services,1336920
+LEN,Lennar,Consumer Discretionary,Homebuilding,920760
+LH,Labcorp,Health Care,Health Care Services,920148
+LHX,L3Harris,Industrials,Aerospace & Defense,202058
+LII,Lennox International,Industrials,Building Products,1069202
+LIN,Linde plc,Materials,Industrial Gases,1707925
+LITE,Lumentum,Information Technology,Communications Equipment,1633978
+LLY,Lilly (Eli),Health Care,Pharmaceuticals,59478
+LMT,Lockheed Martin,Industrials,Aerospace & Defense,936468
+LNT,Alliant Energy,Utilities,Electric Utilities,352541
+LOW,Lowe's,Consumer Discretionary,Home Improvement Retail,60667
+LRCX,Lam Research,Information Technology,Semiconductor Materials & Equipment,707549
+LULU,Lululemon Athletica,Consumer Discretionary,"Apparel, Accessories & Luxury Goods",1397187
+LUV,Southwest Airlines,Industrials,Passenger Airlines,92380
+LVS,Las Vegas Sands,Consumer Discretionary,Casinos & Gaming,1300514
+LYB,LyondellBasell,Materials,Specialty Chemicals,1489393
+LYV,Live Nation Entertainment,Communication Services,Movies & Entertainment,1335258
+MAR,Marriott International,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1048286
+MAS,Masco,Industrials,Building Products,62996
+MCD,McDonald's,Consumer Discretionary,Restaurants,63908
+MCHP,Microchip Technology,Information Technology,Semiconductors,827054
+MCK,McKesson,Health Care,Health Care Distributors,927653
+MDLZ,Mondelez International,Consumer Staples,Packaged Foods & Meats,1103982
+MDT,Medtronic,Health Care,Health Care Equipment,1613103
+META,Meta Platforms,Communication Services,Interactive Media & Services,1326801
+MGM,MGM Resorts,Consumer Discretionary,Casinos & Gaming,789570
+MKC,McCormick & Company,Consumer Staples,Packaged Foods & Meats,63754
+MLM,Martin Marietta Materials,Materials,Construction Materials,916076
+MMM,3M,Industrials,Industrial Conglomerates,66740
+MNST,Monster Beverage,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,865752
+MO,Altria,Consumer Staples,Tobacco,764180
+MOS,Mosaic Company (The),Materials,Fertilizers & Agricultural Chemicals,1285785
+MPC,Marathon Petroleum,Energy,Oil & Gas Refining & Marketing,1510295
+MPWR,Monolithic Power Systems,Information Technology,Semiconductors,1280452
+MRK,Merck & Co.,Health Care,Pharmaceuticals,310158
+MRNA,Moderna,Health Care,Biotechnology,1682852
+MRVL,Marvell Technology,Information Technology,Semiconductors,1835632
+MSFT,Microsoft,Information Technology,Systems Software,789019
+MSI,Motorola Solutions,Information Technology,Communications Equipment,68505
+MTD,Mettler Toledo,Health Care,Life Sciences Tools & Services,1037646
+MU,Micron Technology,Information Technology,Semiconductors,723125
+NCLH,Norwegian Cruise Line Holdings,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",1513761
+NDSN,Nordson Corporation,Industrials,Industrial Machinery & Supplies & Components,72331
+NEE,NextEra Energy,Utilities,Multi-Utilities,753308
+NEM,Newmont,Materials,Gold,1164727
+NFLX,Netflix,Communication Services,Movies & Entertainment,1065280
+NI,NiSource,Utilities,Multi-Utilities,1111711
+NKE,"Nike, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods",320187
+NOC,Northrop Grumman,Industrials,Aerospace & Defense,1133421
+NOW,ServiceNow,Information Technology,Systems Software,1373715
+NRG,NRG Energy,Utilities,Independent Power Producers & Energy Traders,1013871
+NSC,Norfolk Southern,Industrials,Rail Transportation,702165
+NTAP,NetApp,Information Technology,"Technology Hardware, Storage & Peripherals",1002047
+NUE,Nucor,Materials,Steel,73309
+NVDA,Nvidia,Information Technology,Semiconductors,1045810
+NVR,"NVR, Inc.",Consumer Discretionary,Homebuilding,906163
+NWSA,News Corp (Class A),Communication Services,Publishing,1564708
+NXPI,NXP Semiconductors,Information Technology,Semiconductors,1413447
+ODFL,Old Dominion,Industrials,Cargo Ground Transportation,878927
+OKE,Oneok,Energy,Oil & Gas Storage & Transportation,1039684
+OMC,Omnicom Group,Communication Services,Advertising,29989
+ON,ON Semiconductor,Information Technology,Semiconductors,1097864
+ORCL,Oracle Corporation,Information Technology,Application Software,1341439
+ORLY,O'Reilly Automotive,Consumer Discretionary,Automotive Retail,898173
+OTIS,Otis Worldwide,Industrials,Industrial Machinery & Supplies & Components,1781335
+OXY,Occidental Petroleum,Energy,Oil & Gas Exploration & Production,797468
+P,Everpure,Information Technology,"Technology Hardware, Storage & Peripherals",1474432
+PANW,Palo Alto Networks,Information Technology,Systems Software,1327567
+PAYX,Paychex,Industrials,Human Resource & Employment Services,723531
+PCAR,Paccar,Industrials,Construction Machinery & Heavy Transportation Equipment,75362
+PCG,PG&E Corporation,Utilities,Multi-Utilities,1004980
+PEG,Public Service Enterprise Group,Utilities,Electric Utilities,788784
+PEP,PepsiCo,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,77476
+PFE,Pfizer,Health Care,Pharmaceuticals,78003
+PG,Procter & Gamble,Consumer Staples,Personal Care Products,80424
+PH,Parker Hannifin,Industrials,Industrial Machinery & Supplies & Components,76334
+PHM,PulteGroup,Consumer Discretionary,Homebuilding,822416
+PKG,Packaging Corporation of America,Materials,Paper & Plastic Packaging Products & Materials,75677
+PLTR,Palantir Technologies,Information Technology,Application Software,1321655
+PM,Philip Morris International,Consumer Staples,Tobacco,1413329
+PNR,Pentair,Industrials,Industrial Machinery & Supplies & Components,77360
+PNW,Pinnacle West Capital,Utilities,Multi-Utilities,764622
+PODD,Insulet Corporation,Health Care,Health Care Equipment,1145197
+PPG,PPG Industries,Materials,Specialty Chemicals,79879
+PPL,PPL Corporation,Utilities,Electric Utilities,922224
+PSX,Phillips 66,Energy,Oil & Gas Refining & Marketing,1534701
+PTC,PTC Inc.,Information Technology,Application Software,857005
+PWR,Quanta Services,Industrials,Construction & Engineering,1050915
+Q,Qnity Electronics,Information Technology,Semiconductor Materials & Equipment,2058873
+QCOM,Qualcomm,Information Technology,Semiconductors,804328
+RCL,Royal Caribbean Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines",884887
+RDDT,Reddit,Communication Services,Interactive Media & Services,1713445
+REGN,Regeneron Pharmaceuticals,Health Care,Biotechnology,872589
+RL,Ralph Lauren Corporation,Consumer Discretionary,"Apparel, Accessories & Luxury Goods",1037038
+RMD,ResMed|,Health Care,Health Care Equipment,943819
+ROK,Rockwell Automation,Industrials,Electrical Components & Equipment,1024478
+ROL,"Rollins, Inc.",Industrials,Environmental & Facilities Services,84839
+ROP,Roper Technologies,Information Technology,Electronic Equipment & Instruments,882835
+ROST,Ross Stores,Consumer Discretionary,Apparel Retail,745732
+RSG,Republic Services,Industrials,Environmental & Facilities Services,1060391
+RTX,RTX Corporation,Industrials,Aerospace & Defense,101829
+RVTY,Revvity,Health Care,Health Care Equipment,31791
+SBUX,Starbucks,Consumer Discretionary,Restaurants,829224
+SHW,Sherwin-Williams,Materials,Specialty Chemicals,89800
+SJM,J.M. Smucker Company (The),Consumer Staples,Packaged Foods & Meats,91419
+SKYD,Skydance Corporation,Communication Services,Movies & Entertainment,2041610
+SLB,Schlumberger,Energy,Oil & Gas Equipment & Services,87347
+SMCI,Supermicro,Information Technology,"Technology Hardware, Storage & Peripherals",1375365
+SNA,Snap-on,Industrials,Industrial Machinery & Supplies & Components,91440
+SNDK,Sandisk,Information Technology,"Technology Hardware, Storage & Peripherals",2023554
+SNPS,Synopsys,Information Technology,Application Software,883241
+SO,Southern Company,Utilities,Electric Utilities,92122
+SOLV,Solventum,Health Care,Health Care Technology,1964738
+SRE,Sempra,Utilities,Multi-Utilities,1032208
+STE,Steris,Health Care,Health Care Equipment,1757898
+STLD,Steel Dynamics,Materials,Steel,1022671
+STX,Seagate Technology,Information Technology,"Technology Hardware, Storage & Peripherals",1137789
+STZ,Constellation Brands,Consumer Staples,Distillers & Vintners,16918
+SW,Smurfit Westrock,Materials,Paper & Plastic Packaging Products & Materials,2005951
+SWK,Stanley Black & Decker,Industrials,Industrial Machinery & Supplies & Components,93556
+SWKS,Skyworks Solutions,Information Technology,Semiconductors,4127
+SYK,Stryker Corporation,Health Care,Health Care Equipment,310764
+SYY,Sysco,Consumer Staples,Food Distributors,96021
+T,AT&T,Communication Services,Integrated Telecommunication Services,732717
+TDG,TransDigm Group,Industrials,Aerospace & Defense,1260221
+TDY,Teledyne Technologies,Information Technology,Electronic Equipment & Instruments,1094285
+TECH,Bio-Techne,Health Care,Life Sciences Tools & Services,842023
+TEL,TE Connectivity,Information Technology,Electronic Manufacturing Services,1385157
+TER,Teradyne,Information Technology,Semiconductor Materials & Equipment,97210
+TGT,Target Corporation,Consumer Staples,Consumer Staples Merchandise Retail,27419
+TJX,TJX Companies,Consumer Discretionary,Apparel Retail,109198
+TKO,TKO Group Holdings,Communication Services,Movies & Entertainment,1973266
+TMO,Thermo Fisher Scientific,Health Care,Life Sciences Tools & Services,97745
+TMUS,T-Mobile US,Communication Services,Wireless Telecommunication Services,1283699
+TPL,Texas Pacific Land Corporation,Energy,Oil & Gas Exploration & Production,1811074
+TPR,"Tapestry, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods",1116132
+TRGP,Targa Resources,Energy,Oil & Gas Storage & Transportation,1389170
+TRMB,Trimble Inc.,Information Technology,Application Software,864749
+TSCO,Tractor Supply,Consumer Discretionary,Other Specialty Retail,916365
+TSLA,"Tesla, Inc.",Consumer Discretionary,Automobile Manufacturers,1318605
+TSN,Tyson Foods,Consumer Staples,Packaged Foods & Meats,100493
+TT,Trane Technologies,Industrials,Building Products,1466258
+TTWO,Take-Two Interactive,Communication Services,Interactive Home Entertainment,946581
+TWLO,Twilio,Information Technology,Systems Software,1447669
+TXN,Texas Instruments,Information Technology,Semiconductors,97476
+TXT,Textron,Industrials,Aerospace & Defense,217346
+TYL,Tyler Technologies,Information Technology,Application Software,860731
+UAL,United Airlines Holdings,Industrials,Passenger Airlines,100517
+UBER,Uber,Industrials,Passenger Ground Transportation,1543151
+UHS,Universal Health Services,Health Care,Health Care Facilities,352915
+ULTA,Ulta Beauty,Consumer Discretionary,Other Specialty Retail,1403568
+UNH,UnitedHealth Group,Health Care,Managed Health Care,731766
+UNP,Union Pacific Corporation,Industrials,Rail Transportation,100885
+UPS,United Parcel Service,Industrials,Air Freight & Logistics,1090727
+URI,United Rentals,Industrials,Trading Companies & Distributors,1067701
+VEEV,Veeva Systems,Health Care,Health Care Technology,1393052
+VLO,Valero Energy,Energy,Oil & Gas Refining & Marketing,1035002
+VLTO,Veralto,Industrials,Environmental & Facilities Services,1967680
+VMC,Vulcan Materials Company,Materials,Construction Materials,1396009
+VRSK,Verisk Analytics,Industrials,Research & Consulting Services,1442145
+VRSN,Verisign,Information Technology,Internet Services & Infrastructure,1014473
+VRT,Vertiv,Industrials,Electrical Components & Equipment,1674101
+VRTX,Vertex Pharmaceuticals,Health Care,Biotechnology,875320
+VST,Vistra Corp.,Utilities,Electric Utilities,1692819
+VTRS,Viatris,Health Care,Pharmaceuticals,1792044
+VYLR,Vylor,Consumer Staples,Agricultural Products & Services,2128626
+VZ,Verizon,Communication Services,Integrated Telecommunication Services,732712
+WAB,Wabtec,Industrials,Construction Machinery & Heavy Transportation Equipment,943452
+WAT,Waters Corporation,Health Care,Life Sciences Tools & Services,1000697
+WDAY,"Workday, Inc.",Information Technology,Application Software,1327811
+WDC,Western Digital,Information Technology,"Technology Hardware, Storage & Peripherals",106040
+WEC,WEC Energy Group,Utilities,Electric Utilities,783325
+WM,Waste Management,Industrials,Environmental & Facilities Services,823768
+WMB,Williams Companies,Energy,Oil & Gas Storage & Transportation,107263
+WMT,Walmart,Consumer Staples,Consumer Staples Merchandise Retail,104169
+WSM,"Williams-Sonoma, Inc.",Consumer Discretionary,Homefurnishing Retail,719955
+WST,West Pharmaceutical Services,Health Care,Health Care Supplies,105770
+WYNN,Wynn Resorts,Consumer Discretionary,Casinos & Gaming,1174922
+XEL,Xcel Energy,Utilities,Multi-Utilities,72903
+XOM,ExxonMobil,Energy,Integrated Oil & Gas,2115436
+XYL,Xylem Inc.,Industrials,Industrial Machinery & Supplies & Components,1524472
+YUM,Yum! Brands,Consumer Discretionary,Restaurants,1041061
+ZBH,Zimmer Biomet,Health Care,Health Care Equipment,1136869
+ZBRA,Zebra Technologies,Information Technology,Electronic Equipment & Instruments,877212
+ZTS,Zoetis,Health Care,Pharmaceuticals,1555280

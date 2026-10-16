@@ -62,15 +62,26 @@ def _baseline(hist: pd.DataFrame, var: str, h: int) -> tuple[float, float]:
     return float(s.iloc[-1]), float(s.diff().tail(20).std() * np.sqrt(h))
 
 
+def _vintage(hist, origin: str | None, macro) -> dict:
+    """The twin as it stood at one point in time: horizon-12 parameters and its baseline verdict."""
+    p12 = calibrate(hist, macro, 12)
+    sm = summarize(simulate(p12, build_scenario({}, 12), draw_shocks(p12, 1500, 12, seed=5), DEFAULT_LEVERS))
+    return {"asof": origin or "latest", "last_quarter": hist.quarters.index[-1].date().isoformat(),
+            "health": sm["health_score"], "health_p10": sm["health_p10"], "p_breach": sm["p_breach"],
+            "params": {k: v for k, v in p12.items() if k != "_sources"}}
+
+
 def company_cases(ticker: str, n_paths: int = 2000) -> dict:
-    full = load_company(ticker).quarters
-    cases, skipped = [], {}
+    full_data = load_company(ticker)
+    full = full_data.quarters
+    cases, skipped, vintages = [], {}, []
     for origin in ORIGINS:
         try:
             hist = load_company(ticker, asof=origin)
             if len(hist.quarters) < 16:
                 skipped[origin] = "fewer than 16 quarters of history"
                 continue
+            vintages.append(_vintage(hist, origin, macro_quarterly(origin)))
             real = _realized(full, hist.quarters.index[-1])
             if len(real) < H:
                 skipped[origin] = "not enough realized quarters yet"
@@ -96,7 +107,19 @@ def company_cases(ticker: str, n_paths: int = 2000) -> dict:
                     cases.append(row)
         except Exception as e:  # keep going: report why a cutoff could not be used
             skipped[origin] = f"{type(e).__name__}: {e}"
-    return {"ticker": ticker, "cases": cases, "skipped": skipped, "covid": covid_row(ticker, full)}
+    try:
+        vintages.append(_vintage(full_data, None, macro_quarterly()))
+    except Exception as e:
+        skipped["latest"] = f"{type(e).__name__}: {e}"
+    cash_like = full["cash"] + full["short_investments"]
+    timeline = {
+        "ticker": ticker,
+        "series": {"dates": [d.date().isoformat() for d in full.index],
+                   "revenue": full["revenue"].round(0).tolist(), "cash": cash_like.round(0).tolist(),
+                   "debt": full["total_debt"].round(0).tolist()},
+        "vintages": vintages,
+    }
+    return {"ticker": ticker, "cases": cases, "skipped": skipped, "covid": covid_row(ticker, full), "timeline": timeline}
 
 
 def covid_row(ticker: str, full: pd.DataFrame) -> dict | None:

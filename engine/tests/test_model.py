@@ -116,3 +116,24 @@ def test_sobol_indices_are_sane(params):
     assert all(0 <= r["S1"] <= 1.2 and 0 <= r["ST"] <= 1.5 for r in rows)
     # a 0-50% revenue shock must matter more than a 0-60 day inventory build-up for this company
     assert st["sales_depth"] > st["dio_days"]
+
+
+def test_sector_tolerance_raises_health_of_levered_company(params):
+    levered = {**params, "debt0": 4000.0, "maturities_q": [20.0] * 12}
+    levered["other_net0"] = levered["equity0"] + levered["ap0"] + levered["def0"] + levered["debt0"] - (
+        levered["cash0"] + levered["ar0"] + levered["inv0"] + levered["ppe0"])
+    eps = draw_shocks(levered, 800, levered["horizon"], seed=4)
+    plain = summarize(run({**levered, "sector_tol": 1.0}, eps=eps))
+    tolerant = summarize(run({**levered, "sector_tol": 2.0}, eps=eps))
+    assert tolerant["health_score"] > plain["health_score"]
+    # the dynamics are unchanged: only the scoring moves
+    assert tolerant["p_breach"] == plain["p_breach"]
+
+
+def test_health_waterfall_adds_up(params):
+    sm = summarize(run(params, {"sales_depth": 0.5}, n_paths=800))
+    c = sm["components"]
+    weighted = 0.3 * c["liq"] + 0.3 * c["cov"] + 0.2 * c["lev"] + 0.2 * c["solv"]
+    # weighted components minus the breach cap equals the mean health exactly
+    assert weighted >= sm["health_mean"] - 1e-9
+    assert all(0 <= v <= 100 for v in c.values())
