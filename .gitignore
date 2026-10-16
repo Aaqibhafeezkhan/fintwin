@@ -9,3 +9,8 @@ node_modules/
 web/dist/
 *.egg-info/
 tools/node_modules/
+tools/frames/
+tools/*.png
+docs/paper/*.aux
+docs/paper/*.log
+docs/paper/*.out

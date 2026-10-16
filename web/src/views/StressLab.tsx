@@ -31,8 +31,11 @@ const LEVERS: { key: keyof Levers; label: string; desc: string }[] = [
   { key: "issue_equity", label: "Emergency equity raise", desc: "dilutive last resort" },
 ];
 
-export function StressLab({ c, meta, preset, setPreset }: { c: Company; meta: Meta; preset: string; setPreset: (p: string) => void }) {
-  const [knobs, setKnobs] = useState<Knobs>(() => ({ ...meta.presets[preset]?.knobs }));
+export function StressLab({ c, meta, preset: initialPreset, setPreset: syncUrl }: { c: Company; meta: Meta; preset: string; setPreset: (p: string) => void }) {
+  // Local state drives the UI; the URL is only kept in sync so a scenario can be shared as a link.
+  const [preset, setPresetState] = useState(initialPreset);
+  const setPreset = (p: string) => { setPresetState(p); syncUrl(p); };
+  const [knobs, setKnobs] = useState<Knobs>(() => ({ ...meta.presets[initialPreset]?.knobs }));
   const [levers, setLevers] = useState<Levers>(meta.levers);
   const [nPaths, setNPaths] = useState(5000);
   const [showPaths, setShowPaths] = useState(false);
@@ -151,7 +154,7 @@ export function StressLab({ c, meta, preset, setPreset }: { c: Company; meta: Me
                 const f = (v: number | null) => v == null ? "not reached" : r.unit === "pct" ? `−${pct(v)}` : r.unit === "bp" ? `+${v.toFixed(0)}bp` : `+${v.toFixed(1)}pp`;
                 return (
                   <div key={key} style={{ display: "flex", justifyContent: "space-between", gap: 12, borderBottom: "1px solid var(--grid)", paddingBottom: 8 }}>
-                    <div>{r.label}<div className="muted">10% breach chance at {f(r.p10)}</div></div>
+                    <div>{r.label}<div className="muted">{r.p10 === 0 ? "breach chance already ≥10% at baseline" : `10% breach chance at ${f(r.p10)}`}</div></div>
                     <div className="num" style={{ fontSize: 20, fontWeight: 600, whiteSpace: "nowrap" }}>{r.p50 == null ? "survives" : f(r.p50)}</div>
                   </div>
                 );

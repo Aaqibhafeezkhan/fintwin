@@ -3,7 +3,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 export OPENBLAS_NUM_THREADS=1 PYTHONWARNINGS=ignore
-rm -rf .cache/batch && mkdir -p .cache/batch
+mkdir -p .cache/batch   # resumable: existing results are kept
 L=$(uv run python -c "from fintwin.backtest.batch import UNIVERSE_XL; print(' '.join(dict.fromkeys(UNIVERSE_XL)))")
 R=$(echo $L | tr ' ' '\n' | tac | tr '\n' ' ')
 work() { for t in $1; do [ -f ".cache/batch/$t.json" ] && continue; for a in 1 2 3; do uv run python -m fintwin.backtest.batch "$t" && break; sleep 5; done; done; }

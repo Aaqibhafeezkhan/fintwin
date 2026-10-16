@@ -46,12 +46,25 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         <Stat label="Pre-COVID vulnerability ranking" value={`ρ = ${fixed(st?.spearman, 2)}`}
           foot={`Spearman, n=${st?.n}, p=${st && st.p_value < 0.001 ? "<0.001" : fixed(st?.p_value, 3)}${cal ? ` · 95% CI ${fixed(cal.cross_section.ci95[0], 2)}–${fixed(cal.cross_section.ci95[1], 2)}` : ""}`}
           hint="Rank correlation between the twin's pre-COVID health score under the demand-freeze scenario and each company's realized worst cumulative free cash flow in 2020–21" />
-        <Stat label="Revenue forecasts beating naive baseline" value={pct(agg.revenue?.share_beating_baseline)}
-          foot={`median CRPS skill ${pct(agg.revenue?.median_crps_skill)} · ${agg.revenue?.cases} cases`} />
-        <Stat label="Cash forecasts beating naive baseline" value={pct(agg.cash_like?.share_beating_baseline)}
-          foot={`median CRPS skill ${pct(agg.cash_like?.median_crps_skill)}`} />
-        <Stat label="90% interval coverage (revenue)" value={pct(agg.revenue?.coverage90)}
-          foot="target 90% · lower = overconfident (two regime breaks)" />
+        {cal ? (
+          <>
+            <Stat label="Out-of-sample forecasts" value={cal.n_forecasts.toLocaleString()}
+              foot={`${cal.n_companies} companies · point-in-time cutoffs ${cal.origins[0].slice(0, 4)}–${cal.origins[cal.origins.length - 1].slice(0, 4)}`} />
+            <Stat label="Revenue CRPS skill vs naive" value={pct(cal.vars.revenue.crps_skill_vs_naive)}
+              foot={`twin wins in ${pct(cal.vars.revenue.share_cases_beating_naive)} of forecasts`} />
+            <Stat label="90% coverage, raw → conformal" value={`${pct(cal.vars.revenue.raw.coverage90)} → ${pct(cal.vars.revenue.conformal.coverage90)}`}
+              foot="revenue · conformal scale learned only from earlier years" />
+          </>
+        ) : (
+          <>
+            <Stat label="Revenue forecasts beating naive baseline" value={pct(agg.revenue?.share_beating_baseline)}
+              foot={`median CRPS skill ${pct(agg.revenue?.median_crps_skill)} · ${agg.revenue?.cases} cases`} />
+            <Stat label="Cash forecasts beating naive baseline" value={pct(agg.cash_like?.share_beating_baseline)}
+              foot={`median CRPS skill ${pct(agg.cash_like?.median_crps_skill)}`} />
+            <Stat label="90% interval coverage (revenue)" value={pct(agg.revenue?.coverage90)}
+              foot="target 90% · lower = overconfident (two regime breaks)" />
+          </>
+        )}
       </div>
 
       <Card title={`Did the twin know who would bleed? — ${pts.length} companies, calibrated on pre-COVID filings`}

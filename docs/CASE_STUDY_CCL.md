@@ -14,8 +14,8 @@ The twin was calibrated with `asof="2020-02-20"`. Its last visible quarter was *
 
 | Scenario (Feb 2020 view) | Health score | P(liquidity breach, 2y) | P(sub-investment grade) |
 |---|---|---|---|
-| Baseline | **73** | 0% | 0% |
-| Demand freeze (−70% revenue, markets shut 2 quarters) | **15** | 100% | ~100% |
+| Baseline | **71** | 0% | 0% |
+| Demand freeze (−70% revenue, markets shut 2 quarters) | **12** | 100% | ~100% |
 
 The baseline was benign, as it should be: nothing in the filings predicted a pandemic. The value lies in the conditional answer. Under a demand freeze, Carnival's twin collapsed harder than almost any other company in the 30-name universe. Three structural features combine:
 
@@ -35,10 +35,10 @@ Carnival survived by raising roughly $19B of net new debt, much of it secured at
 
 ## Structural test
 
-When the twin is fed the *realized* revenue path, its cumulative free cash flow over Q1 2020–Q4 2021 is **−$12.1B, against an actual −$17.6B**. That is the right direction and shape (quarterly correlation 0.68), with burn under-estimated by about 31%. The gap comes from fixed ship costs and deposit refunds running above the calibrated cost structure. An industry-specific "fleet lay-up cost" parameter would be the natural next refinement.
+When the twin is fed the *realized* revenue path, its cumulative free cash flow over Q1 2020–Q4 2021 is **−$12.8B, against an actual −$17.6B**. That is the right direction and shape (quarterly correlation 0.66), with burn under-estimated by about 28%. The gap comes from fixed ship costs and deposit refunds running above the calibrated cost structure. An industry-specific "fleet lay-up cost" parameter would be the natural next refinement.
 
 ## Takeaways
 
 * The twin **cannot forecast** the shock, and the unconditional fan missed it entirely. That is the correct behaviour, and the backtest reports it.
-* The twin **does rank fragility**. Before COVID, its stress health score put the three cruise lines and Boeing near the bottom of 30 companies (Spearman ρ = 0.56 with realized cash burn).
+* The twin **does rank fragility**. Before COVID, its stress health score put the three cruise lines and Boeing near the bottom of 88 companies (Spearman ρ = 0.51 with realized cash burn, p < 10⁻⁶).
 * In the Stress Lab, flipping on *Emergency equity raise* and running *Demand freeze* reproduces the strategy Carnival actually used to survive.

@@ -1,0 +1,42 @@
+{
+ "without_regime": {
+  "cash_like": {
+   "coverage50": 0.188,
+   "coverage90": 0.427,
+   "median_crps_skill": 0.136,
+   "share_beating_baseline": 0.583
+  },
+  "revenue": {
+   "coverage50": 0.156,
+   "coverage90": 0.625,
+   "median_crps_skill": 0.148,
+   "share_beating_baseline": 0.667
+  },
+  "total_debt": {
+   "coverage50": 0.281,
+   "coverage90": 0.5,
+   "median_crps_skill": -0.034,
+   "share_beating_baseline": 0.417
+  }
+ },
+ "with_regime": {
+  "cash_like": {
+   "coverage50": 0.188,
+   "coverage90": 0.427,
+   "median_crps_skill": 0.137,
+   "share_beating_baseline": 0.583
+  },
+  "revenue": {
+   "coverage50": 0.156,
+   "coverage90": 0.625,
+   "median_crps_skill": 0.165,
+   "share_beating_baseline": 0.667
+  },
+  "total_debt": {
+   "coverage50": 0.281,
+   "coverage90": 0.51,
+   "median_crps_skill": -0.039,
+   "share_beating_baseline": 0.417
+  }
+ }
+}

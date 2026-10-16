@@ -12,13 +12,7 @@ export function MemoCard({ ticker }: { ticker: string }) {
   const [showSheet, setShowSheet] = useState(false);
   useEffect(() => { setMemo(undefined); loadMemo(ticker).then(setMemo); }, [ticker]);
   if (memo === undefined) return null;
-  if (memo === null) {
-    return (
-      <Card title="AI analyst memo" sub="Not generated for this company yet">
-        <p className="muted">Run <span className="kbd">uv run --extra ai python -m fintwin.memo {ticker}</span> to write one.</p>
-      </Card>
-    );
-  }
+  if (memo === null) return null; // memos are generated at build time; companies without one simply omit the card
   const v = VERDICT_STATUS[memo.verdict];
   return (
     <Card title={<>AI analyst memo <span className="pill" style={{ marginLeft: 8 }}><span aria-hidden style={{ color: `var(--${v.key})`, fontSize: 10 }}>{v.icon}</span>{memo.verdict}</span></>}

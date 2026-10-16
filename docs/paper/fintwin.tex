@@ -57,7 +57,7 @@ Four feedback loops govern the response to stress:
 A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%).
 
 \subsection{Calibration}
-All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; the debt-rollover share from the two-year debt trend; and the minimum operating cash balance from the company's own revealed behaviour (half its 10th-percentile cash balance over three years). An earlier cost-proportional cash floor forced high-turnover, low-cash retailers to ``borrow up'' to cash levels they never hold; the large-sample evaluation exposed this bias, and the revealed floor cut the twin's cash-forecast CRPS for Walmart by an order of magnitude. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
+All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; the debt-rollover share from the two-year debt trend; and the minimum operating cash balance from the company's own revealed behaviour (half its 10th-percentile cash balance over three years). An earlier cost-proportional cash floor forced high-turnover, low-cash retailers to ``borrow up'' to cash levels they never hold; the large-sample evaluation exposed this bias, and the revealed floor cut the twin's cash-forecast CRPS for Walmart roughly ninefold. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
 
 \subsection{Scenarios, reverse stress and sensitivity}
 Eight presets (rates $+200$bp, sales $-20\%$, recession, demand freeze, stagflation, credit crunch, supply-chain shock) are expanded into per-quarter shock paths. Reverse stress testing finds the smallest shock giving a 50\% breach probability by bisection under common random numbers. Variance-based Sobol indices \cite{saltelli2010} over the joint six-dimensional scenario space separate first-order effects from interactions (Fig.~\ref{fig:sobol}).
@@ -90,7 +90,7 @@ Cash & \CashN & \CashSkill & \CashBeat & \CashRawNinety{} $\rightarrow$ \CashCon
 We froze every twin at 20 February 2020 and applied the same generic demand-freeze scenario ($-70\%$ revenue for three quarters, markets shut for two). The realized outcome is the worst cumulative free cash flow between 2020Q1 and 2021Q2 as a share of pre-shock annual revenue. The twin's stress health score correlates with the realized outcome at $\rho=\XsRho$ ($p\XsP$, $n=\XsN$, Fig.~\ref{fig:xs}); \XsSevereFragile{} of the companies in the twin's two most fragile quintiles suffered a severe cash burn (worse than 10\% of annual revenue), against \XsSevereRobust{} in the two most robust quintiles. Because every company receives the same shock, this measures structural fragility, not exposure: Walmart is fragile to a demand collapse it never suffered.
 
 \begin{figure}[h]
-\centering\includegraphics[width=0.72\linewidth]{figures/cross_section.pdf}
+\centering\includegraphics[width=0.58\linewidth]{figures/cross_section.pdf}
 \caption{Pre-COVID twin stress health score versus realized worst cumulative free cash flow in 2020--21.}
 \label{fig:xs}
 \end{figure}
@@ -105,7 +105,7 @@ Feeding the realized revenue path into the twin isolates its mechanics from its 
 \end{figure}
 
 \begin{figure}[h]
-\centering\includegraphics[width=\linewidth]{figures/sobol.pdf}
+\centering\includegraphics[width=0.9\linewidth]{figures/sobol.pdf}
 \caption{Sobol indices of the health score (solid: first-order; light: total). Large gaps between the two indicate interactions — e.g.\ a debt-market freeze matters mainly in combination with a revenue shock.}
 \label{fig:sobol}
 \end{figure}
