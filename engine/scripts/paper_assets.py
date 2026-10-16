@@ -36,6 +36,11 @@ def m(name: str, value) -> None:
     macros[name] = str(value)
 
 
+def usd(x):
+    """Signed billions with a typographic minus, e.g. $-$\$12.1B."""
+    return ("$-$" if x < 0 else "") + "\\$" + f"{abs(x) / 1e9:.1f}B"
+
+
 def pct(x, d=0):
     return f"{x * 100:.{d}f}\\%"
 
@@ -50,9 +55,12 @@ m("XsRho", f"{xs['spearman']:.2f}")
 m("XsP", "<0.001" if xs["p_value"] < 0.001 else f"{xs['p_value']:.3f}")
 m("XsCiLo", f"{xs['ci95'][0]:.2f}")
 m("XsCiHi", f"{xs['ci95'][1]:.2f}")
-q = xs["quintile_median_burn"]
-m("XsQFragile", f"{q[0]:.0f}\\%")
-m("XsQRobust", f"{q[-1]:.0f}\\%")
+rows_q = sorted((r for r in xs["rows"] if r.get("realized_min_cum_fcf_pct_rev") is not None),
+                key=lambda r: r["health_stress"])
+k = len(rows_q) * 2 // 5
+fragile, robust = rows_q[:k], rows_q[-k:]
+m("XsSevereFragile", f"{100 * np.mean([r['realized_min_cum_fcf_pct_rev'] < -10 for r in fragile]):.0f}\\%")
+m("XsSevereRobust", f"{100 * np.mean([r['realized_min_cum_fcf_pct_rev'] < -10 for r in robust]):.0f}\\%")
 for var, tag in (("revenue", "Rev"), ("cash_like", "Cash")):
     v = cal["vars"][var]
     m(f"{tag}RawNinety", pct(v["raw"]["coverage90"]))
@@ -70,8 +78,8 @@ for key, f in bt["forecast"].items():
         tk, ck = key.split(":")
         tag = tk.replace(".", "") + ("Covid" if ck == "pre_covid" else "Hikes")
         m(f"Struct{tag}Err", f"{s['final_error_pct']:.0f}\\%")
-        m(f"Struct{tag}Model", f"{s['model_cum_fcf_bands'][2][-1] / 1e9:.1f}")
-        m(f"Struct{tag}Actual", f"{s['actual_cum_fcf'][-1] / 1e9:.1f}")
+        m(f"Struct{tag}Model", usd(s['model_cum_fcf_bands'][2][-1]))
+        m(f"Struct{tag}Actual", usd(s['actual_cum_fcf'][-1]))
         m(f"Struct{tag}Corr", f"{s['corr']:.2f}" if s.get("corr") is not None else "--")
 ccl = bt["forecast"]["CCL:pre_covid"]["pre_shock"]
 m("CclBaseHealth", f"{ccl['base']['health_score']:.0f}")

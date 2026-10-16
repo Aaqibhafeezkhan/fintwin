@@ -41,6 +41,13 @@ DURATION = {
     "capex": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
     "dividends": ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"],
     "buybacks": ["PaymentsForRepurchaseOfCommonStock"],
+    # non-cash impairments, added back to operating income (credit analysts' "adjusted EBIT")
+    "imp_total": ["AssetImpairmentCharges"],
+    "imp_gw_intang": ["GoodwillAndIntangibleAssetImpairment"],
+    "imp_goodwill": ["GoodwillImpairmentLoss"],
+    "imp_intangible": ["ImpairmentOfIntangibleAssetsExcludingGoodwill",
+                       "ImpairmentOfIntangibleAssetsIndefinitelivedExcludingGoodwill"],
+    "imp_longlived": ["ImpairmentOfLongLivedAssetsHeldForUse"],
 }
 INSTANT = {
     "cash": ["CashAndCashEquivalentsAtCarryingValue",
@@ -220,13 +227,22 @@ def load_company(ticker: str, asof: str | None = None, min_year: int = 2010) -> 
         if q["operating_income"].isna().all():
             notes.append("operating income rebuilt as pre-tax income + interest expense")
         q["operating_income"] = q["operating_income"].fillna(rebuilt)
+    # Adjusted operating income: add back non-cash impairments. Tags overlap (a cash-flow total vs. its components),
+    # so take the largest of the alternative measurements per quarter rather than summing them.
+    parts = q[["imp_goodwill", "imp_intangible", "imp_longlived"]].fillna(0).sum(axis=1)
+    impairment = pd.concat([q["imp_total"].fillna(0), q["imp_gw_intang"].fillna(0), parts], axis=1).max(axis=1).clip(lower=0)
+    q["impairment"] = impairment
+    q["operating_income_reported"] = q["operating_income"]
+    q["operating_income"] = q["operating_income"] + impairment
+    if impairment.gt(0).any():
+        notes.append(f"operating income adjusted for impairments in {int(impairment.gt(0).sum())} quarters")
     if q["payables"].isna().all():
         notes.append("payables: no data, assumed 0")
     zero_fill = ["dividends", "buybacks", "sbc", "short_investments", "receivables", "inventory", "deferred_revenue",
                  "debt_current", "ltd_current", "short_borrowings", "commercial_paper"]
     q[zero_fill] = q[zero_fill].fillna(0.0)
     # Balances are sticky: carry the last known value across occasional gaps.
-    for k in ["ppe", "assets", "current_assets", "current_liabilities", "equity", "retained_earnings",
+    for k in ["cash", "ppe", "assets", "current_assets", "current_liabilities", "equity", "retained_earnings",
               "ltd_noncurrent", "debt_combined", "ltd_total", "payables", "revolver_capacity"]:
         q[k] = q[k].ffill(limit=2)
     q["payables"] = q["payables"].fillna(0.0)

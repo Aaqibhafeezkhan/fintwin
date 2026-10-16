@@ -12,7 +12,7 @@
 \setlist{nosep,leftmargin=1.4em}
 \input{numbers.tex}
 
-\title{\textbf{FinTwin: A Point-in-Time System-Dynamics Digital Twin\\for Corporate Liquidity Stress Testing from SEC Filings}}
+\title{\Large\textbf{FinTwin: A Point-in-Time System-Dynamics Digital Twin\\for Corporate Liquidity Stress Testing from SEC Filings}}
 \author{Spilios Dimakopoulos}
 \date{October 2026 \quad\textbullet\quad Preprint \quad\textbullet\quad Code: \texttt{github.com/SpiliosDimakopoulos/fintwin}}
 
@@ -34,6 +34,7 @@ The SEC \texttt{companyfacts} endpoint returns every tagged value a company has 
 \begin{enumerate}
 \item \textbf{Tag drift.} Each field has an ordered list of fallback tags merged period by period (e.g.\ \texttt{SalesRevenueNet} $\rightarrow$ \texttt{RevenueFromContractWithCustomer\ldots} after ASC~606). Debt is assembled from current, non-current, commercial-paper and short-term components; operating income is rebuilt as pre-tax income plus interest where untagged.
 \item \textbf{Year-to-date de-cumulation.} 10-Q cash-flow facts are cumulative and Q4 exists only within the 10-K. Facts sharing a start date are differenced (H1$-$Q1, 9M$-$H1, FY$-$9M); 52/53-week fiscal calendars are aligned within $\pm12$ days.
+\item \textbf{Adjusted operating income.} Non-cash goodwill, intangible and long-lived asset impairments are added back, as credit analysts do; overlapping tags (a cash-flow total versus its components) are reconciled by taking the largest measurement per quarter. Without this step a single write-down (e.g.\ Kraft Heinz's \$9B in one quarter) drives trailing coverage negative and the synthetic rating to default.
 \item \textbf{Point-in-time vintages.} \texttt{load\_company(ticker, asof)} keeps only facts \emph{filed} on or before \texttt{asof}, and the latest such filing wins, reproducing an analyst's information set and excluding later restatements.
 \end{enumerate}
 Interest rates and recession dates come from FRED. Every number retains the accession number of its source filing.
@@ -56,7 +57,7 @@ Four feedback loops govern the response to stress:
 A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%).
 
 \subsection{Calibration}
-All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; and the debt-rollover share from the two-year debt trend. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
+All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; the debt-rollover share from the two-year debt trend; and the minimum operating cash balance from the company's own revealed behaviour (half its 10th-percentile cash balance over three years). An earlier cost-proportional cash floor forced high-turnover, low-cash retailers to ``borrow up'' to cash levels they never hold; the large-sample evaluation exposed this bias, and the revealed floor cut the twin's cash-forecast CRPS for Walmart by an order of magnitude. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
 
 \subsection{Scenarios, reverse stress and sensitivity}
 Eight presets (rates $+200$bp, sales $-20\%$, recession, demand freeze, stagflation, credit crunch, supply-chain shock) are expanded into per-quarter shock paths. Reverse stress testing finds the smallest shock giving a 50\% breach probability by bisection under common random numbers. Variance-based Sobol indices \cite{saltelli2010} over the joint six-dimensional scenario space separate first-order effects from interactions (Fig.~\ref{fig:sobol}).
@@ -86,7 +87,7 @@ Cash & \CashN & \CashSkill & \CashBeat & \CashRawNinety{} $\rightarrow$ \CashCon
 \end{figure}
 
 \subsection{Did the twin know who would bleed?}
-We froze every twin at 20 February 2020 and applied the same generic demand-freeze scenario ($-70\%$ revenue for three quarters, markets shut for two). The realized outcome is the worst cumulative free cash flow between 2020Q1 and 2021Q2 as a share of pre-shock annual revenue. The twin's stress health score correlates with the realized outcome at $\rho=\XsRho$ ($p\XsP$, $n=\XsN$, Fig.~\ref{fig:xs}); the median realized burn of the most fragile quintile was \XsQFragile{} of revenue against \XsQRobust{} for the most robust. Because every company receives the same shock, this measures structural fragility, not exposure: Walmart is fragile to a demand collapse it never suffered.
+We froze every twin at 20 February 2020 and applied the same generic demand-freeze scenario ($-70\%$ revenue for three quarters, markets shut for two). The realized outcome is the worst cumulative free cash flow between 2020Q1 and 2021Q2 as a share of pre-shock annual revenue. The twin's stress health score correlates with the realized outcome at $\rho=\XsRho$ ($p\XsP$, $n=\XsN$, Fig.~\ref{fig:xs}); \XsSevereFragile{} of the companies in the twin's two most fragile quintiles suffered a severe cash burn (worse than 10\% of annual revenue), against \XsSevereRobust{} in the two most robust quintiles. Because every company receives the same shock, this measures structural fragility, not exposure: Walmart is fragile to a demand collapse it never suffered.
 
 \begin{figure}[h]
 \centering\includegraphics[width=0.72\linewidth]{figures/cross_section.pdf}
@@ -95,7 +96,7 @@ We froze every twin at 20 February 2020 and applied the same generic demand-free
 \end{figure}
 
 \subsection{Structural test}
-Feeding the realized revenue path into the twin isolates its mechanics from its inability to foresee shocks. For Apple (2020--21) simulated cumulative free cash flow is \$\StructAAPLCovidModel{}B against \$\StructAAPLCovidActual{}B actual (error \StructAAPLCovidErr). For Carnival the twin reproduces the direction and timing of the collapse (\$\StructCCLCovidModel{}B vs.\ \$\StructCCLCovidActual{}B, quarterly correlation \StructCCLCovidCorr) but underestimates burn, because fixed ship-operating costs and deposit refunds exceeded the calibrated structure (Fig.~\ref{fig:ccl}). Boeing and Netflix fail the test for identifiable reasons — program-specific working capital and a content-spending pause — that generic XBRL tags cannot reveal.
+Feeding the realized revenue path into the twin isolates its mechanics from its inability to foresee shocks. For Apple (2020--21) simulated cumulative free cash flow is \StructAAPLCovidModel{} against \StructAAPLCovidActual{} actual (error \StructAAPLCovidErr). For Carnival the twin reproduces the direction and timing of the collapse (\StructCCLCovidModel{} vs.\ \StructCCLCovidActual{}, quarterly correlation \StructCCLCovidCorr) but underestimates burn, because fixed ship-operating costs and deposit refunds exceeded the calibrated structure (Fig.~\ref{fig:ccl}). Boeing and Netflix fail the test for identifiable reasons — program-specific working capital and a content-spending pause — that generic XBRL tags cannot reveal.
 
 \begin{figure}[h]
 \centering\includegraphics[width=\linewidth]{figures/carnival.pdf}

@@ -4,11 +4,12 @@
 
 **Source.** The SEC EDGAR XBRL `companyfacts` endpoint provides every number a company has tagged in its 10-K/10-Q filings. Requests carry a declared User-Agent, stay under 10 requests/s and are cached on disk. Interest rates come from FRED's public CSV endpoint (DGS3MO, DGS10, BAA10Y).
 
-**Three problems, three fixes.**
+**Four problems, four fixes.**
 
 1. **Tag drift.** Companies switch tags over time (e.g. `SalesRevenueNet` became `RevenueFromContractWithCustomerExcludingAssessedTax` after ASC 606). Each field has an ordered list of fallback tags, merged period by period. Debt is assembled from current, noncurrent, commercial-paper and short-term components. Operating income is rebuilt as pre-tax income + interest for filers that never tag it.
 2. **Year-to-date reporting.** 10-Q cash-flow facts are cumulative, and Q4 exists only inside the 10-K annual figure. Facts that share a start date are differenced (H1 − Q1, 9M − H1, FY − 9M) to recover discrete quarters. 52/53-week fiscal calendars are snapped onto a common quarter spine within ±12 days.
-3. **Look-ahead bias.** `load_company(ticker, asof=date)` keeps only facts *filed* on or before `date`, and the latest such filing wins. This reproduces the information set an analyst actually had, so later restatements can't leak into a backtest.
+3. **Impairments.** Non-cash goodwill, intangible and long-lived asset write-downs are added back to operating income ("adjusted EBIT"), taking the largest of the overlapping tag measurements per quarter. Without it, one write-down (Kraft Heinz: $9B in a quarter) sends trailing coverage negative and the synthetic rating to D.
+4. **Look-ahead bias.** `load_company(ticker, asof=date)` keeps only facts *filed* on or before `date`, and the latest such filing wins. This reproduces the information set an analyst actually had, so later restatements can't leak into a backtest.
 
 Every value keeps its accession number, and the dashboard links to the filing.
 
@@ -53,6 +54,8 @@ Quarterly time step, 12-quarter horizon, vectorized across Monte Carlo paths.
 | DSO/DIO/DPO/deposit days | last 4 quarters |
 | Coupon | interest expense / debt, last reported quarters |
 | Rollover share | 1 + Δdebt(8q) / (2 × next-year maturities), clipped to [0, 1] |
+| Cash floor | half the company's 10th-percentile cash balance over 12 quarters (revealed minimum operating cash) |
+| Recession regime | Markov switching; entry 4.5%/q and mean length 4.2q from NBER dates since 1947; revenue cyclicality β from nominal GDP, shrunk toward 1.5 |
 | Financing noise | MAD of quarterly % debt changes |
 | Short rate | Vasicek AR(1) on quarterly 3M T-bill since 2000 |
 

@@ -182,10 +182,11 @@ def aggregate() -> dict:
     # decile view: realized burn of the twin's most vs least fragile fifth
     xs["quintile"] = pd.qcut(xs["health_stress"].rank(method="first"), 5, labels=False)
     quint = xs.groupby("quintile")["realized_min_cum_fcf_pct_rev"].median().round(1).tolist()
+    severe = (xs["realized_min_cum_fcf_pct_rev"] < -10).groupby(xs["quintile"]).mean().round(3).tolist()
     res["cross_section"] = {
         "n": int(len(xs)), "spearman": float(rho), "p_value": float(pval),
         "ci95": [float(np.nanpercentile(boot, 2.5)), float(np.nanpercentile(boot, 97.5))],
-        "quintile_median_burn": quint, "rows": rows,
+        "quintile_median_burn": quint, "quintile_share_severe_burn": severe, "rows": rows,
     }
     res["skipped"] = {r["ticker"]: r["skipped"] for r in per if r["skipped"]}
     OUT.write_text(json.dumps(res, separators=(",", ":")), encoding="utf-8")
@@ -202,7 +203,8 @@ if __name__ == "__main__":
             print(var, {k: v[k] for k in ("n", "raw", "conformal", "crps_skill_vs_naive", "share_cases_beating_naive",
                                           "regime_ablation")})
         cs = r["cross_section"]
-        print("cross-section", {k: cs[k] for k in ("n", "spearman", "p_value", "ci95", "quintile_median_burn")})
+        print("cross-section", {k: cs[k] for k in ("n", "spearman", "p_value", "ci95", "quintile_median_burn",
+                                                    "quintile_share_severe_burn")})
     else:
         CACHE.mkdir(parents=True, exist_ok=True)
         t = arg.upper()
