@@ -95,8 +95,8 @@ jobs:
         with: { name: site-data, path: web/public/data/, retention-days: 90 }
       - name: Record the refresh in the repository (small summary files only)
         run: |
-          git config user.name "fintwin-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "SpiliosDimakopoulos"
+          git config user.email "spiliosdimakk@gmail.com"
           git add web/public/data/build_report.json web/public/data/calibration.json web/public/data/index.json
           git diff --cached --quiet || git commit -m "data: weekly refresh $(date -u +%Y-%m-%d)"
           git push || echo "push skipped"
