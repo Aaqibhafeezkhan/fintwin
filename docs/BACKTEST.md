@@ -1,5 +1,8 @@
 # Backtest report
 
+> **Superseded for research claims by the paper ([docs/paper/fintwin.pdf](paper/fintwin.pdf)).** The paper adds persistence benchmarks (trailing free-cash-flow margin), a run-rate-adjusted outcome, 2020 bankruptcies and a structural test over 2014–2023. With those controls, the COVID ranking below is largely explained by persistent cash-flow characteristics; the twin's robust strength is identifying where a margin rule misjudges the cash response to a given revenue path.
+
+
 All numbers come from `web/public/data/backtest.json`, which `uv run python -m fintwin.export BACKTEST` regenerates. Twins are calibrated on **point-in-time** data (facts *filed* before the cutoff), with no tuning on outcomes.
 
 ## 0. Large-sample validation (headline)

@@ -64,7 +64,7 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
       )}
 
       {xs && (
-        <Section eyebrow="The February 2020 test" title="Frozen before the pandemic, it ranked who would bleed">
+        <Section eyebrow="The February 2020 test" title="Frozen before the pandemic: what it saw, and what it could not">
           <div className="cols-main">
             <div>
               <Scatter points={rows.map((r) => ({ id: r.ticker, x: r.health_stress, y: r.realized_min_cum_fcf_pct_rev as number, label: r.ticker,
@@ -81,7 +81,12 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
                 (worse than 10% of a year's revenue); <b>{pct(severe(sorted.slice(-k)))}</b> of the most robust two-fifths did.</p>
               <p>The cruise lines and Boeing sit in the bottom-left corner: rated most fragile, hit hardest. Walmart is
                 the honest miss, fragile to a demand collapse it never suffered.</p>
-              <p className="muted">Spearman ρ = {fixed(xs.spearman, 2)}, 95% bootstrap interval {fixed(xs.ci95[0], 2)}–{fixed(xs.ci95[1], 2)}.</p>
+              <p>The research paper tests this harder. A company's trailing free-cash-flow margin ranks the same outcome
+                better, and measured against each company's own pre-2020 run-rate, no balance-sheet model, this one included,
+                saw who the shock would hit. Where the twin adds value is the other half of a stress test: given the revenue
+                that actually happened, it knows where cash departs from a simple margin rule, every year from 2014 to 2023.</p>
+              <p className="muted">Spearman ρ = {fixed(xs.spearman, 2)}, 95% bootstrap interval {fixed(xs.ci95[0], 2)}–{fixed(xs.ci95[1], 2)}.
+                {" "}<a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</p>
             </div>
           </div>
         </Section>

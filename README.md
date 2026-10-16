@@ -14,7 +14,7 @@
 
 ![Stress lab demo](docs/demo.gif)
 
-> **30-second pitch.** A flight simulator for corporate finance. It reads 15 years of a company's official filings and learns how its finances behave: fixed vs variable costs, how fast customers pay, when its debt matures. Then it replays the future 5,000 times under any crisis you pick, live in the browser. I froze it in February 2020 and asked which of 331 S&P 500 companies would bleed cash in the pandemic. 22% of the fifth it rated most fragile did, against 3% of the fifth it rated most robust. Boeing came second from the bottom. It now covers 392 companies and rebuilds itself from the latest filings every week.
+> **30-second pitch.** A flight simulator for corporate finance. It reads 15 years of a company's official filings and learns how its finances behave: fixed vs variable costs, how fast customers pay, when its debt matures. Then it replays the future 5,000 times under any crisis you pick, live in the browser. Then I tested it the hard way. Frozen in February 2020, it beat the Altman, Ohlson and Zmijewski scores at ranking who would burn cash, but a simple trailing cash-flow margin beat it, and nothing on a balance sheet predicted who the shock would actually hit. What the twin does well is the other half of a stress test: given the revenue that actually happened, it knows where cash departs from a simple margin rule, consistently over ten years. It covers 392 companies and rebuilds itself from the latest filings every week.
 
 ## Results
 
@@ -22,17 +22,18 @@ All numbers below come from out-of-sample, point-in-time tests: the model sees o
 
 | Test | Result |
 |---|---|
-| **Pre-COVID fragility ranking**: 331 S&P 500 companies frozen on 20 Feb 2020 | Spearman **ρ = 0.39** with realized 2020–21 cash burn (p < 10⁻¹², 95% CI 0.29–0.48). Severe burn (>10% of revenue) hit **22%** of the twin's most fragile quintile and **3%** of its most robust (16% vs 3% for the outer two-fifths). |
-| **Revenue forecasts**: 15,212 four-quarter forecasts, 375 companies, cutoffs 2013–2025 | CRPS **28% better** than a seasonal random walk; beats it in 69% of forecasts. |
-| **Calibration**: online conformal rescaling, learned only from past cutoffs | 90%-interval coverage raised from 70% (raw) to **91%** (revenue) and from 36% to **91%** (cash), over 30,414 forecasts. |
-| **Structural test**: realized revenue fed in, compare cash burn | Apple 2020–21: within 2% of actual free cash flow. Carnival: right shape (corr. 0.66), burn underestimated by 27%. |
+| **Transmission (structural test)**: realized revenue fed into each twin, 2,661 firm-years 2014–2023 | The twin knows where a margin pass-through rule misjudges cash flow: incremental **ρ = 0.30** (95% CI 0.25–0.36), positive in **every year**. In 2020, for companies whose revenue fell >10%, operating cash flow tracked with **ρ = 0.72 vs 0.27** for the rule (across all revenue declines in 2014–2023 the two are level, and the rule has smaller errors in levels). |
+| **Ranking before COVID**: 333 S&P 500 non-financials frozen on 20 Feb 2020 | Twin ρ = 0.40 with 2020–21 cash burn, above Altman Z″ (0.31), Ohlson, Zmijewski and every leverage/coverage ratio. **But** the trailing FCF margin reaches 0.68, and against each company's own run-rate (the shock-induced part) no predictor, the twin included, ranks 2020. |
+| **2020 bankruptcies**: 27 Chapter 11 filers vs size-matched survivors | AUC 0.95 vs 0.88 for Altman Z″ (p = 0.02). The twin's scoring formula on the opening balance sheet does as well (0.96): the signal is in the score, not the simulation. |
+| **Revenue forecasts**: 15,112 forecast–horizon pairs, 374 companies | Scaled CRPS **27% better** than a seasonal random walk and **18% better** than ETS; Diebold–Mariano tests significant with firm × origin clustering. |
+| **Calibration**: online conformal rescaling, learned only from past cutoffs | 90%-interval coverage raised from 70% (raw) to **91%** (revenue) and from 36% to **91%** (cash). |
 | **Engineering** | Python reference engine and TypeScript browser engine agree to 1e-6 on golden runs. The balance sheet balances on every path, checked by property-based tests. |
 
-The twin is also honest about where it fails: [docs/BACKTEST.md](docs/BACKTEST.md).
-- Cash forecasts lose to a random walk on average.
-- Boeing and Netflix miss the structural test for reasons generic XBRL tags can't capture.
-- Walmart is fragile to a demand collapse it never suffered, and thin-margin distributors (Kroger, McKesson) rank fragile for the same reason.
-- The universe is today's S&P 500, so companies that failed before 2026 are missing. This survivorship bias likely flatters the cross-section.
+Where it fails, in the paper's own words ([docs/paper/fintwin.pdf](docs/paper/fintwin.pdf)):
+- It does not predict *who* a crisis will hit: fundamentals-based fragility rankings, the twin's included, mostly measure persistent cash-flow habits.
+- Its feedback loops barely change the ranking of companies.
+- Cash forecasts lose to a random walk and to ETS; in quiet years the margin rule has smaller errors in levels.
+- The universe is today's S&P 500 (survivorship bias); the 2020 bankruptcy test addresses it for one year only.
 
 ## What it does
 

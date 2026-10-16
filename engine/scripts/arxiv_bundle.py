@@ -24,6 +24,27 @@ def run(cmd: list[str], cwd: Path) -> None:
         raise SystemExit(f"{' '.join(cmd)} failed in {cwd}:\n{r.stdout[-3000:]}")
 
 
+def write_abstracts(tex: str) -> None:
+    """Abstract for the submission forms, with every macro expanded: abstract_arxiv.txt keeps TeX math (arXiv renders
+    it; at most 1,920 characters), abstract.txt is plain Unicode for SSRN."""
+    macros = {}
+    for f in ("numbers.tex", "research_numbers.tex"):
+        for name, val in re.findall(r"\\newcommand\{\\(\w+)\}\{(.*)\}", (PAPER / f).read_text(encoding="utf-8")):
+            macros[name] = val
+    macros["twin"] = "FinTwin"
+    body = tex.split("\\begin{abstract}", 1)[1].split("\\medskip", 1)[0].replace("\\noindent", "")
+    body = re.sub(r"\\(\w+)(\{\})?", lambda mt: macros.get(mt.group(1), mt.group(0)), body)
+    body = " ".join(body.replace("{,}", ",").replace("$-$", "-").replace("\\%", "%").replace("\\&", "&").replace("~", " ").split())
+    arxiv = body.replace("--", "-")
+    plain = (body.replace("$\\rho$", "ρ").replace("$''$", "″").replace("--", "–").replace("$", ""))
+    (PAPER / "abstract_arxiv.txt").write_text(arxiv + "\n", encoding="utf-8")
+    (PAPER / "abstract.txt").write_text(plain + "\n", encoding="utf-8")
+    if "\\" in plain:
+        raise SystemExit(f"unexpanded LaTeX left in the abstract: {plain}")
+    if len(arxiv) > 1920:
+        raise SystemExit(f"abstract is {len(arxiv)} characters; arXiv allows 1,920")
+
+
 def main() -> None:
     # fresh build with BibTeX in place, to produce an up-to-date .bbl
     run(["latexmk", "-pdf", "-interaction=nonstopmode", "-quiet", "fintwin.tex"], PAPER)
@@ -60,6 +81,7 @@ def main() -> None:
         with tarfile.open(DIST / "fintwin-arxiv.tar.gz", "w:gz") as tar:
             for f in sorted([*files, "00README.json"]):
                 tar.add(stage / f, arcname=f)
+    write_abstracts(tex)
     for f in ("aux", "log", "out", "fls", "fdb_latexmk", "blg"):
         (PAPER / f"fintwin.{f}").unlink(missing_ok=True)
     size = (DIST / "fintwin-arxiv.tar.gz").stat().st_size

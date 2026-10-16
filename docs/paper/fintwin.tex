@@ -1,134 +1,362 @@
-\documentclass[10pt]{article}
+\documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
+\usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage[hidelinks]{hyperref}
+\usepackage{threeparttable}
 \usepackage{xcolor}
 \usepackage{enumitem}
+\usepackage{setspace}
 \usepackage[font=small,labelfont=bf]{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage[round,authoryear]{natbib}
+\usepackage[colorlinks=true,linkcolor=black,citecolor={blue!55!black},urlcolor={blue!55!black}]{hyperref}
 \setlist{nosep,leftmargin=1.4em}
+\setstretch{1.08}
 \input{numbers.tex}
+\input{research_numbers.tex}
+\newcommand{\twin}{FinTwin}
 
-\title{\Large\textbf{FinTwin: A Point-in-Time System-Dynamics Digital Twin\\for Corporate Liquidity Stress Testing from SEC Filings}}
-\author{Spilios Dimakopoulos}
-\date{October 2026 \quad\textbullet\quad Preprint \quad\textbullet\quad Code: \texttt{github.com/SpiliosDimakopoulos/fintwin}}
+\title{\textbf{What Can a Financial Digital Twin Tell Us?\\Simulating Corporate Liquidity Stress from SEC Filings,\\with Out-of-Sample Evidence from COVID-19 and a Decade of Data}}
+\author{Spilios Dimakopoulos\thanks{Independent researcher. E-mail: \href{mailto:spiliosdimakk@gmail.com}{spiliosdimakk@gmail.com}. Code, data snapshots and an interactive implementation: \url{https://github.com/SpiliosDimakopoulos/fintwin}.}}
+\date{October 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\noindent
-We present FinTwin, an open-source digital twin of non-financial public companies that converts SEC XBRL filings into a calibrated stock-and-flow model of the firm's financial machinery and stress-tests it with Monte Carlo simulation. Unlike price-forecasting models, the twin simulates how cash, working capital, debt maturities, refinancing and credit quality jointly respond to shocks, through explicit feedback loops between interest coverage, synthetic ratings and market access. The data layer resolves three practical obstacles of XBRL — tag drift, year-to-date reporting and restatements — and produces point-in-time vintages that make backtests free of look-ahead bias. On \NForecasts{} out-of-sample, four-quarter forecasts for \NCompanies{} companies over \NOrigins{} yearly cutoffs, the twin's revenue forecasts improve the continuous ranked probability score on a seasonal random walk by \RevSkill{}; raw interval coverage is below nominal (\RevRawNinety{} for nominal 90\%), and online conformal rescaling, learned only from earlier cutoffs, restores it to \RevConfNinety{}. Calibrated only on filings available on 20 February 2020, the twin's stress health score ranks \XsN{} companies' realized 2020--21 cash burn with Spearman $\rho=\XsRho$ (95\% bootstrap CI \XsCiLo{}--\XsCiHi{}). A TypeScript port runs 5{,}000 paths in the browser and is parity-tested against the Python reference to $10^{-6}$.
+\noindent A stress test has two parts: deciding which companies are fragile, and translating a shock into cash. We build \twin, an open-source system-dynamics digital twin calibrated for each company from point-in-time SEC XBRL filings, and evaluate the two parts separately against \NBench{} benchmarks. Frozen before COVID-19, the twin's stress score ranks the 2020--21 cash burn of \CovN{} S\&P~500 non-financial companies better than the Altman, Ohlson and Zmijewski scores ($\rho$ = \CovRho{} against \CovAltmanRho{} for Altman's Z$''$), and it separates \BkSmBk{} companies that filed for Chapter~11 in 2020 from S\&P survivors of similar size with an AUC of \BkSmTwin{} (Z$''$: \BkSmAltman). But a company's trailing free-cash-flow margin ranks cash burn far better ($\rho$ = \CovFcfRho); the twin's own scoring formula, applied to the opening balance sheet without simulation, matches it on bankruptcies; and when burn is measured against each company's pre-shock run-rate, neither the twin nor the distress scores rank the 2020 shock. The twin's value lies in its mechanics instead. Fed the revenue that actually followed, it identifies where a margin pass-through rule misjudges cash flow, with an incremental correlation of \StrPanIncr{} (95\% CI \StrPanIncrLo--\StrPanIncrHi) across \StrPanN{} firm-years from 2014 to 2023, positive in every year; in 2020 it tracked the operating cash flow of companies whose revenue fell by more than 10\% with $\rho$ = \StrCovDownCfoTwin{} against \StrCovDownCfoMargin{} for the rule, although its point predictions are noisier than the rule's. Its revenue forecasts beat a seasonal random walk and exponential smoothing. Filing-based simulation is a tool for conditional analysis, not for predicting who will be hit. Pipeline, data and code are public.
+
+\medskip\noindent\textbf{Keywords:} stress testing; corporate liquidity; financial distress prediction; system dynamics; digital twin; XBRL; COVID-19; probabilistic forecasting.
+
+\noindent\textbf{JEL:} G32, G33, G17, C53, C63.
 \end{abstract}
 
-\section{Introduction}
-Corporate stress testing asks a conditional question: \emph{if} revenue falls 30\% or debt markets close, does the company run out of cash, and how fast? Answering it requires a model of the firm's internal dynamics — operating leverage, working capital, the maturity wall, the cost and availability of refinancing — rather than a statistical forecast of a single output. System dynamics \cite{forrester1961,sterman2000} provides exactly this language: stocks that accumulate, flows that fill and drain them, and feedback loops whose dominance determines whether a shock fades or spirals.
+\section{Introduction}\label{sec:intro}
 
-Three gaps motivate this work. First, public corporate stress tests are either regulator-run for banks or proprietary. Second, open financial models built on SEC data rarely address the data's point-in-time nature, so their backtests silently use restated figures. Third, simulation models are seldom evaluated as probabilistic forecasts with proper scoring rules \cite{gneiting2007}. FinTwin contributes (i) a reproducible XBRL pipeline with point-in-time vintages, (ii) a stock-and-flow twin with explicit reinforcing and balancing loops, calibrated per company, (iii) a large-sample probabilistic evaluation with online conformal calibration \cite{vovk2005,gibbs2021}, and (iv) a cross-sectional test of whether the twin, frozen before COVID-19, identified the companies that would bleed cash.
+A stress test asks a conditional question: \emph{if} revenue falls by half for a year and debt markets close, does the company run out of cash, and when? Supervisors run such tests for banks with structural balance-sheet models, whose strengths and limits are reviewed by \citet{borio2014}. For non-financial companies, credit analysts usually answer the question with ratios --- leverage, interest coverage, liquidity --- or with accounting-based distress scores \citep{altman1968,ohlson1980,zmijewski1984} and their hazard-model successors \citep{shumway2001,campbell2008}. Ratios describe a position; they do not simulate a process. Two companies with the same leverage can respond very differently to the same shock, depending on how much of their cost base is fixed, how working capital releases or absorbs cash, when their debt matures, whether customers have paid in advance, and whether the company can still refinance once its coverage deteriorates.
 
-\section{Data: point-in-time XBRL}
-The SEC \texttt{companyfacts} endpoint returns every tagged value a company has filed. We construct a quarterly panel of 20 fields (income, cash flow, balance sheet, debt components, customer deposits and the debt maturity schedule) with three corrections.
-\begin{enumerate}
-\item \textbf{Tag drift.} Each field has an ordered list of fallback tags merged period by period (e.g.\ \texttt{SalesRevenueNet} $\rightarrow$ \texttt{RevenueFromContractWithCustomer\ldots} after ASC~606). Debt is assembled from current, non-current, commercial-paper and short-term components; operating income is rebuilt as pre-tax income plus interest where untagged.
-\item \textbf{Year-to-date de-cumulation.} 10-Q cash-flow facts are cumulative and Q4 exists only within the 10-K. Facts sharing a start date are differenced (H1$-$Q1, 9M$-$H1, FY$-$9M); 52/53-week fiscal calendars are aligned within $\pm12$ days.
-\item \textbf{Adjusted operating income.} Non-cash goodwill, intangible and long-lived asset impairments are added back, as credit analysts do; overlapping tags (a cash-flow total versus its components) are reconciled by taking the largest measurement per quarter. Without this step a single write-down (e.g.\ Kraft Heinz's \$9B in one quarter) drives trailing coverage negative and the synthetic rating to default.
-\item \textbf{Point-in-time vintages.} \texttt{load\_company(ticker, asof)} keeps only facts \emph{filed} on or before \texttt{asof}, and the latest such filing wins, reproducing an analyst's information set and excluding later restatements.
-\end{enumerate}
-Interest rates and recession dates come from FRED. Every number retains the accession number of its source filing.
+System dynamics \citep{forrester1961,sterman2000} offers a language for these mechanisms: stocks that accumulate, flows that fill and drain them, delays, and feedback loops. Engineering uses the same idea under the name \emph{digital twin}, a simulation kept synchronized with a physical system through its data \citep{grieves2017,tao2019}. This paper builds such a twin for public companies. \twin{} turns a company's XBRL filings into a quarterly stock-and-flow model with nine balance-sheet stocks, operating leverage, working-capital delays, the contractual debt-maturity ladder, committed credit lines, a Markov recession regime and four feedback loops. Every parameter is estimated from the filings available on the evaluation date.
 
-\section{The twin}
-\subsection{Stocks, flows and loops}
-The model is quarterly and vectorized over Monte Carlo paths. Its stocks are cash, receivables, inventory, payables, customer deposits, net PP\&E, term debt, revolver and equity; a residual ``other net assets'' stock makes the opening balance sheet balance, and the identity $A - L - E = 0$ is preserved on every path and quarter (verified by property-based tests). Demand follows an AR(1) in deseasonalized log growth,
-\begin{equation}
-g_t = \mu + \phi(g_{t-1}-\mu) + \sigma_g\,(1+0.5\,s_t)\,\varepsilon^d_t + \delta\, s_t, \qquad \mathrm{Rev}_t = B_{t-1}e^{g_t}\, S_{q(t)}\,(1+\xi_t),
-\end{equation}
-where $s_t\in\{0,1\}$ is a Markov recession regime with entry hazard and exit probability estimated from NBER recessions since 1947, $\delta=-\beta\,\Delta_{\mathrm{GDP}}$ scales the historical nominal-GDP shortfall by the company's revenue cyclicality $\beta$, and $\xi_t$ is a scenario shock. Cash operating costs are $F(1+\pi)^t c_t + (v + m_t)\mathrm{Rev}_t$, with a mean-reverting margin shock $m_t$ correlated with demand. Receivables and inventory adjust toward days-based targets with first-order delays; payables and customer deposits move immediately, so a revenue collapse triggers deposit refunds.
+The question is what such a model is good for. A stress test combines two claims that are rarely separated. The first is a \emph{ranking} claim: under a common scenario, some companies are more fragile than others, and the model knows which. The second is a \emph{transmission} claim: given a shock, the model translates it into cash flows, debt and liquidity correctly. Realized outcomes mix the two with a third ingredient that no model built on filings can see --- how hard each company was actually hit. We therefore test them separately, always against benchmarks computed from the same point-in-time information, and we report what fails as well as what works.
 
-Four feedback loops govern the response to stress:
-\begin{itemize}
-\item \textbf{R1 leverage--spread spiral.} Trailing interest coverage maps to a synthetic rating and spread \cite{damodaran2026}; refinanced and new debt carry that spread, raising interest and lowering coverage.
-\item \textbf{R2 market-access cliff.} The share of a funding need that can be placed falls from 100\% (coverage $\ge1.5\times$) to 60\% and 30\%, and to zero in a market freeze; unfunded maturities drain cash.
-\item \textbf{B1 cash conservation.} Under stress, payouts stop and capex falls to maintenance.
-\item \textbf{B2 delayed restructuring.} After two quarters below the target margin, fixed costs fall 4\% per quarter to a floor of $-15\%$.
-\end{itemize}
-A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%). Because leverage that would alarm a software company is normal for a regulated utility, the coverage and leverage components are scored against sector norms: each GICS sector receives a tolerance factor equal to its median net debt/EBITDA relative to the universe median, clipped to $[1,2]$. The factor is estimated from the data and affects the score only, not the dynamics.
+\paragraph{Ranking.} Frozen on 20 February 2020 and subjected to a generic demand-freeze scenario, the twin ranks realized 2020--21 cash burn across \CovN{} S\&P~500 non-financial companies with $\rho$ = \CovRho, above the Altman, Ohlson and Zmijewski scores and every leverage, coverage and liquidity ratio we tried. It separates \BkSmBk{} companies that filed for Chapter~11 in 2020 from S\&P survivors of similar size with an AUC of \BkSmTwin{}, against \BkSmAltman{} for Altman's Z$''$. Three findings qualify this. A company's trailing free-cash-flow margin ranks 2020 cash burn far better ($\rho$ = \CovFcfRho), and once it is included the twin adds nothing. The twin's own scoring formula, evaluated on the opening balance sheet without any simulation, separates the bankruptcies just as well. And when cash burn is measured relative to each company's pre-2020 run-rate --- the deterioration the shock caused, which is what a stress test claims to anticipate --- neither the twin nor the distress scores and balance-sheet ratios rank it ($\rho$ = \AbnTwinRho{} for the twin); only revenue volatility, capital intensity and a composite fitted to all benchmarks carry modest signal. Fundamentals-based fragility rankings, the twin's included, mostly measure persistent cash-flow characteristics; little of which companies the shock would hit could be read from their filings.
 
-\subsection{Calibration}
-All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; the debt-rollover share from the two-year debt trend; and the minimum operating cash balance from the company's own revealed behaviour (half its 10th-percentile cash balance over three years). An earlier cost-proportional cash floor forced high-turnover, low-cash retailers to ``borrow up'' to cash levels they never hold; the large-sample evaluation exposed this bias, and the revealed floor cut the twin's cash-forecast CRPS for Walmart roughly ninefold. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
+\paragraph{Transmission.} The twin's mechanics fare better. Feeding each company's realized revenue into its twin, we compare the simulated cash response with reality and with a pass-through rule that applies the trailing margin to the same revenue. Across \StrPanN{} firm-years from 2014 to 2023, the twin's deviation from the rule predicts the realized deviation with an incremental correlation of \StrPanIncr{} (95\% CI \StrPanIncrLo--\StrPanIncrHi), positive in every single year: the twin knows where operating leverage, working capital and financing make cash depart from revenue. In 2020, among companies whose revenue fell by more than 10\%, it tracked operating cash flow with $\rho$ = \StrCovDownCfoTwin{} against \StrCovDownCfoMargin{} for the rule, but across all firm-years with such revenue declines the two are level ($\rho$ = \StrPanDownCfoTwin{} against \StrPanDownCfoMargin). Its point predictions are noisier than the rule's in every year, including shock years: its value is in identifying departures from the rule, not in replacing it. Its probabilistic revenue forecasts improve on a seasonal random walk by \FcRevRw{} and on exponential smoothing by \FcRevEts{} in scaled CRPS; its cash forecasts lose to both.
 
-\subsection{Scenarios, reverse stress and sensitivity}
-Eight presets (rates $+200$bp, sales $-20\%$, recession, demand freeze, stagflation, credit crunch, supply-chain shock) are expanded into per-quarter shock paths. Reverse stress testing finds the smallest shock giving a 50\% breach probability by bisection under common random numbers. Variance-based Sobol indices \cite{saltelli2010} over the joint six-dimensional scenario space separate first-order effects from interactions (Fig.~\ref{fig:sobol}).
+\paragraph{Contributions.} The paper makes four contributions. It provides a reproducible pipeline that turns raw XBRL into point-in-time quarterly panels, which makes backtests of fundamental models free of look-ahead and restatement bias. It shows that the apparent ability of fundamentals-based models to anticipate who suffers in a crisis largely reflects persistence, and proposes two simple controls --- a trailing cash-flow benchmark and a run-rate-adjusted outcome --- that any evaluation of stress or distress models should include. It introduces a structural test that evaluates a simulation model's transmission mechanics on realized shocks, separately from its scenario, and finds that a filing-based twin passes its incremental version. And it evaluates a simulation model as a probabilistic forecaster with proper scoring rules \citep{gneiting2007} and formal comparisons \citep{diebold1995}, while being explicit about which parts of the model's structure the evidence supports: its feedback loops change the ranking of companies very little.
 
-\section{Evaluation}
-\subsection{Large-sample probabilistic calibration}
-The universe is the current S\&P~500 outside Financials and Real Estate, plus a handful of former members relevant to 2020. For each of the \NCompanies{} companies and each yearly cutoff (15 February 2013--2025) we calibrate on point-in-time filings and forecast the next four reported quarters with 2{,}000 paths, yielding \NForecasts{} forecasts. We score with the CRPS against a seasonal random walk with historical spread and examine probability integral transform (PIT) histograms. Online split-conformal calibration \cite{vovk2005,gibbs2021} rescales each year's interval half-widths by the empirical quantile of normalized errors from \emph{earlier} cutoffs only.
+Section~\ref{sec:lit} reviews related work, Sections~\ref{sec:data} and~\ref{sec:model} describe the data and the model, Section~\ref{sec:design} sets out the evaluation, Section~\ref{sec:results} reports results, Section~\ref{sec:discussion} discusses limitations and Section~\ref{sec:conclusion} concludes.
 
-\begin{table}[h]
-\centering\small
-\begin{tabular}{lcccccc}
-\toprule
- & Forecasts & CRPS skill & Beats naive & 90\% cov.\ raw $\rightarrow$ conformal & 50\% cov.\ raw $\rightarrow$ conformal & Regime gain \\
-\midrule
-Revenue & \RevN & \RevSkill & \RevBeat & \RevRawNinety{} $\rightarrow$ \RevConfNinety & \RevRawFifty{} $\rightarrow$ \RevConfFifty & \RevRegimeGain \\
-Cash & \CashN & \CashSkill & \CashBeat & \CashRawNinety{} $\rightarrow$ \CashConfNinety & \CashRawFifty{} $\rightarrow$ \CashConfFifty & \CashRegimeGain \\
-\bottomrule
-\end{tabular}
-\caption{Out-of-sample evaluation. CRPS skill $=1-\mathrm{CRPS}_{\text{twin}}/\mathrm{CRPS}_{\text{naive}}$ (pooled). ``Regime gain'' is the CRPS reduction from adding the recession regime, holding shocks fixed.}
-\label{tab:cal}
+\section{Related literature}\label{sec:lit}
+
+\paragraph{Distress prediction.} Accounting-based scores combine a few ratios into a discriminant or logit score \citep{altman1968,ohlson1980,zmijewski1984}; hazard models add market variables and time variation \citep{shumway2001,campbell2008}, and structural models infer default probabilities from equity values and volatility \citep{merton1974,leland1994,bharath2008}. These models are estimated on large samples of defaults and predict the \emph{probability} of an event. A twin answers a different question --- what would happen to this company under this shock --- but if its simulated mechanics are right, its stress outcomes should rank companies' realized distress. We test exactly that, and we compare the twin with accounting scores because, like the twin, they use filings only; market-based predictors are a natural extension.
+
+\paragraph{Corporate liquidity and COVID-19.} Firms hold cash and credit lines to insure against cash-flow shortfalls \citep{opler1999,almeida2004,bates2009,sufi2009}. The 2020 shock offered a natural experiment. \citet{fahlenbrach2021} show that firms with more financial flexibility before the pandemic suffered smaller stock-price declines, \citet{ramelli2020} and \citet{ding2021} document that pre-pandemic leverage and cash holdings shaped stock returns, and \citet{acharya2020} describe the dash for cash through credit-line drawdowns and bond issuance by firms at risk of downgrade. These studies explain market reactions with balance-sheet characteristics. We use the same episode to evaluate a model that was not estimated on it, and we measure outcomes in cash rather than in prices.
+
+\paragraph{Stress testing and system dynamics.} Regulatory stress tests of banks combine macroeconomic scenarios with structural balance-sheet models \citep{borio2014}. For non-financial companies, simulation-based financial planning is standard practice inside firms but rarely published or validated. System dynamics has long been used to model corporate strategy and business cycles \citep{forrester1961,sterman2000,morecroft2015}, and digital twins are widespread in engineering \citep{grieves2017,tao2019}, but neither literature has, to our knowledge, produced a company-level financial model that is calibrated automatically from public filings and validated out of sample on a large cross-section.
+
+\paragraph{Forecast evaluation.} We evaluate the twin's predictive distributions with the continuous ranked probability score and probability integral transform histograms \citep{gneiting2007,gneiting2007b}, compare predictive accuracy with Diebold--Mariano tests \citep{diebold1995} using clustered standard errors \citep{petersen2009,cameron2008}, benchmark against exponential smoothing in state-space form \citep{hyndman2008}, and recalibrate intervals with online split-conformal prediction \citep{vovk2005,gibbs2021}.
+
+\input{sections/model.tex}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\small,
+  var/.style={draw=black!55, rounded corners=2pt, fill=black!3, inner sep=4pt, align=center, minimum width=27mm, minimum height=9mm},
+  arr/.style={-{Stealth[length=2.2mm]}, thick, black!65},
+  lab/.style={font=\footnotesize, fill=white, inner sep=0.8pt},
+  loop/.style={font=\bfseries, black!75, circle, draw=black!40, inner sep=1.5pt}]
+% layout: a 3 x 4 grid; every loop is a closed cycle with the sign product shown in the caption
+\node[var] (fixed) at (0, 2.4) {Fixed costs};
+\node[var] (rev) at (-4.6, 0) {Revenue};
+\node[var] (ebit) at (0, 0) {EBIT and\\interest coverage};
+\node[var] (rating) at (4.6, 0) {Synthetic rating\\and credit spread};
+\node[var] (access) at (-4.6, -2.4) {Debt-market\\access};
+\node[var] (interest) at (4.6, -2.4) {Interest expense};
+\node[var] (refi) at (-4.6, -4.8) {Maturities\\refinanced};
+\node[var] (cash) at (0, -4.8) {Cash};
+\node[var] (payouts) at (4.6, -4.8) {Payouts and\\capex};
+\draw[arr] (rev) -- node[lab, above]{$+$} (ebit);
+% R1: coverage -> rating -> interest -> coverage
+\draw[arr] (ebit) -- node[lab, above]{$+$} (rating);
+\draw[arr] (rating) -- node[lab, right]{$-$} (interest);
+\draw[arr] (interest) -- node[lab, above, pos=0.45]{$-$} (ebit);
+% R2: coverage -> access -> refinancing -> cash -> (revolver) interest -> coverage
+\draw[arr] (ebit) -- node[lab, above, pos=0.45]{$+$} (access);
+\draw[arr] (access) -- node[lab, left]{$+$} (refi);
+\draw[arr] (refi) -- node[lab, above]{$+$} (cash);
+\draw[arr] (cash) -- node[lab, above, pos=0.4]{$-$} (interest);
+% B1: cash -> payouts and capex -> cash
+\draw[arr] (cash.15) to[bend left=12] node[lab, above]{$+$} (payouts.165);
+\draw[arr] (payouts.195) to[bend left=12] node[lab, below]{$-$} (cash.345);
+% B2: margin -> fixed-cost cuts -> margin
+\draw[arr] (ebit.105) to[bend left=30] node[lab, left]{$+$} (fixed.255);
+\draw[arr] (fixed.285) to[bend left=30] node[lab, right]{$-$} (ebit.75);
+\draw[arr, dashed] (ebit) -- node[lab, right, pos=0.35]{$+$} (cash);
+\node[loop] at (3.7, -0.75) {R1};
+\node[loop] at (-1.9, -2.6) {R2};
+\node[loop] at (2.3, -5.55) {B1};
+\node[loop] at (1.25, 1.25) {B2};
+\end{tikzpicture}
+\caption{The four feedback loops in causal-loop notation. A ``$+$'' (``$-$'') link means that the variables move in the same (opposite) direction; a loop is reinforcing (R) when the product of its signs is positive and balancing (B) when it is negative. R1, leverage--spread spiral: lower coverage worsens the rating, which raises interest and lowers coverage further. R2, market-access cliff: lower coverage reduces the share of maturities that can be refinanced, so cash falls, revolver drawings raise interest, and coverage falls further. B1, cash conservation: payouts and capex are cut as cash falls. B2, delayed restructuring: fixed costs are cut as margins fall. The dashed link (operating cash flow) is not part of a loop. The full model also contains working capital, customer deposits, the debt-maturity ladder, taxes and the recession regime.}
+\label{fig:loops}
+\end{figure}
+
+\section{Evaluation design}\label{sec:design}
+
+\subsection{Samples}
+The universe is the current S\&P~500 outside Financials and Real Estate (394 companies), whose balance sheets fit a corporate cash-flow model, plus five former members or notable non-members that matter for 2020 (American Airlines, Macy's, Kohl's, Wynn Resorts, Intel); results without them are in Appendix Table~\ref{tab:robust}. A company enters a design when at least 16 quarters of filings are available at the cutoff, which rules out February 2013 because XBRL reporting began in 2009--2011. Because today's index members survived to today, we add a second sample of non-financial SEC registrants that filed for Chapter~11 between April and November 2020. It is a convenience sample of prominent filings, collected from public records and verified against the companies' XBRL filings, not an exhaustive census. Of 35 candidates, \BkN{} have the required history (Appendix Table~\ref{tab:bkfirms}); Valaris, Extraction Oil \& Gas, Garrett Motion, Ultra Petroleum and Pacific Drilling were listed or reorganized too recently. Energy companies, hit by the oil-price collapse, and retailers dominate the sample.
+
+\subsection{Benchmarks}
+Every benchmark is computed from the same point-in-time vintage as the twin. Eleven are classic: Altman's Z$''$-score for non-manufacturers \citep{altman2006}, Ohlson's O-score \citep{ohlson1980}, Zmijewski's score \citep{zmijewski1984}, interest coverage, net debt over EBITDA, cash over revenue, the current ratio, revenue volatility, the fixed-cost share estimated by the twin's calibration, size, and a \emph{static stress test}: the back-of-the-envelope calculation an analyst would do for the same scenario with the same inputs (liquidity divided by three quarters of fixed costs and interest, net of the contribution on the remaining revenue, plus debt maturing in those quarters). Two are cash-flow benchmarks that capture persistence: the trailing four-quarter free-cash-flow margin and capital expenditure over revenue. Finally, the \emph{health formula} applies the twin's scoring rule to the opening balance sheet, without any simulation. Because the health score combines runway, a coverage-based rating, leverage and Altman's Z$''$, comparing the twin with this formula isolates what the simulation adds to its own ingredients. We also fit a cross-validated composite of all thirteen benchmarks (ten folds, with sector effects). All predictors are oriented so that higher values mean higher risk.
+
+\subsection{Outcomes}
+\emph{Raw cash burn} is the worst cumulative free cash flow (operating cash flow less capital expenditure) over a window, as a percentage of revenue in the four quarters before the cutoff; worse than $-10\%$ is \emph{severe}. In the COVID design the window is 2020Q1--2021Q2. \emph{Abnormal cash burn} subtracts the company's trailing quarterly free-cash-flow run-rate from every quarter of the window before cumulating, so a utility that always invests more than it earns is not counted as stressed; it measures the deterioration the shock caused. In the panel, the twin is calibrated and simulated over twelve quarters, and outcomes cover the eight quarters after the last quarter known at the cutoff: severe raw and abnormal burn, \emph{coverage collapse} (trailing EBIT/interest falling below $1.5\times$, for companies above it at the cutoff), and a \emph{dividend cut} (dividends in the next four quarters below half of the previous four, for payers). Outcomes are measured on the latest data.
+
+\subsection{The structural test}
+To test transmission separately from the scenario, we replace the twin's simulated revenue with the revenue the company actually reported over the eight quarters after the cutoff, run 500 paths, take the median path of operating and free cash flow quarter by quarter, and record its worst cumulative value as a share of trailing revenue. Two rules see the same realized revenue: a \emph{margin rule} that applies the trailing operating- or free-cash-flow margin to it, and, for free cash flow, a \emph{run-rate} that ignores revenue. The margin rule is the natural null for a model whose purpose is to capture operating leverage, working capital and financing. Besides correlations with realized cash, we report the \emph{incremental correlation} between the twin's deviation from the margin rule and the realized deviation from it: whether the twin knows where pass-through fails.
+
+\subsection{Inference}
+Rank correlations and AUCs come with bootstrap confidence intervals (2{,}000 resamples; panel bootstraps resample firms). Comparisons between two predictors are paired, on the observations where both exist. Within-sector correlations correlate deviations of percentile ranks from GICS-sector means. Out-of-sample panel models are ridge-penalized logits with median imputation and missing-value indicators, winsorized at training-set percentiles; for test year $Y$ they are trained only on cutoffs up to $Y-3$, whose eight-quarter outcomes were reported by $Y$. Forecast comparisons use the CRPS scaled by mean quarterly revenue and Diebold--Mariano tests with standard errors clustered by firm and by forecast origin. We run many comparisons; individual $p$-values near 0.05 should be read with that in mind.
+
+\section{Results}\label{sec:results}
+
+\subsection{Ranking fragility before COVID-19}
+Table~\ref{tab:covid} reports how well each predictor, frozen on 20 February 2020, ranks 2020--21 cash burn. The twin's stress score reaches $\rho$ = \CovRho{} (95\% CI \CovRhoLo--\CovRhoHi). It beats every classic benchmark: the best of them, \CovClassicName, reaches \CovClassicRho{} (paired difference \CovClassicDiff, $p\CovClassicP$), and the static stress test with the twin's own inputs reaches \CovStaticRho{} ($p\CovStaticP$). The advantage holds within sectors ($\rho$ = \CovWithin, 95\% CI \CovWithinLo--\CovWithinHi) and the twin's correlation is essentially unchanged without the five companies added for 2020 ($\rho$ = \CovNoAddedRho) and lower but positive without capital-intensive utilities ($\rho$ = \CovNoUtilRho; Appendix Table~\ref{tab:robust}). Simulating the demand-freeze scenario also improves on the health formula applied to the opening balance sheet ($\rho$ = \CovFormulaRho; difference \CovFormulaDiff, $p\CovFormulaP$) and on the twin's own baseline run ($\rho$ = \CovBaseRho; difference \CovStressBase, $p\CovStressBaseP$).
+
+The cash-flow benchmarks change the picture. The trailing free-cash-flow margin alone ranks cash burn with $\rho$ = \CovFcfRho{} (95\% CI \CovFcfLo--\CovFcfHi, $n$ = \CovFcfN), well above the twin, also within sectors ($\rho$ = \CovFcfWithin), and the cross-validated composite of all benchmarks reaches \CovCompRho. In the rank regression of Table~\ref{tab:covidreg}, which includes every benchmark, the formula and sector effects, the twin's $t$-statistic is \CovRegT{} while the free-cash-flow margin's is \CovRegFcfT. Companies that burned cash in 2020--21 were, to a large extent, companies that burned cash before.
+
+The abnormal-burn columns of Table~\ref{tab:covid} make the point directly. Measured against each company's own pre-2020 run-rate, the deterioration the shock caused is not ranked by the twin ($\rho$ = \AbnTwinRho, 95\% CI \AbnTwinLo--\AbnTwinHi), by Altman's Z$''$ ($\rho$ = \AbnAltmanRho), by the free-cash-flow margin ($\rho$ = \AbnFcfRho), or by the stress scenarios (Appendix Table~\ref{tab:scenarios}). Revenue volatility ($\rho$ = \AbnRevVolRho), capital intensity ($\rho$ = \AbnCapexRho) and the fixed-cost share ($\rho$ = \AbnFixedRho) carry modest signal, a composite fitted to all benchmarks reaches \AbnCompRho, and cash holdings are related with the opposite sign to the one a fragility measure would predict ($\rho$ = \AbnCashRho, 95\% CI \AbnCashLo--\AbnCashHi). The 2020 shock was concentrated in travel, leisure and energy for reasons --- a pandemic and an oil-price war --- that balance sheets do not reveal; a generic scenario applied to every company cannot recover them.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Ranking 2020--21 cash burn with predictors frozen on 20 February 2020}
+\label{tab:covid}
+\input{tables/covid_predictors.tex}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+Spearman correlation between each risk-oriented predictor and realized burn severity across S\&P~500 non-financial companies. Raw burn: worst cumulative free cash flow in 2020Q1--2021Q2 as a share of trailing revenue (\CovSevere{} companies below $-10\%$). Abnormal burn: the same after subtracting each company's pre-2020 free-cash-flow run-rate (\AbnN{} companies with a run-rate). ``Within sector'' correlates deviations from GICS-sector means of percentile ranks. ``Twin $-$ predictor'': paired bootstrap difference in $\rho$ on the companies where both exist. $^{*}$, $^{**}$, $^{***}$: $p<0.10, 0.05, 0.01$.
+\end{minipage}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}[t]
+\centering\includegraphics[width=\linewidth]{figures/covid.pdf}
+\caption{Left: the twin's stress health score on 20 February 2020 against realized worst cumulative free cash flow in 2020--21. Right: share of companies with a severe cash burn by quintile of the twin's stress score and of Altman's Z$''$.}
+\label{fig:covid}
+\end{figure}
+
+\begin{table}[t]
+\centering\footnotesize
+\begin{threeparttable}
+\caption{Rank regression of 2020--21 raw cash-burn severity}
+\label{tab:covidreg}
+\input{tables/covid_regression.tex}
+\begin{tablenotes}\footnotesize
+\item OLS of the percentile rank of realized burn severity on percentile ranks of the predictors (missing values at the median rank), with GICS sector fixed effects and HC3 standard errors. Benchmark coefficients are not interpretable individually because the benchmarks are strongly correlated.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Companies that did not survive}
+Table~\ref{tab:bankrupt} adds the \BkN{} companies that filed for Chapter~11 in 2020. Against all \BkSurv{} S\&P companies the twin's stress score separates them with an AUC of \BkAuc, but size alone reaches \BkSize, because index members are large. Restricting survivors to companies no larger than the 90th percentile of the bankrupt firms leaves \BkSmSurv{} survivors and \BkSmBk{} bankrupt firms. There the twin's AUC is \BkSmTwin{} (95\% CI \BkSmTwinLo--\BkSmTwinHi), against \BkSmAltman{} for Altman's Z$''$ (difference \BkSmTwinAltmanDiff, $p\BkSmTwinAltmanP$), \BkSmIcr{} for interest coverage ($p\BkSmTwinIcrP$), \BkSmFcf{} for the free-cash-flow margin ($p\BkSmTwinFcfP$; available for only \BkFcfBk{} bankrupt firms) and \BkSmSize{} for size. The health formula on the opening balance sheet, however, reaches \BkSmFormula{} (difference \BkSmTwinFormulaDiff, $p\BkSmTwinFormulaP$): what separates the bankruptcies is the combination of runway, coverage, leverage and solvency in the score, not the simulation. The stress scenario even hurts here: in the full sample the stress score is worse than the twin's baseline score (difference \BkStressBase, $p\BkStressBaseP$), possibly because a uniform demand freeze pushes many healthy companies toward the bottom of the scale and compresses the ranking. Two caveats apply: the bankrupt firms are a convenience sample, and the survivors survived until 2026, which makes them easier to separate than the 2020 population would have been.
+
+\begin{table}[t]
+\centering\footnotesize
+\begin{threeparttable}
+\caption{Chapter~11 filers of 2020 versus S\&P~500 survivors, predictors frozen on 20 February 2020}
+\label{tab:bankrupt}
+\input{tables/bankruptcy.tex}
+\begin{tablenotes}\footnotesize
+\item AUC for separating 2020 Chapter~11 filers from S\&P~500 non-financial companies. Paired differences use the companies where both predictors exist. Size-matched: survivors no larger than the 90th percentile of bankrupt firms' revenue. $^{*}$, $^{**}$, $^{***}$: $p<0.10, 0.05, 0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[t]
+\centering\includegraphics[width=\linewidth]{figures/bankrupt.pdf}
+\caption{Distribution of the twin's stress health score on 20 February 2020 for S\&P~500 non-financial companies and for companies that filed for Chapter~11 in 2020.}
+\label{fig:bankrupt}
+\end{figure}
+
+\subsection{Translating a shock into cash}
+Table~\ref{tab:structural} reports the structural test. In 2020, among the \StrCovDownN{} companies whose revenue over the eight quarters after the cutoff fell by more than 10\%, the twin's simulated operating cash flow correlates with the realized one at $\rho$ = \StrCovDownCfoTwin, against \StrCovDownCfoMargin{} for the margin rule ($p\StrCovDownCfoP$); for free cash flow the figures are \StrCovDownFcfTwin{} and \StrCovDownFcfMargin{} ($p\StrCovDownFcfP$). When revenue collapses, the cash response is shaped by fixed costs, working-capital releases, customer-deposit refunds and maturing debt, which a proportional rule ignores and the twin models. Carnival is the extreme case: with its realized revenue, the twin reproduces the timing and shape of the collapse in free cash flow but understates its depth (Figure~\ref{fig:ccl}).
+
+This advantage does not generalize to all revenue declines: across the \StrPanDownN{} firm-years of the 2014--2023 panel with such declines, twin and rule are level ($\rho$ = \StrPanDownCfoTwin{} against \StrPanDownCfoMargin). Over the whole panel (\StrPanN{} firm-years of \StrPanFirms{} companies), the margin rule is better in levels: its median absolute error is \StrPanMaeMargin{} percentage points of revenue against \StrPanMaeTwin{} for the twin, and the twin is closer in \StrPanCloser{} of cases. But the twin knows where the rule goes wrong. The correlation between the twin's deviation from the rule and the realized deviation is \StrPanIncr{} (95\% CI \StrPanIncrLo--\StrPanIncrHi), and it is positive in every year, from \StrPanYearMin{} in \StrPanYearMinYear{} to \StrPanYearMax{} (Figure~\ref{fig:structural}). The practical implication is a combination: the margin rule for the level, and the twin for the direction and size of departures from it.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\caption{The structural test: realized revenue fed into the twin}
+\label{tab:structural}
+\input{tables/structural.tex}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+Worst cumulative operating or free cash flow over the eight quarters after the cutoff, as a share of trailing revenue, with the realized revenue of those quarters given to the twin and to the margin rule (trailing cash-flow margin times realized revenue). ``Difference'': paired bootstrap difference in $\rho$ (panel: clustered by firm). Incremental $\rho$: correlation of (twin $-$ rule) with (realized $-$ rule). 2020 cutoff: 20 February 2020; panel cutoffs: 15 February 2014--2023. $^{*}$, $^{**}$, $^{***}$: $p<0.10, 0.05, 0.01$.
+\end{minipage}
+\end{table}
+
+\begin{figure}[t]
+\centering\includegraphics[width=\linewidth]{figures/structural.pdf}
+\caption{Incremental correlation between the twin's and the realized departure of operating cash flow from the margin rule, by cutoff year (bars), and its pooled 95\% confidence interval (band).}
+\label{fig:structural}
+\end{figure}
+
+\subsection{A decade of distress}
+Table~\ref{tab:panel} summarizes \PanFirmYears{} firm-years of \PanFirms{} companies with cutoffs from \PanYears. The twin's baseline health score predicts severe raw cash burn over the next eight quarters with an AUC of \PanTwinAuc, above the health formula (\PanFormulaAuc, $p\PanFormulaP$), Altman's Z$''$ (\PanAltmanAuc) and interest coverage (\PanIcrAuc), but below the trailing free-cash-flow margin (\PanFcfAuc). Out of sample (test years \PanOosYears), a logit with all benchmarks and the formula reaches \PanOosBench{}, and adding the twin changes it by \PanOosDelta. For abnormal burn the twin has no skill (AUC \PanAbnTwinAuc); for coverage collapse, the current coverage ratio is the best predictor; and for dividend cuts the twin is comparable with the benchmarks without adding to them. Year by year (Figure~\ref{fig:panel}), the free-cash-flow margin is the best predictor in \PanFcfBestYears{} of \PanYearCount{} years, and Altman's Z$''$ beats the twin in 2014, 2015 and 2017.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{4pt}
+\caption{Distress over the next eight quarters, \PanYears{} panel}
+\label{tab:panel}
+\input{tables/panel.tex}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+Twin: baseline health score (no stress scenario). Formula: the health formula on the opening balance sheet. Out-of-sample logits are ridge-penalized and trained for each test year on cutoffs at least three years earlier; ``Benchmarks'' contains all thirteen benchmarks and the formula, and ``+ Twin'' adds the twin's baseline health, baseline breach probability and recession-scenario health. $\Delta$: difference in AUC with a firm-clustered paired bootstrap CI. $^{*}$, $^{**}$, $^{***}$: $p<0.10, 0.05, 0.01$.
+\end{minipage}
+\end{table}
+
+\begin{figure}[t]
+\centering\includegraphics[width=\linewidth]{figures/panel_auc.pdf}
+\caption{AUC for severe raw cash burn in the next eight quarters, by cutoff year.}
+\label{fig:panel}
+\end{figure}
+
+\subsection{Feedback loops}
+Table~\ref{tab:ablations} switches off each loop. The ranking by stress health barely changes, even without any loop (change \AblHealthLoss, $p\AblHealthP$), and in the panel a twin without loops predicts cash burn just as well (AUC \PanNoLoopsAuc{} against \PanTwinAuc). The loops matter more for the breach probability: for raw burn, removing the market-access cliff (R2) lowers its correlation by \AblRtwoLoss{} ($p\AblRtwoP$). For abnormal burn the same ablation goes the other way (\AblAbnRtwoLoss, $p\AblAbnRtwoP$). Given the number of comparisons, we read this as no reliable evidence that the loops improve rankings. Their role is in scenario analysis --- they determine whether and when a stressed company runs out of cash --- which a cross-sectional ranking test does not measure.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{threeparttable}
+\caption{Loop ablations, COVID cross-section}
+\label{tab:ablations}
+\input{tables/ablations.tex}
+\begin{tablenotes}\footnotesize
+\item Spearman correlation between versions of the twin under the demand-freeze scenario and realized 2020--21 burn severity. ``Loss'': paired bootstrap difference between the full and the ablated twin (positive: the loop helps). $^{*}$, $^{**}$, $^{***}$: $p<0.10, 0.05, 0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Forecast accuracy and calibration}
+Table~\ref{tab:fc} compares the twin's four-quarter predictive distributions with a seasonal random walk with historical spread and with an ETS model \citep{hyndman2008} (additive errors, damped trend and seasonality on log revenue; simple exponential smoothing for cash), on \FcRevN{} revenue forecast--horizon pairs (about \FcRevFc{} four-quarter forecasts). The twin's scaled CRPS for revenue is \FcRevRw{} lower than the random walk's and \FcRevEts{} lower than ETS's (two-way clustered $t$ = \FcRevRwT{} and \FcRevEtsT). For cash, both benchmarks are better (skill \FcCashRw{} and \FcCashEts): treasury decisions are discretionary, and the twin models them as noise around policies inferred from history.
+
+Raw predictive intervals are too narrow (Figure~\ref{fig:cal}). In the weekly validation run of the software, which pools \NForecasts{} revenue and cash forecast--horizon pairs, the nominal 90\% revenue interval covers \RevRawNinety{} of outcomes; online split-conformal rescaling \citep{vovk2005,gibbs2021}, using only errors from earlier cutoffs, restores coverage to \RevConfNinety{} for revenue and \CashConfNinety{} for cash.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{threeparttable}
+\caption{Four-quarter probabilistic forecasts}
+\label{tab:fc}
+\input{tables/forecasts.tex}
+\begin{tablenotes}\footnotesize
+\item Pairs: forecast--horizon pairs for which all three models produced a distribution. Skill: $1-\overline{\mathrm{CRPS}}_{\text{twin}}/\overline{\mathrm{CRPS}}_{\text{benchmark}}$ with each CRPS scaled by mean quarterly revenue; pooled: in unscaled dollars. Better: share of pairs where the twin's CRPS is lower. DM $t$: Diebold--Mariano statistic on scaled CRPS differences, clustered by firm and origin (negative: the twin is better).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[t]
 \centering\includegraphics[width=\linewidth]{figures/calibration.pdf}
-\caption{PIT histograms (dashed: uniform) and raw 90\% interval coverage by cutoff year. The U-shape shows raw bands are too narrow; the cutoffs whose window contains the 2020 shock (orange) are the worst.}
+\caption{Probability integral transform histograms of the twin's raw forecasts (dashed: uniform) and raw 90\% interval coverage by cutoff year, from the weekly validation run. The U-shape shows that raw intervals are too narrow; cutoffs whose window contains the 2020 shock are the worst.}
 \label{fig:cal}
 \end{figure}
 
-\subsection{Did the twin know who would bleed?}
-We froze every twin at 20 February 2020 and applied the same generic demand-freeze scenario ($-70\%$ revenue for three quarters, markets shut for two). The realized outcome is the worst cumulative free cash flow between 2020Q1 and 2021Q2 as a share of pre-shock annual revenue. The twin's stress health score correlates with the realized outcome at $\rho=\XsRho$ ($p\XsP$, $n=\XsN$, Fig.~\ref{fig:xs}); \XsSevereFragile{} of the companies in the twin's two most fragile quintiles suffered a severe cash burn (worse than 10\% of annual revenue), against \XsSevereRobust{} in the two most robust quintiles. Because every company receives the same shock, this measures structural fragility, not exposure: Walmart is fragile to a demand collapse it never suffered.
-
-\begin{figure}[h]
-\centering\includegraphics[width=0.58\linewidth]{figures/cross_section.pdf}
-\caption{Pre-COVID twin stress health score versus realized worst cumulative free cash flow in 2020--21.}
-\label{fig:xs}
-\end{figure}
-
-\subsection{Structural test}
-Feeding the realized revenue path into the twin isolates its mechanics from its inability to foresee shocks. For Apple (2020--21) simulated cumulative free cash flow is \StructAAPLCovidModel{} against \StructAAPLCovidActual{} actual (error \StructAAPLCovidErr). For Carnival the twin reproduces the direction and timing of the collapse (\StructCCLCovidModel{} vs.\ \StructCCLCovidActual{}, quarterly correlation \StructCCLCovidCorr) but underestimates burn, because fixed ship-operating costs and deposit refunds exceeded the calibrated structure (Fig.~\ref{fig:ccl}). Boeing and Netflix fail the test for identifiable reasons — program-specific working capital and a content-spending pause — that generic XBRL tags cannot reveal.
-
-\begin{figure}[h]
+\begin{figure}[t]
 \centering\includegraphics[width=\linewidth]{figures/carnival.pdf}
-\caption{Carnival. Left: revenue forecasts from the twin frozen in February 2020 under the baseline and the demand-freeze scenario, against reported revenue. Right: structural test with realized revenue fed in.}
+\caption{Carnival. Left: revenue forecasts of the twin frozen in February 2020 under the baseline and the demand-freeze scenario, against reported revenue. Right: the structural test for Carnival, with realized revenue fed into the twin (cumulative free cash flow \StructCCLCovidModel{} simulated against \StructCCLCovidActual{} realized, quarterly correlation \StructCCLCovidCorr).}
 \label{fig:ccl}
 \end{figure}
 
+\section{Discussion and limitations}\label{sec:discussion}
+
+\paragraph{What a twin is for.} The evidence separates the two halves of a stress test. Ranking companies by fragility under a generic scenario mostly reproduces what persistent cash-flow characteristics already reveal, and neither the twin nor the classic distress scores anticipated who the 2020 shock would hit. Translating a given shock into cash is different: there the simulated mechanics add information about departures from a proportional rule, consistently over ten years, although the rule remains the better point estimate. A filing-based twin is therefore most useful where the shock is specified --- scenario analysis, planning, covenant and liquidity headroom under a stated path for revenue --- and least useful as an unconditional early-warning score. Figure~\ref{fig:ccl} illustrates both halves for Carnival.
+
+\paragraph{Evaluating stress and distress models.} Two controls changed our conclusions and should be routine: a persistence benchmark such as the trailing free-cash-flow margin, and an outcome measured against each company's own run-rate. Without them, our initial results suggested that the twin anticipated who would bleed in 2020; with them, the ranking evidence largely disappears.
+
+\paragraph{Hindsight and data.} Several design choices were made after 2020: the demand-freeze scenario resembles the 2020 shock, the health-score weights and shrinkage priors were set during development, and the rating table is the January 2026 version of \citet{damodaran2026}, applied to earlier cutoffs. Macroeconomic inputs use final rather than real-time vintages. These choices favour the twin, which strengthens the negative findings and qualifies the positive ones. The main universe consists of today's index members, which creates survivorship bias; the bankruptcy sample addresses it only for 2020 and is not exhaustive. Some XBRL items are tagged idiosyncratically, missing quarters in outcome windows are treated as zero cash flow or no dividend (in the abnormal-burn measure, as the run-rate), and some parameters (for example undrawn credit lines when untagged) are assumptions.
+
+\paragraph{Outcomes and scope.} Cash burn is not distress, and defaults, downgrades or covenant breaches would be better outcomes but are not available from filings. The structural test uses realized revenue, so it cannot separate the model's mechanics from errors in the reported revenue path itself. The product version of the health score also scores coverage and leverage against sector norms estimated from current data; it is excluded from the evaluation, and with it the 2020 raw-burn correlation is \CovSectorAdj.
+
+\section{Conclusion}\label{sec:conclusion}
+
+A transparent stock-and-flow model of the firm, calibrated automatically from public filings and evaluated without look-ahead, does not tell us in advance who a crisis will hit: once persistence is controlled for, neither it nor the classic distress scores ranked the 2020 shock. What it does is identify where a proportional rule misjudges the cash response to a given shock, consistently across a decade of out-of-sample tests, and forecast revenue better than standard time-series benchmarks. That is the job a stress test is for. Because the twin runs in a web browser and every number in this paper is generated from open code, the tests can be repeated and extended --- with market-based inputs, industry-specific scenarios and outcomes such as defaults --- by anyone.
+
+\section*{Data and code availability}
+All code, the point-in-time data pipeline, the research experiments and the scripts that generate every table, figure and number in this paper are available at \url{https://github.com/SpiliosDimakopoulos/fintwin} under the MIT licence, with an archived version on Zenodo. The experiments run on free GitHub-hosted runners (\texttt{.github/workflows/research.yml}). An interactive version of the twin, which recomputes 5{,}000 Monte Carlo paths in the browser, is at \url{https://spiliosdimakopoulos.github.io/fintwin/}. All inputs are public: SEC EDGAR XBRL filings and FRED.
+
+\section*{Use of AI tools}
+Software development, data analysis and drafting were assisted by an AI coding assistant (Claude, Anthropic), and an AI-generated referee report was used to identify weaknesses in an earlier version. The author designed the study, reviewed all code, results and text, and takes full responsibility for the content.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Additional tables and figures}
+
+\begin{table}[h]
+\centering\small
+\caption{COVID cross-section: Spearman correlation of the twin's health score under each scenario with realized 2020--21 burn severity}
+\label{tab:scenarios}
+\input{tables/scenarios.tex}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\caption{Robustness of the 2020 raw-burn ranking}
+\label{tab:robust}
+\input{tables/robustness.tex}
+\end{table}
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Calibrated parameters}
+\label{tab:params}
+\begin{tabular}{lp{0.5\linewidth}l}
+\toprule
+Parameter & Estimate & Window \\
+\midrule
+Seasonal factors $S_q$ & median ratio to centred 4-quarter moving average & last 32 quarters \\
+Trend growth $\mu$ & median log growth, shrunk 50\% toward 1.2\%/quarter & last 12 quarters \\
+AR coefficient $\phi$, volatility $\sigma_g$ & OLS; median absolute deviation of residuals & last 32 quarters \\
+Tail index & Student-$t$ maximum likelihood on standardized residuals & growth residuals \\
+Cyclicality $\beta$ & regression of revenue on nominal GDP growth, shrunk 50\% toward 1.5 & last 40 quarters \\
+Recession entry and exit & NBER recessions since 1947 & FRED \\
+Fixed costs $F$, variable ratio $v$ & penalized regression of cash costs on revenue & last 16 quarters \\
+Margin shock $m_t$ & AR(1) of cost-regression residuals; correlation with demand & last 16 quarters \\
+DSO, DIO, DPO, deposit days & averages of balance to revenue or costs & last 4 quarters \\
+Depreciation, capex, SBC ratios & medians & last 8 quarters \\
+Coupon & interest expense over debt & last 4 quarters \\
+Rollover share & two-year debt trend relative to maturities & last 8 quarters \\
+Discretionary financing volatility & robust s.d.\ of quarterly debt changes & last 20 quarters \\
+Maturity ladder & XBRL maturity schedule, else six-year average life & latest 10-K \\
+Credit facility & XBRL facility size, else 8\% of revenue (assumption) & latest filing \\
+Minimum cash & half the 10th-percentile cash balance & last 12 quarters \\
+Short-rate dynamics & Vasicek fit to the 3-month Treasury bill & since 2000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\scriptsize
+\caption{Companies that filed for Chapter~11 in 2020, ordered by the twin's stress health score on 20 February 2020}
+\label{tab:bkfirms}
+\input{tables/bankrupt_firms.tex}
+\end{table}
+
 \begin{figure}[h]
 \centering\includegraphics[width=0.9\linewidth]{figures/sobol.pdf}
-\caption{Sobol indices of the health score (solid: first-order; light: total). Large gaps between the two indicate interactions — e.g.\ a debt-market freeze matters mainly in combination with a revenue shock.}
+\caption{Sobol indices of the health score for a representative company over the joint scenario space (solid: first-order; light: total). Large gaps indicate interactions: a debt-market freeze matters mainly together with a revenue shock.}
 \label{fig:sobol}
 \end{figure}
 
 \section{Implementation}
-The Python reference engine (NumPy) performs calibration, backtests and exports; a line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server and recomputes 5{,}000 paths per slider move. Golden runs exported from Python with identical pre-drawn shocks require agreement to $10^{-6}$ on eleven output series. A rule-based analyst turns each company's results into a credit-memo-style note (verdict, evidenced risks, buffers, scenario commentary, watch list) whose figures are taken directly from the simulation output.
+The Python reference engine (NumPy) performs calibration, experiments and exports. A line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server. Golden runs exported from Python with identical pre-drawn shocks must agree to $10^{-6}$ on eleven output series, the balance-sheet identity is checked by property-based tests, and the data pipeline is tested end to end on synthetic XBRL. The data are rebuilt weekly on free GitHub-hosted runners.
 
-\section{Limitations}
-The twin covers non-financial corporates; filers relying on custom taxonomies cannot be parsed with generic tags. Unconditional fans cannot anticipate regime breaks: Carnival's revenue fell about 99\%, beyond the $-70\%$ preset. Balance-sheet forecasts are weaker than revenue forecasts because financing decisions are discretionary and modelled as calibrated noise. Conformal rescaling corrects average coverage but not conditional coverage in crisis years. Using today's index members introduces survivorship bias: companies that failed before 2026 are absent from the sample, which likely flatters the cross-sectional result.
-
-\section{Conclusion}
-A transparent stock-and-flow twin calibrated from public filings, evaluated as a probabilistic forecaster without look-ahead, is useful less as a predictor of the next quarter than as an instrument for ranking structural fragility and exploring conditional scenarios. All code and data snapshots are open.
-
-\paragraph{AI use statement.} Software development, analysis and drafting were carried out with assistance from an AI coding assistant (Claude); the author reviewed the design, results and text.
-
-\begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{0pt}
-\bibitem{forrester1961} J.~W. Forrester. \emph{Industrial Dynamics}. MIT Press, 1961.
-\bibitem{sterman2000} J.~D. Sterman. \emph{Business Dynamics: Systems Thinking and Modeling for a Complex World}. McGraw-Hill, 2000.
-\bibitem{gneiting2007} T.~Gneiting and A.~E. Raftery. Strictly proper scoring rules, prediction, and estimation. \emph{JASA}, 102(477):359--378, 2007.
-\bibitem{vovk2005} V.~Vovk, A.~Gammerman and G.~Shafer. \emph{Algorithmic Learning in a Random World}. Springer, 2005.
-\bibitem{gibbs2021} I.~Gibbs and E.~Cand\`es. Adaptive conformal inference under distribution shift. \emph{NeurIPS}, 2021.
-\bibitem{saltelli2010} A.~Saltelli et al. Variance based sensitivity analysis of model output. \emph{Computer Physics Communications}, 181(2):259--270, 2010.
-\bibitem{altman1968} E.~I. Altman. Financial ratios, discriminant analysis and the prediction of corporate bankruptcy. \emph{Journal of Finance}, 23(4):589--609, 1968.
-\bibitem{damodaran2026} A.~Damodaran. Ratings, interest coverage ratios and default spread. NYU Stern, January 2026.
-\end{thebibliography}
 \end{document}

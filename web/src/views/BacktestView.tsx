@@ -31,7 +31,7 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           <i> filed</i> before its test date, so later restatements stay invisible, and nothing was tuned on the outcomes.</p>
       </Section>
 
-      <Section eyebrow="Finding 1" title="Frozen in February 2020, it ranked who would bleed cash">
+      <Section eyebrow="Finding 1" title="Frozen in February 2020, it ranked cash burn, mostly through persistence">
         <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 28 }}>
           <Metric label="Rank correlation" value={xs.spearman} format={(v) => `ρ ${v.toFixed(2)}`} foot={`95% CI ${fixed(xs.ci95[0], 2)}–${fixed(xs.ci95[1], 2)}`}
             info="Spearman correlation between the twin's demand-freeze health score (Feb 2020 data) and realized worst cumulative free cash flow, 2020Q1–2021Q2." />
@@ -46,6 +46,11 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           labelIds={["CCL", "RCL", "NCLH", "BA", "AAL", "MSFT", "GOOGL", "WMT", "LVS", "EXPE", "WYNN"]} onClick={onOpen} />
         <p className="muted" style={{ marginTop: 10, maxWidth: 760 }}>Every company receives the same generic shock, so this measures structural fragility, not who the
           pandemic actually hit. Walmart is the visible miss: fragile to a demand collapse it never suffered.</p>
+        <p className="muted" style={{ marginTop: 6, maxWidth: 760 }}>The research paper adds harder controls. A trailing free-cash-flow
+          margin ranks this outcome better (ρ ≈ 0.68), and against each company's own pre-2020 run-rate no balance-sheet model,
+          the twin included, ranks the shock. The twin's robust strength is transmission: fed the revenue that actually happened, it
+          identifies where a margin rule misjudges cash flow, in every year from 2014 to 2023.{" "}
+          <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</p>
       </Section>
 
       <CalibrationFinding cal={cal} />
