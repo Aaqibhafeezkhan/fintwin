@@ -18,6 +18,8 @@
 
 ## Results
 
+![The paper in one picture: who a crisis hits is mostly persistence; how a given shock becomes cash is where the twin adds information](docs/findings.png)
+
 All numbers below come from out-of-sample, point-in-time tests: the model sees only the filings that existed on the test date.
 
 | Test | Result |

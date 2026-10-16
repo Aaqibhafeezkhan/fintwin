@@ -29,6 +29,13 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         <h1 className="display h-l" style={{ margin: "8px 0 10px" }}>Does the twin know anything?</h1>
         <p className="lede">Every test below is out of sample and point-in-time. Each twin is calibrated only on facts
           <i> filed</i> before its test date, so later restatements stay invisible, and nothing was tuned on the outcomes.</p>
+        <figure style={{ margin: "24px 0 0" }}>
+          <img src={`${import.meta.env.BASE_URL}findings.png`} width={1900} height={838} loading="lazy"
+            style={{ width: "100%", height: "auto", borderRadius: 6, border: "1px solid var(--rule)" }}
+            alt="Left: rank correlation with 2020-21 cash burn. The twin reaches 0.40, Altman Z'' 0.31, the trailing free-cash-flow margin 0.68; for burn caused by the shock, the twin and Altman are near zero. Right: in every year 2014 to 2023, the twin explains where cash departs from a margin rule, pooled correlation 0.30." />
+          <figcaption className="muted" style={{ marginTop: 8, fontSize: 13 }}>The research paper in one picture.{" "}
+            <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</figcaption>
+        </figure>
       </Section>
 
       <Section eyebrow="Finding 1" title="Frozen in February 2020, it ranked cash burn, mostly through persistence">
