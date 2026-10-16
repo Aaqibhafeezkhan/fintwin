@@ -1,0 +1,47 @@
+"""Monte Carlo driver: shocks -> model -> distribution summaries."""
+from __future__ import annotations
+
+import numpy as np
+
+from ..model.ratings import RATINGS
+from ..model.sd_model import simulate
+from ..scenarios.presets import DEFAULT_LEVERS, build_scenario
+from .shocks import draw_shocks
+
+BANDS = [5, 25, 50, 75, 95]
+BAND_VARS = ["revenue", "ebitda", "fcf", "cash", "liquidity", "debt", "icr", "nd_ebitda", "health", "zscore"]
+
+
+def run(p: dict, knobs: dict | None = None, levers: dict | None = None, n_paths: int = 5000,
+        seed: int = 7, eps: np.ndarray | None = None) -> dict:
+    T = p["horizon"]
+    scn = build_scenario(knobs or {}, T)
+    lev = {**DEFAULT_LEVERS, **(levers or {})}
+    if eps is None:
+        eps = draw_shocks(p, n_paths, T, seed)
+    return simulate(p, scn, eps, lev)
+
+
+def summarize(out: dict) -> dict:
+    T = out["cash"].shape[1]
+    bands = {k: np.percentile(out[k], BANDS, axis=0).round(4).tolist() for k in BAND_VARS}
+    breach_by_q = out["breach"].mean(0)
+    final_rating = out["rating"][:, -1].astype(int)
+    rating_dist = np.bincount(final_rating, minlength=len(RATINGS)) / len(final_rating)
+    health_path_mean = out["health"].mean(1)
+    min_liq = out["liquidity"].min(1)
+    first_breach = np.where(out["breach"].any(1), out["breach"].argmax(1), -1)
+    return {
+        "bands": bands,
+        "p_breach_by_q": breach_by_q.round(4).tolist(),
+        "p_breach": float(breach_by_q[-1]),
+        "p_icr_below_1_5": float((out["icr"].min(1) < 1.5).mean()),
+        "p_downgrade_below_ig": float((out["rating"][:, -1] < 9).mean()),
+        "rating_dist": rating_dist.round(4).tolist(),
+        "health_score": float(np.median(health_path_mean)),
+        "health_p10": float(np.percentile(health_path_mean, 10)),
+        "min_liquidity_bands": np.percentile(min_liq, BANDS).tolist(),
+        "median_quarters_to_breach": float(np.median(first_breach[first_breach >= 0])) if (first_breach >= 0).any() else None,
+        "equity_needed_median": float(np.median(out["issued"].sum(1))),
+        "horizon": T,
+    }

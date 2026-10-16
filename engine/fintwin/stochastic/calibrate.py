@@ -1,0 +1,240 @@
+"""Calibrate model parameters from a company's own filing history (and FRED rates).
+
+Every parameter records how it was obtained in `p["_sources"]`, so the dashboard can show
+"estimated from 16 quarters of filings" versus "assumption" for each number.
+"""
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+from scipy import stats
+
+from ..data.facts import CompanyData
+
+DAYS_Q = 91.25
+LONG_RUN_GROWTH_Q = 0.012  # ~5% nominal p.a., the anchor that trend growth is shrunk toward
+
+
+def _clip(x, lo, hi, default):
+    x = float(x) if x is not None and np.isfinite(x) else default
+    return float(min(max(x, lo), hi))
+
+
+def _seasonal(rev: pd.Series, seasons: pd.Series) -> np.ndarray:
+    hist = rev.tail(32)
+    ma = hist.rolling(4, center=True).mean()
+    ratio = (hist / ma).groupby(seasons.loc[hist.index]).median()  # median: robust to crisis quarters
+    s = np.array([ratio.get(i, 1.0) for i in range(4)], dtype=float)
+    s = np.where(np.isfinite(s), s, 1.0)
+    return s / s.mean()
+
+
+FIXED_SHARE_PRIOR = 0.35  # typical share of operating costs that does not scale with revenue
+PRIOR_WEIGHT = 2.0
+
+
+def _fixed_variable_split(rev: np.ndarray, costs: np.ndarray) -> tuple[float, float]:
+    """Penalized least squares costs = F + v*rev, F >= 0.
+
+    When revenue barely moves the regression cannot tell fixed from variable costs, so the fit is shrunk
+    toward a 35% fixed-cost share; the data dominate once revenue has varied enough to identify the slope.
+    """
+    ratio = float(np.median(costs / rev))
+    v_prior = ratio * (1 - FIXED_SHARE_PRIOR)
+    scale = float(np.var(costs)) * len(costs) + 1e-9
+    best = (np.inf, 0.0, v_prior)
+    for v in np.arange(0.1, 1.051, 0.005):
+        F = max(float(np.mean(costs - v * rev)), 0.0)
+        sse = float(np.sum((costs - F - v * rev) ** 2)) / scale
+        obj = sse + PRIOR_WEIGHT * ((v - v_prior) / max(ratio, 1e-9)) ** 2
+        if obj < best[0]:
+            best = (obj, F, float(v))
+    return best[1], best[2]
+
+
+def _ar1(x: np.ndarray) -> tuple[float, float, np.ndarray]:
+    x = x[np.isfinite(x)]
+    if len(x) < 6:
+        return 0.0, float(np.std(x)) if len(x) else 0.05, x - x.mean() if len(x) else x
+    m = x.mean()
+    y, z = x[1:] - m, x[:-1] - m
+    phi = float(np.dot(y, z) / max(np.dot(z, z), 1e-12))
+    resid = y - phi * z
+    robust_sd = 1.4826 * float(np.median(np.abs(resid - np.median(resid))))  # MAD: crises go to the t tails
+    return phi, robust_sd, resid
+
+
+def fit_vasicek(short_rate: pd.Series) -> dict:
+    r = short_rate.dropna().values
+    a, b = np.polyfit(r[:-1], r[1:], 1)[::-1]
+    b = min(b, 0.995)
+    resid = r[1:] - (a + b * r[:-1])
+    return {
+        "kappa": _clip(1 - b, 0.01, 0.5, 0.05),
+        "theta": _clip(a / (1 - b), 0.01, 0.05, 0.03),
+        "sigma_r": _clip(np.std(resid, ddof=1), 0.001, 0.01, 0.004),
+    }
+
+
+def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
+    q = c.quarters.copy()
+    src: dict[str, str] = {}
+    rev = q["revenue"]
+    last = q.iloc[-1]
+    n_hist = len(q)
+
+    # ---- revenue process ----
+    seasonal = _seasonal(rev, q["season"])
+    deseason = rev / seasonal[q["season"].values]
+    g = np.log(deseason).diff().dropna()
+    g = g[np.isfinite(g)]
+    g_recent = g.tail(12)
+    mu_hist = float(np.median(g_recent)) if len(g_recent) else LONG_RUN_GROWTH_Q
+    mu = _clip(0.5 * mu_hist + 0.5 * LONG_RUN_GROWTH_Q, -0.04, 0.06, LONG_RUN_GROWTH_Q)
+    phi, sigma_g, resid_g = _ar1(g.tail(32).values)
+    phi = _clip(phi, 0.0, 0.8, 0.2)
+    sigma_g = _clip(sigma_g, 0.01, 0.35, 0.05)
+    src["mu"] = f"median deseasonalized log-growth of last {len(g_recent)} quarters, shrunk 50% toward 1.2%/q"
+    src["sigma_g"] = f"robust (MAD) AR(1) residual s.d. over {min(len(g), 32)} quarters"
+
+    # Student-t tail thickness on standardized growth residuals
+    df = 30.0
+    if len(resid_g) >= 12:
+        try:
+            z = resid_g / max(sigma_g, 1e-9)
+            df = _clip(stats.t.fit(z, floc=0, fscale=1)[0], 3.0, 30.0, 30.0)
+        except Exception:
+            pass
+    src["t_df"] = "MLE Student-t fit on standardized growth residuals"
+
+    # ---- cost structure: operating leverage ----
+    ebitda = q["operating_income"] + q["da"].fillna(0)
+    costs = (rev - ebitda)
+    win = pd.DataFrame({"rev": rev, "costs": costs}).dropna().tail(16)
+    F, v = _fixed_variable_split(win["rev"].values, win["costs"].values)
+    src["F,v"] = f"constrained regression of cash operating costs on revenue, {len(win)} quarters"
+    m_resid = (win["costs"] - F - v * win["rev"]) / win["rev"]
+    rho_m, sigma_m, resid_m = _ar1(m_resid.values)
+    rho_m = _clip(rho_m, 0.0, 0.9, 0.5)
+    sigma_m = _clip(sigma_m, 0.002, 0.08, 0.01)
+    margin_hist = (ebitda / rev).tail(16)
+    target_margin = float(np.nanmedian(margin_hist)) - 0.05
+
+    # correlation between demand and margin shocks (aligned tails)
+    n = min(len(resid_g), len(resid_m))
+    rho_gm = 0.0
+    if n >= 8:
+        rho_gm = _clip(np.corrcoef(resid_g[-n:], resid_m[-n:])[0, 1], -0.8, 0.8, 0.0)
+
+    # ---- balance-sheet ratios ----
+    t4 = q.tail(4)
+    cost_t4 = (F + v * t4["revenue"]).clip(lower=1e-9)
+    dso = _clip((t4["receivables"] / t4["revenue"]).mean() * DAYS_Q, 0, 200, 30)
+    dio = _clip((t4["inventory"] / cost_t4).mean() * DAYS_Q, 0, 600, 0)
+    dpo = _clip((t4["payables"] / cost_t4).mean() * DAYS_Q, 0, 365, 45)
+
+    t8 = q.tail(8)
+    ppe_prev = q["ppe"].shift(1).tail(8)
+    dep_rate = _clip(np.nanmedian(t8["da"] / ppe_prev), 0.005, 0.15, 0.03)
+    capex_ratio = _clip(np.nanmedian(t8["capex"] / t8["revenue"]), 0.0, 0.6, 0.05)
+    sbc_ratio = _clip(np.nanmedian(t8["sbc"] / t8["revenue"]), 0.0, 0.3, 0.0)
+
+    nwc = q["receivables"] + q["inventory"] - q["payables"]
+    explained = q["net_income"] + q["da"] + q["sbc"] - nwc.diff()
+    ocf_ratio = _clip(np.nanmedian(((q["cfo"] - explained) / rev).tail(8)), -0.4, 0.4, 0.0)
+    src["ocf_ratio"] = "median unexplained operating cash flow / revenue (e.g. content spend, deferred revenue)"
+
+    ebt = t8["net_income"] + t8["tax"]
+    tax_rate = _clip(t8["tax"].sum() / ebt.sum() if ebt.sum() > 0 else np.nan, 0.05, 0.30, 0.21)
+
+    # ---- financing ----
+    debt0 = float(last["total_debt"])
+    pair = q[["interest_expense", "total_debt"]].dropna()
+    pair = pair[pair["total_debt"] > 0].tail(4)
+    if len(pair):
+        coupon = _clip((pair["interest_expense"] / pair["total_debt"]).mean() * 4, 0.005, 0.12, 0.04)
+        src["coupon"] = f"interest expense / debt, last {len(pair)} reported quarters (to {pair.index[-1].date()})"
+    else:
+        coupon = 0.04
+        src["coupon"] = "assumption: 4% (no interest expense reported)"
+
+    div_q = float(q["dividends"].tail(2).mean())
+    fcf8 = (t8["cfo"] - t8["capex"]).clip(lower=0).sum()
+    bb_ratio = _clip(t8["buybacks"].sum() / fcf8 if fcf8 > 0 else 0.0, 0.0, 1.2, 0.0)
+
+    rev_ttm = float(rev.tail(4).sum())
+    cap_recent = q["revolver_capacity"].dropna()
+    if len(cap_recent) and (q.index[-1] - cap_recent.index[-1]).days < 730:
+        revolver_cap = float(cap_recent.iloc[-1])
+        src["revolver_cap"] = "LineOfCreditFacilityMaximumBorrowingCapacity tag"
+    else:
+        revolver_cap = 0.08 * rev_ttm
+        src["revolver_cap"] = "assumption: committed facility = 8% of TTM revenue"
+
+    cash0 = float(last["cash"] + last["short_investments"])
+    quarterly_costs = F + v * rev.tail(4).mean()
+    cash_floor = 0.2 * quarterly_costs
+    src["cash_floor"] = "assumption: minimum operating cash = 20% of a quarter's cash costs"
+
+    # maturity ladder (annual -> quarterly). Stale or missing ladders fall back to a 6-year average life.
+    ladder_q = np.zeros(horizon)
+    fresh = c.maturities_date and (q.index[-1] - pd.Timestamp(c.maturities_date)).days <= 450
+    if fresh and sum(c.maturities) > 0:
+        elapsed_q = int(round((q.index[-1] - pd.Timestamp(c.maturities_date)).days / DAYS_Q))
+        yearly = list(c.maturities[:5])
+        per_q = np.repeat(np.array(yearly) / 4.0, 4)[elapsed_q:]
+        ladder_q[: min(horizon, len(per_q))] = per_q[:horizon]
+        # short-term borrowings / commercial paper not in the ladder roll every quarter
+        st = float(last["short_borrowings"] + last["commercial_paper"])
+        ladder_q[:4] += st / 4.0
+        src["maturities"] = f"XBRL maturity schedule as of {c.maturities_date}"
+    else:
+        ladder_q[:] = debt0 / 24.0
+        src["maturities"] = "assumption: uniform amortization, 6-year average life (ladder missing/stale)"
+    ladder_q = np.minimum(ladder_q, debt0)
+
+    # ---- rates ----
+    m = macro[macro.index <= q.index[-1] + pd.Timedelta(days=45)]
+    vas = fit_vasicek(m["short_rate"].loc["2000":])
+    term_premium = _clip(float((m["long_rate"] - m["short_rate"]).tail(40).median()), 0.0, 0.03, 0.012)
+
+    # ---- initial stocks ----
+    ar0, inv0, ap0 = float(last["receivables"]), float(last["inventory"]), float(last["payables"])
+    ppe0 = float(last["ppe"]) if np.isfinite(last["ppe"]) else 0.0
+    equity0 = float(last["equity"])
+    assets0 = float(last["assets"])
+    liabilities0 = float(last["liabilities"]) if np.isfinite(last["liabilities"]) else assets0 - equity0
+    other_net0 = equity0 + ap0 + debt0 - (cash0 + ar0 + inv0 + ppe0)
+    other_liab0 = max(liabilities0 - ap0 - debt0, 0.0)
+    ca, cl = last["current_assets"], last["current_liabilities"]
+    wc_other0 = float((ca - cl) - (cash0 + ar0 + inv0 - ap0)) if np.isfinite(ca) and np.isfinite(cl) else 0.0
+    retained0 = float(last["retained_earnings"]) if np.isfinite(last["retained_earnings"]) else 0.0
+
+    hist4 = q.tail(4)
+    ebit4 = hist4["operating_income"].fillna(0).values
+    ebitda4 = (hist4["operating_income"] + hist4["da"].fillna(0)).fillna(0).values
+    int4 = hist4["interest_expense"].fillna(q["total_debt"].tail(4) * coupon / 4).values
+
+    season_next = (int(q["season"].iloc[-1]) + 1) % 4
+    base_rev0 = float(deseason.iloc[-1])
+
+    p = {
+        "ticker": c.ticker, "name": c.name, "last_quarter": q.index[-1].date().isoformat(), "horizon": horizon,
+        "history_quarters": n_hist,
+        "seasonal": seasonal.tolist(), "season0": season_next, "base_rev0": base_rev0,
+        "mu": mu, "phi": phi, "sigma_g": sigma_g, "g0": _clip(g.iloc[-1] if len(g) else mu, mu - 0.1, mu + 0.1, mu),
+        "t_df": df, "rho_gm": rho_gm,
+        "F": F, "v": v, "rho_m": rho_m, "sigma_m": sigma_m, "infl": 0.006,
+        "target_margin": target_margin, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
+        "dso": dso, "dio": dio, "dpo": dpo, "dep_rate": dep_rate, "capex_ratio": capex_ratio,
+        "maint_capex": 0.8, "sbc_ratio": sbc_ratio, "ocf_ratio": ocf_ratio, "tax_rate": tax_rate,
+        "coupon": coupon, "floating": 0.1, "div_q": div_q, "bb_ratio": bb_ratio,
+        "revolver_cap": revolver_cap, "cash_floor": cash_floor, "maturities_q": ladder_q.tolist(),
+        "r0": float(m["short_rate"].iloc[-1]), "term_premium": term_premium, **vas,
+        "cash0": cash0, "ar0": ar0, "inv0": inv0, "ap0": ap0, "ppe0": ppe0, "debt0": debt0,
+        "equity0": equity0, "other_net0": other_net0, "other_liab0": other_liab0,
+        "wc_other0": wc_other0, "retained0": retained0,
+        "ebit_ttm0": ebit4.tolist(), "ebitda_ttm0": ebitda4.tolist(), "interest_ttm0": int4.tolist(),
+        "_sources": src,
+    }
+    return p
