@@ -178,6 +178,7 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             row["h_sector_adj"] = c["sector_adjusted"]["health"]
             row |= c["features"]
             row |= {f"real_{k}": v for k, v in (c.get("realized") or {}).items()}
+            row |= {f"s_{k}": v for k, v in (c.get("structural") or {}).items()}
             xs.append(row)
         for pr in r.get("panel", []):
             row = {"ticker": r["ticker"], "year": int(pr["origin"][:4])}
@@ -189,6 +190,7 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             }
             row |= pr["features"]
             row |= {f"y_{k}": v for k, v in (pr.get("outcome") or {}).items()}
+            row |= {f"s_{k}": v for k, v in (pr.get("structural") or {}).items()}
             panel.append(row)
         for fr in r.get("forecasts", []):
             fc.append({"ticker": r["ticker"], **fr})
@@ -636,6 +638,60 @@ def forecast_section(fc: pd.DataFrame) -> dict:
     return out
 
 
+def structural_section(df: pd.DataFrame, by_year: bool = False) -> dict:
+    """Realized revenue fed into the twin: does it translate revenue into cash better than simple pass-through rules?
+
+    For each cash measure (free cash flow, operating cash flow) the twin's worst cumulative value is compared with
+    the realized one and with two rules that see the same realized revenue: the trailing margin applied to it and,
+    for free cash flow, the trailing run-rate. The incremental test correlates the twin's deviation from the margin
+    rule with the realized deviation from the margin rule, i.e. whether the twin knows where pass-through fails.
+    """
+    if "s_real_fcf" not in df:
+        return {}
+    d = df[df["s_real_fcf"].notna()].reset_index(drop=True)
+    firms = d["ticker"].to_numpy() if by_year else None
+    b_ = B_PANEL if by_year else B
+    out: dict = {"n": int(len(d)), "n_firms": int(d["ticker"].nunique())}
+    subsets = {"all": np.ones(len(d), bool), "revenue_down_10pct": (d["s_rev_change"] < -10).to_numpy()}
+    for name, keep in subsets.items():
+        g = d[keep].reset_index(drop=True)
+        f = None if firms is None else firms[keep]
+        res: dict = {"n": int(len(g))}
+        for var in ("fcf", "cfo"):
+            real, twin, marg = (g[f"s_{k}_{var}"].to_numpy(float) for k in ("real", "twin", "margin"))
+            e: dict = {
+                "rho_twin": rho(twin, real),
+                "rho_margin": rho(marg, real),
+                "twin_minus_margin": paired(rho, twin, marg, real, f, b_),
+                "mae_twin": float(np.nanmedian(np.abs(twin - real))),
+                "mae_margin": float(np.nanmedian(np.abs(marg - real))),
+                "rho_incremental": rho(twin - marg, real - marg),
+                "rho_incremental_ci": ci(boot(rho, [twin - marg, real - marg], f, b=b_)),
+            }
+            err_t, err_m = np.abs(twin - real), np.abs(marg - real)
+            e["share_twin_closer"] = float(np.nanmean(err_t < err_m))
+            if var == "fcf":
+                rr = g["s_runrate_fcf"].to_numpy(float)
+                e["rho_runrate"] = rho(rr, real)
+                e["twin_minus_runrate"] = paired(rho, twin, rr, real, f, b_)
+            res[var] = e
+        out[name] = res
+    if by_year:
+        out["by_year"] = {
+            int(y): {
+                "n": int(len(gy)),
+                "rho_incremental_cfo": rho(
+                    (gy["s_twin_cfo"] - gy["s_margin_cfo"]).to_numpy(float),
+                    (gy["s_real_cfo"] - gy["s_margin_cfo"]).to_numpy(float),
+                ),
+                "mae_twin_cfo": float(np.nanmedian(np.abs(gy["s_twin_cfo"] - gy["s_real_cfo"]))),
+                "mae_margin_cfo": float(np.nanmedian(np.abs(gy["s_margin_cfo"] - gy["s_real_cfo"]))),
+            }
+            for y, gy in d.groupby("year")
+        }
+    return out
+
+
 def main(cache: Path) -> dict:
     xs, panel, fc, errors = load(cache)
     res: dict = {
@@ -644,6 +700,10 @@ def main(cache: Path) -> dict:
         **({"covid_abnormal": covid_section(xs, "real_abn_burn")} if "real_abn_burn" in xs else {}),
         "bankruptcy": bankruptcy_section(xs),
         "panel": panel_section(panel),
+        "structural": {
+            "covid": structural_section(xs[~xs["bankrupt"]].reset_index(drop=True)),
+            "panel": structural_section(panel, by_year=True),
+        },
         "forecasts": forecast_section(fc),
         "errors": errors,
     }
