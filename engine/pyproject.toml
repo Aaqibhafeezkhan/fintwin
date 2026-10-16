@@ -60,4 +60,5 @@ check_untyped_defs = false
 # Network clients, the optional LLM memo, the optional local API and CLI orchestration are exercised by the
 # weekly data workflow, not by unit tests; everything else is measured.
 omit = ["fintwin/data/edgar.py", "fintwin/data/fred.py", "fintwin/memo.py", "fintwin/api.py", "fintwin/pipeline.py",
-        "fintwin/backtest/walk_forward.py", "fintwin/backtest/batch.py"]
+        "fintwin/backtest/walk_forward.py", "fintwin/backtest/batch.py", "fintwin/research/experiments.py",
+        "fintwin/research/__main__.py"]

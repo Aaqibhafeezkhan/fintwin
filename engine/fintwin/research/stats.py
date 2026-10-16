@@ -17,6 +17,7 @@ from scipy.stats import rankdata, spearmanr
 
 OUT = Path(__file__).resolve().parents[3] / "docs" / "paper" / "research.json"
 B = 2000
+B_PANEL = 500  # firm-clustered panel bootstraps are slower
 RNG = np.random.default_rng(20200220)
 
 # name -> (column, sign): risk = sign * value
@@ -361,10 +362,12 @@ def panel_section(p: pd.DataFrame) -> dict:
             sel = m & np.isfinite(x)
             entry: dict = {"auc": auc(x[sel], y[sel]), "n": int(sel.sum())}
             if name == "severe_burn":
-                entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=500))
+                entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=B_PANEL))
                 if k != "twin":
                     both = sel & np.isfinite(twin)
-                    d = boot(lambda a, b, t: auc(a, t) - auc(b, t), [twin[both], x[both], y[both]], firms[both], b=500)
+                    d = boot(
+                        lambda a, b, t: auc(a, t) - auc(b, t), [twin[both], x[both], y[both]], firms[both], b=B_PANEL
+                    )
                     entry["twin_minus"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
             uni[k] = entry
         res["univariate"] = uni
@@ -406,7 +409,9 @@ def panel_section(p: pd.DataFrame) -> dict:
                         -np.mean(yy * np.log(np.clip(v, 1e-6, 1)) + (1 - yy) * np.log(np.clip(1 - v, 1e-6, 1)))
                     ),
                 }
-            d = boot(lambda a, b, t: auc(a, t) - auc(b, t), [P["benchmarks_plus_twin"], P["benchmarks"], yy], ff, b=500)
+            d = boot(
+                lambda a, b, t: auc(a, t) - auc(b, t), [P["benchmarks_plus_twin"], P["benchmarks"], yy], ff, b=B_PANEL
+            )
             oos["delta_auc_twin_added"] = {"diff": float(np.nanmean(d)), "ci": ci(d), "p": p_two_sided(d)}
             oos["n_test"] = int(len(yy))
             oos["test_years"] = [yr for yr in out["years"] if ((p["year"] <= yr - 3).to_numpy() & m).sum() >= 300]
