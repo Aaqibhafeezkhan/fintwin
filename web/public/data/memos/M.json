@@ -1,0 +1,182 @@
+{
+ "ticker": "M",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-08-01",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Macy's, Inc.",
+  "ticker": "M",
+  "sector": "Department stores",
+  "last_reported_quarter": "2026-08-01",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$21.9B",
+   "cash_and_short_term_investments": "$1.3B",
+   "total_debt": "$2.4B",
+   "synthetic_rating_today": "AAA",
+   "debt_maturing_next_4_quarters": "$17M",
+   "committed_credit_facility": "$1.8B",
+   "customer_deposits_days_of_revenue": 5
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$1.2B",
+   "variable_cost_share_of_revenue_pct": 70,
+   "trend_growth_pct_per_year": 1.0,
+   "demand_volatility_pct_per_quarter": 2.7,
+   "average_cost_of_debt_pct": 5.4,
+   "revenue_sensitivity_to_gdp": 2.5
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 20,
+    "prob_sub_investment_grade_at_horizon_pct": 15
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 21,
+    "prob_sub_investment_grade_at_horizon_pct": 15
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 51,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 98,
+    "prob_sub_investment_grade_at_horizon_pct": 17
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 51,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 97,
+    "prob_sub_investment_grade_at_horizon_pct": 17
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 13,
+    "health_score_unluckiest_10pct": 11,
+    "prob_liquidity_breach_pct": 0.1,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 95
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 52,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 93,
+    "prob_sub_investment_grade_at_horizon_pct": 21
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 20,
+    "prob_sub_investment_grade_at_horizon_pct": 15
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 48,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 92,
+    "prob_sub_investment_grade_at_horizon_pct": 30
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "18pp cost increase",
+    "shock_for_10pct_breach": "17pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -23.1,
+   "Costs +5pp": -12.7,
+   "Inventory +45 days": -10.1,
+   "Spreads +400bp": -0.5,
+   "Rates +300bp": -0.5,
+   "Debt markets shut 4q": -0.0
+  },
+  "global_sensitivity_total_order_pct": {
+   "Revenue shock": 76,
+   "Inventory build-up": 22,
+   "Variable costs": 17,
+   "Debt-market freeze": 4,
+   "Interest rates": 0,
+   "Credit spreads": 0
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 77/100 under baseline, 13 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Macy's, Inc. enters the simulation with $1.3B of cash and short-term investments against $2.4B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 77, with the unluckiest tenth of paths at 67 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 76% of the variance of the health score across the stress space, and interactions between shocks add 19%.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 23.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 24% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 20% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  }
+ ],
+ "resilience": [
+  "Cash of $1.3B covers the next four quarters of maturities ($17M).",
+  "A committed credit facility of about $1.8B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (AAA), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 13 (−64 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 95%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 59 (−18 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 30%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 63 (−14 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 17%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 64 (−13 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 17%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 64 (−13 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 21%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 77 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 15%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 77 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 15%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $1.3B vs $17M).",
+  "Variable-cost ratio versus the calibrated 70% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

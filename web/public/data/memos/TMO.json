@@ -1,0 +1,170 @@
+{
+ "ticker": "TMO",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-27",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "THERMO FISHER SCIENTIFIC INC.",
+  "ticker": "TMO",
+  "sector": "Life sciences tools",
+  "last_reported_quarter": "2026-06-27",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$46.3B",
+   "cash_and_short_term_investments": "$4.1B",
+   "total_debt": "$42.5B",
+   "synthetic_rating_today": "A+",
+   "debt_maturing_next_4_quarters": "$3.4B",
+   "committed_credit_facility": "$3.7B",
+   "customer_deposits_days_of_revenue": 23
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$2.4B",
+   "variable_cost_share_of_revenue_pct": 58,
+   "trend_growth_pct_per_year": 4.3,
+   "demand_volatility_pct_per_quarter": 3.8,
+   "average_cost_of_debt_pct": 3.7,
+   "revenue_sensitivity_to_gdp": 0.7
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 68,
+    "health_score_unluckiest_10pct": 63,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 62,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 58,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 58,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 39,
+    "health_score_unluckiest_10pct": 34,
+    "prob_liquidity_breach_pct": 0.1,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 20
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 58,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 62,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 65,
+    "health_score_unluckiest_10pct": 60,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "33pp cost increase",
+    "shock_for_10pct_breach": "30pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -7.2,
+   "Costs +5pp": -2.7,
+   "Rates +300bp": -2.1,
+   "Spreads +400bp": -1.8,
+   "Inventory +45 days": -1.2,
+   "Debt markets shut 4q": -0.4
+  }
+ },
+ "verdict": "Watch",
+ "headline": "Watch credit profile: health 68/100 under baseline, 39 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "THERMO FISHER SCIENTIFIC INC. enters the simulation with $4.1B of cash and short-term investments against $42.5B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 68, with the unluckiest tenth of paths at 63 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -7.2 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 7.2 points and raises breach odds by 0.0 percentage points; fixed costs are about 26% of the cost base, so losses scale faster than revenue."
+  }
+ ],
+ "resilience": [
+  "Cash of $4.1B covers the next four quarters of maturities ($3.4B).",
+  "A committed credit facility of about $3.7B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A+), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 39 (−29 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 20%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 63 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 63 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 64 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 65 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 67 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 67 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $4.1B vs $3.4B).",
+  "Variable-cost ratio versus the calibrated 58% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

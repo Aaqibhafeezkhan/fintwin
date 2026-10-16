@@ -1,0 +1,191 @@
+{
+ "ticker": "BA",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "BOEING CO",
+  "ticker": "BA",
+  "sector": "Aerospace",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$94.0B",
+   "cash_and_short_term_investments": "$20.0B",
+   "total_debt": "$45.9B",
+   "synthetic_rating_today": "B+",
+   "debt_maturing_next_4_quarters": "$6.4B",
+   "committed_credit_facility": "$7.5B",
+   "customer_deposits_days_of_revenue": 237
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$8.0B",
+   "variable_cost_share_of_revenue_pct": 60,
+   "trend_growth_pct_per_year": 4.6,
+   "demand_volatility_pct_per_quarter": 12.4,
+   "average_cost_of_debt_pct": 5.1,
+   "revenue_sensitivity_to_gdp": 2.1
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 37,
+    "health_score_unluckiest_10pct": 10,
+    "prob_liquidity_breach_pct": 0.7,
+    "prob_interest_coverage_below_1_5x_pct": 82,
+    "prob_sub_investment_grade_at_horizon_pct": 51
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 37,
+    "health_score_unluckiest_10pct": 10,
+    "prob_liquidity_breach_pct": 0.7,
+    "prob_interest_coverage_below_1_5x_pct": 83,
+    "prob_sub_investment_grade_at_horizon_pct": 51
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 24,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 0.8,
+    "prob_interest_coverage_below_1_5x_pct": 96,
+    "prob_sub_investment_grade_at_horizon_pct": 53
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 24,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 0.8,
+    "prob_interest_coverage_below_1_5x_pct": 95,
+    "prob_sub_investment_grade_at_horizon_pct": 53
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 5,
+    "health_score_unluckiest_10pct": 3,
+    "prob_liquidity_breach_pct": 98.8,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 77
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 26,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 1.0,
+    "prob_interest_coverage_below_1_5x_pct": 94,
+    "prob_sub_investment_grade_at_horizon_pct": 54
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 36,
+    "health_score_unluckiest_10pct": 8,
+    "prob_liquidity_breach_pct": 4.2,
+    "prob_interest_coverage_below_1_5x_pct": 83,
+    "prob_sub_investment_grade_at_horizon_pct": 50
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 26,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 1.1,
+    "prob_interest_coverage_below_1_5x_pct": 93,
+    "prob_sub_investment_grade_at_horizon_pct": 55
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "24pp cost increase",
+    "shock_for_10pct_breach": "17pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -15.9,
+   "Costs +5pp": -9.4,
+   "Inventory +45 days": -3.8,
+   "Debt markets shut 4q": -0.9,
+   "Spreads +400bp": -0.7,
+   "Rates +300bp": -0.2
+  },
+  "global_sensitivity_total_order_pct": {
+   "Revenue shock": 81,
+   "Debt-market freeze": 20,
+   "Inventory build-up": 10,
+   "Variable costs": 8,
+   "Credit spreads": 0,
+   "Interest rates": 0
+  }
+ },
+ "verdict": "Strained",
+ "headline": "Strained credit profile: health 37/100 under baseline, 5 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "BOEING CO enters the simulation with $20.0B of cash and short-term investments against $45.9B of debt and a synthetic B+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 37, with the unluckiest tenth of paths at 10 or below and a 0.7% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 81% of the variance of the health score across the stress space, and interactions between shocks add 27%.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 15.9 points and raises breach odds by 0.1 percentage points; fixed costs are about 36% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 82% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  },
+  {
+   "risk": "Customer-deposit refunds",
+   "evidence": "About 237 days of revenue are held as customer deposits; a demand stop turns them into a cash outflow on top of operating losses."
+  },
+  {
+   "risk": "Downgrade to speculative grade",
+   "evidence": "51% of baseline paths end the horizon below BBB."
+  }
+ ],
+ "resilience": [
+  "Cash of $20.0B covers the next four quarters of maturities ($6.4B).",
+  "A committed credit facility of about $7.5B backstops liquidity (size assumed: not tagged in filings).",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach.",
+  "It would take a revenue collapse of more than half to make a cash shortfall likely."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 5 (−32 vs baseline), breach probability 98.8%, sub-investment-grade at horizon 77%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 24 (−13 vs baseline), breach probability 0.8%, sub-investment-grade at horizon 53%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 24 (−13 vs baseline), breach probability 0.8%, sub-investment-grade at horizon 53%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 26 (−11 vs baseline), breach probability 1.1%, sub-investment-grade at horizon 55%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 26 (−11 vs baseline), breach probability 1.0%, sub-investment-grade at horizon 54%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 36 (−1 vs baseline), breach probability 4.2%, sub-investment-grade at horizon 50%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 37 (+0 vs baseline), breach probability 0.7%, sub-investment-grade at horizon 51%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $20.0B vs $6.4B).",
+  "Variable-cost ratio versus the calibrated 60% of revenue: a sustained rise signals margin squeeze.",
+  "Customer-deposit balance: falling deposits are the earliest sign of weakening forward demand.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

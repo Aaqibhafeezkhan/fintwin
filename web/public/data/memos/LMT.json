@@ -1,0 +1,175 @@
+{
+ "ticker": "LMT",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-28",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "LOCKHEED MARTIN CORP",
+  "ticker": "LMT",
+  "sector": "Defense",
+  "last_reported_quarter": "2026-06-28",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$77.0B",
+   "cash_and_short_term_investments": "$3.8B",
+   "total_debt": "$20.5B",
+   "synthetic_rating_today": "AA",
+   "debt_maturing_next_4_quarters": "$3.4B",
+   "committed_credit_facility": "$6.2B",
+   "customer_deposits_days_of_revenue": 53
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$3.8B",
+   "variable_cost_share_of_revenue_pct": 67,
+   "trend_growth_pct_per_year": 4.9,
+   "demand_volatility_pct_per_quarter": 5.3,
+   "average_cost_of_debt_pct": 5.4,
+   "revenue_sensitivity_to_gdp": 0.5
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 65,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 73,
+    "health_score_unluckiest_10pct": 64,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 54,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 66,
+    "health_score_unluckiest_10pct": 53,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 15,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 100.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 36
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 54,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_sub_investment_grade_at_horizon_pct": 5
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 72,
+    "health_score_unluckiest_10pct": 65,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 68,
+    "health_score_unluckiest_10pct": 58,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 4
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "19pp cost increase",
+    "shock_for_10pct_breach": "16pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -12.2,
+   "Costs +5pp": -5.9,
+   "Inventory +45 days": -3.4,
+   "Debt markets shut 4q": -0.9,
+   "Rates +300bp": -0.6,
+   "Spreads +400bp": -0.5
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 74/100 under baseline, 15 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "LOCKHEED MARTIN CORP enters the simulation with $3.8B of cash and short-term investments against $20.5B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 74, with the unluckiest tenth of paths at 65 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -12.2 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 12.2 points and raises breach odds by 0.0 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Customer-deposit refunds",
+   "evidence": "About 53 days of revenue are held as customer deposits; a demand stop turns them into a cash outflow on top of operating losses."
+  }
+ ],
+ "resilience": [
+  "Cash of $3.8B covers the next four quarters of maturities ($3.4B).",
+  "A committed credit facility of about $6.2B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (AA), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 15 (−59 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 36%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 66 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 67 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 5%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 67 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 68 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 72 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 73 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $3.8B vs $3.4B).",
+  "Variable-cost ratio versus the calibrated 67% of revenue: a sustained rise signals margin squeeze.",
+  "Customer-deposit balance: falling deposits are the earliest sign of weakening forward demand.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

@@ -1,0 +1,173 @@
+{
+ "ticker": "DUK",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-03-31",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Duke Energy CORP",
+  "ticker": "DUK",
+  "sector": "Utilities",
+  "last_reported_quarter": "2026-03-31",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$32.5B",
+   "cash_and_short_term_investments": "$2.1B",
+   "total_debt": "$80.5B",
+   "synthetic_rating_today": "BB+",
+   "debt_maturing_next_4_quarters": "$8.6B",
+   "committed_credit_facility": "$2.6B",
+   "customer_deposits_days_of_revenue": 0
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$1.5B",
+   "variable_cost_share_of_revenue_pct": 33,
+   "trend_growth_pct_per_year": 7.5,
+   "demand_volatility_pct_per_quarter": 5.2,
+   "average_cost_of_debt_pct": 4.6,
+   "revenue_sensitivity_to_gdp": 1.2
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 35,
+    "health_score_unluckiest_10pct": 31,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_sub_investment_grade_at_horizon_pct": 14
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 34,
+    "health_score_unluckiest_10pct": 30,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 4,
+    "prob_sub_investment_grade_at_horizon_pct": 22
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 33,
+    "health_score_unluckiest_10pct": 27,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 12,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 34,
+    "health_score_unluckiest_10pct": 27,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 8,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 6,
+    "health_score_unluckiest_10pct": 3,
+    "prob_liquidity_breach_pct": 100.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 85
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 33,
+    "health_score_unluckiest_10pct": 28,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 6,
+    "prob_sub_investment_grade_at_horizon_pct": 18
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 32,
+    "health_score_unluckiest_10pct": 25,
+    "prob_liquidity_breach_pct": 30.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 34,
+    "health_score_unluckiest_10pct": 29,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_sub_investment_grade_at_horizon_pct": 11
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "77% revenue drop",
+    "shock_for_10pct_breach": "64% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "30pp cost increase",
+    "shock_for_10pct_breach": "25pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -5.5,
+   "Debt markets shut 4q": -2.8,
+   "Rates +300bp": -1.2,
+   "Spreads +400bp": -0.7,
+   "Inventory +45 days": -0.5,
+   "Costs +5pp": -0.5
+  }
+ },
+ "verdict": "Strained",
+ "headline": "Strained credit profile: health 35/100 under baseline, 6 under demand freeze; the company breaks (50% breach odds) at a 77% revenue drop.",
+ "summary": "Duke Energy CORP enters the simulation with $2.1B of cash and short-term investments against $80.5B of debt and a synthetic BB+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 35, with the unluckiest tenth of paths at 31 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -5.5 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 5.5 points and raises breach odds by 0.1 percentage points; fixed costs are about 36% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Refinancing wall",
+   "evidence": "$8.6B of debt matures in the next four quarters against $2.1B of cash; repayment depends on continued market access."
+  }
+ ],
+ "resilience": [
+  "A committed credit facility of about $2.6B backstops liquidity (size assumed: not tagged in filings).",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach.",
+  "It would take a revenue collapse of more than half to make a cash shortfall likely."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 6 (−29 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 85%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 32 (−3 vs baseline), breach probability 30.0%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 33 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 33 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 18%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 34 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 34 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 11%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 34 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 22%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $2.1B vs $8.6B).",
+  "Variable-cost ratio versus the calibrated 33% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

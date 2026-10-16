@@ -30,7 +30,7 @@ export type Company = {
 
 export type Memo = {
   ticker: string; generated_by: string; as_of: string; attempts: number; unverified_numbers: number[];
-  fact_sheet: unknown; verdict: "Strong" | "Adequate" | "Watch" | "Weak" | "Distressed"; headline: string; summary: string;
+  fact_sheet: unknown; verdict: "Strong" | "Adequate" | "Healthy" | "Watch" | "Strained" | "Weak" | "Distressed"; headline: string; summary: string;
   key_risks: { risk: string; evidence: string }[]; resilience: string[]; scenario_notes: { scenario: string; note: string }[];
   watch_list: string[];
 };

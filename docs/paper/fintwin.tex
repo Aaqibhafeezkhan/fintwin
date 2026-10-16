@@ -111,7 +111,7 @@ Feeding the realized revenue path into the twin isolates its mechanics from its 
 \end{figure}
 
 \section{Implementation}
-The Python reference engine (NumPy) performs calibration, backtests and exports; a line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server and recomputes 5{,}000 paths per slider move. Golden runs exported from Python with identical pre-drawn shocks require agreement to $10^{-6}$ on eleven output series. A build-time language-model analyst writes credit memos from a fact sheet of simulation outputs; a deterministic checker matches every figure in each memo against the fact sheet and flags unmatched figures.
+The Python reference engine (NumPy) performs calibration, backtests and exports; a line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server and recomputes 5{,}000 paths per slider move. Golden runs exported from Python with identical pre-drawn shocks require agreement to $10^{-6}$ on eleven output series. A rule-based analyst turns each company's results into a credit-memo-style note (verdict, evidenced risks, buffers, scenario commentary, watch list) whose figures are taken directly from the simulation output.
 
 \section{Limitations}
 The twin covers non-financial corporates; filers relying on custom taxonomies cannot be parsed with generic tags. Unconditional fans cannot anticipate regime breaks: Carnival's revenue fell about 99\%, beyond the $-70\%$ preset. Balance-sheet forecasts are weaker than revenue forecasts because financing decisions are discretionary and modelled as calibrated noise. Conformal rescaling corrects average coverage but not conditional coverage in crisis years.

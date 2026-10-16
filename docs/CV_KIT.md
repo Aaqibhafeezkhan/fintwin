@@ -9,7 +9,7 @@
 * Built FinTwin, an open-source digital twin of public companies' finances from SEC XBRL filings. It is a stock-and-flow (system dynamics) model with 9 balance-sheet stocks and 4 feedback loops, stress-tested with calibrated Monte Carlo; live dashboard and 8-page technical preprint.
 * Validated on 7,800+ point-in-time, out-of-sample forecasts across 94 companies (2013–2025). Revenue forecasts beat a seasonal random walk by 32% (CRPS), and online conformal calibration raised 90%-interval coverage from 68% to 90%.
 * Frozen on pre-COVID filings, the twin's fragility ranking of 88 companies matched realized 2020–21 cash burn (Spearman ρ = 0.51, p < 10⁻⁶). None of its most robust names suffered severe burn, versus 26% of its most fragile.
-* Engineered a point-in-time XBRL pipeline (tag drift, YTD de-cumulation, impairment-adjusted EBIT, filed-date vintages), Sobol global sensitivity, reverse stress testing, and an LLM credit-memo generator whose every figure is machine-verified against the simulation.
+* Engineered a point-in-time XBRL pipeline (tag drift, YTD de-cumulation, impairment-adjusted EBIT, filed-date vintages), Sobol global sensitivity, reverse stress testing, and a rule-based analyst that writes evidence-backed credit notes for 94 companies straight from the simulation output.
 * Shipped a serverless React/TypeScript dashboard running 5,000 simulations in ~150 ms in a Web Worker, parity-tested against the Python engine to 1e-6, with CI and property-based tests.
 
 ## 30-second spoken pitch

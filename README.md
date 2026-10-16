@@ -34,7 +34,7 @@ The twin is also honest about where it fails: [docs/BACKTEST.md](docs/BACKTEST.m
 | **System-dynamics model** | 9 balance-sheet stocks, quarterly flows, first-order delays and 4 feedback loops: a leverage–spread spiral, a market-access cliff, cash conservation and delayed restructuring. |
 | **Calibrated Monte Carlo** | Robust (MAD) volatilities, Student-t tails, demand–margin correlation, a Vasicek short rate, and a Markov recession regime with NBER base rates and company-specific GDP sensitivity. |
 | **Stress tools** | 8 crisis presets, free sliders and 6 CFO levers. Reverse stress testing answers "how big a shock breaks it?". Tornado charts and Sobol global sensitivity (with bootstrap CIs) show what matters. |
-| **AI analyst** | Claude writes a credit memo per company from the twin's fact sheet. A deterministic checker verifies every figure in the memo against the simulation, and unverifiable numbers are flagged, never hidden. |
+| **Analyst notes** | A rule-based analyst turns each company's simulation into a credit-memo-style note: verdict, evidenced risks, buffers, scenario commentary, watch list. It is deterministic, so every figure is correct by construction. An optional LLM module writes freer prose from the same fact sheet and machine-checks its figures, if you supply your own key. |
 | **Dashboard** | React + Web Worker, no server: 94 companies × 8 scenarios, light/dark, mobile. An optional local API adds any ticker live. |
 
 | | |
@@ -45,14 +45,14 @@ The twin is also honest about where it fails: [docs/BACKTEST.md](docs/BACKTEST.m
 ## Run it
 
 ```bash
-cp .env.example .env                       # SEC_USER_AGENT (required by SEC); ANTHROPIC_API_KEY only for memos
+cp .env.example .env                       # SEC_USER_AGENT (required by SEC)
 cd engine && uv sync && uv run pytest -q   # 20 tests: balance-sheet identity (Hypothesis), point-in-time, CRPS, Sobol...
 bash scripts/full_pipeline.sh              # validation (~7.8k forecasts) + all snapshots + backtests
 cd ../web && npm ci && npm test && npm run dev    # includes Python <-> TypeScript parity
 ```
 
 Optional extras:
-- `uv run --extra ai python -m fintwin.memo CCL` writes a memo.
+- `uv run python -m fintwin.notes` regenerates the analyst notes. The optional LLM memos need your own API key: `uv run --extra ai python -m fintwin.memo CCL`.
 - `uv run --extra api python -m fintwin.api` lets you twin any ticker live.
 - `uv run python scripts/paper_assets.py` regenerates the paper's figures and numbers.
 
@@ -61,7 +61,7 @@ Optional extras:
 ```
 engine/fintwin/   data/ (EDGAR, facts, FRED) · model/ (stock-and-flow core, ratings) · stochastic/ (calibrate, shocks, MC)
                   scenarios/ (presets, reverse stress) · sensitivity/ (tornado, Sobol) · backtest/ (walk-forward, batch, scoring)
-                  export.py · memo.py · api.py
+                  export.py · notes.py (rule-based analyst) · memo.py (optional LLM) · api.py
 web/src/          engine/ (TS port + parity tests) · views/ · charts/
 docs/             paper/ (LaTeX + figures, numbers generated from data) · METHODOLOGY · BACKTEST · CASE_STUDY_CCL · CV_KIT
 ```

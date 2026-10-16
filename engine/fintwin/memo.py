@@ -21,7 +21,7 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
-from .model.ratings import RATINGS
+from .notes import fact_sheet
 
 # A key in the project's git-ignored .env wins over a stale shell variable.
 load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=True)
@@ -58,63 +58,6 @@ Rules:
   repeating numbers; every risk needs evidence from the sheet.
 - Be calibrated: the baseline is a forecast under normal conditions; scenarios are conditional what-ifs, not predictions.
 - Plain, precise English. No hype, no investment advice."""
-
-
-def _money(x: float) -> str:
-    a = abs(x)
-    s = "-" if x < 0 else ""
-    return f"{s}${a / 1e9:.1f}B" if a >= 1e9 else f"{s}${a / 1e6:.0f}M"
-
-
-def fact_sheet(c: dict, meta: dict) -> dict:
-    p, base = c["params"], c["presets"]["base"]
-    hist = c["history"]["series"]
-    last_rating = next((r for r in reversed(hist["rating"]) if r is not None), None)
-    rev_ttm = sum(x for x in hist["revenue"][-4:] if x is not None)
-    sheet = {
-        "company": c["name"], "ticker": c["ticker"], "sector": c["sector"], "last_reported_quarter": p["last_quarter"],
-        "horizon_quarters": p["horizon"], "simulated_paths": 5000,
-        "reported": {
-            "revenue_last_4_quarters": _money(rev_ttm),
-            "cash_and_short_term_investments": _money(p["cash0"]),
-            "total_debt": _money(p["debt0"]),
-            "synthetic_rating_today": RATINGS[int(last_rating)] if last_rating is not None else "n/a",
-            "debt_maturing_next_4_quarters": _money(sum(p["maturities_q"][:4])),
-            "committed_credit_facility": _money(p["revolver_cap"]),
-            "customer_deposits_days_of_revenue": round(p["ddays"]),
-        },
-        "calibrated_structure": {
-            "fixed_costs_per_quarter": _money(p["F"]),
-            "variable_cost_share_of_revenue_pct": round(p["v"] * 100),
-            "trend_growth_pct_per_year": round(((1 + p["mu"]) ** 4 - 1) * 100, 1),
-            "demand_volatility_pct_per_quarter": round(p["sigma_g"] * 100, 1),
-            "average_cost_of_debt_pct": round(p["coupon"] * 100, 1),
-            "revenue_sensitivity_to_gdp": round(p.get("beta_gdp", 1.5), 1),
-        },
-        "scenarios": {},
-        "reverse_stress": {},
-        "sensitivity_tornado_health_change": {t["label"]: round(t["d_health"], 1) for t in c["tornado"]},
-    }
-    for key, v in c["presets"].items():
-        label = meta["presets"][key]["label"]
-        sheet["scenarios"][label] = {
-            "description": meta["presets"][key]["desc"],
-            "health_score_0_100": round(v["health_score"]),
-            "health_score_unluckiest_10pct": round(v["health_p10"]),
-            "prob_liquidity_breach_pct": round(v["p_breach"] * 100, 1),
-            "prob_interest_coverage_below_1_5x_pct": round(v["p_icr_below_1_5"] * 100),
-            "prob_sub_investment_grade_at_horizon_pct": round(v["p_downgrade_below_ig"] * 100),
-        }
-    for key, r in c["reverse_stress"].items():
-        unit = {"pct": "% revenue drop", "bp": "bp rate rise", "pp": "pp cost increase"}[r["unit"]]
-        conv = (lambda v: round(v * 100)) if r["unit"] == "pct" else (lambda v: round(v))
-        sheet["reverse_stress"][r["label"]] = {
-            "shock_for_50pct_breach": f"{conv(r['p50'])}{unit}" if r["p50"] is not None else "not reached (company can fund itself)",
-            "shock_for_10pct_breach": f"{conv(r['p10'])}{unit}" if r["p10"] is not None else "not reached",
-        }
-    if c.get("sobol"):
-        sheet["global_sensitivity_total_order_pct"] = {r["label"]: round(r["ST"] * 100) for r in c["sobol"]["rows"]}
-    return sheet
 
 
 NUM = re.compile(r"-?\$?\d+(?:,\d{3})*(?:\.\d+)?")

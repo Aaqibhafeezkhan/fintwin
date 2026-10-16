@@ -1,0 +1,178 @@
+{
+ "ticker": "HLT",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Hilton Worldwide Holdings Inc.",
+  "ticker": "HLT",
+  "sector": "Lodging",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$12.5B",
+   "cash_and_short_term_investments": "$1.0B",
+   "total_debt": "$12.7B",
+   "synthetic_rating_today": "A",
+   "debt_maturing_next_4_quarters": "$322M",
+   "committed_credit_facility": "$999M",
+   "customer_deposits_days_of_revenue": 23
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$562M",
+   "variable_cost_share_of_revenue_pct": 56,
+   "trend_growth_pct_per_year": 5.7,
+   "demand_volatility_pct_per_quarter": 5.0,
+   "average_cost_of_debt_pct": 5.5,
+   "revenue_sensitivity_to_gdp": 5.0
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 41,
+    "health_score_unluckiest_10pct": 36,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 41,
+    "health_score_unluckiest_10pct": 35,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 4
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 33,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 33,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 22,
+    "health_score_unluckiest_10pct": 16,
+    "prob_liquidity_breach_pct": 0.2,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 11
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 33,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 5
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 42,
+    "health_score_unluckiest_10pct": 35,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 40,
+    "health_score_unluckiest_10pct": 34,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "37pp cost increase",
+    "shock_for_10pct_breach": "34pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -4.8,
+   "Costs +5pp": -1.9,
+   "Rates +300bp": -0.7,
+   "Spreads +400bp": -0.4,
+   "Debt markets shut 4q": 0.9,
+   "Inventory +45 days": 2.4
+  },
+  "global_sensitivity_total_order_pct": {
+   "Revenue shock": 100,
+   "Variable costs": 4,
+   "Inventory build-up": 3,
+   "Debt-market freeze": 2,
+   "Interest rates": 1,
+   "Credit spreads": 0
+  }
+ },
+ "verdict": "Strained",
+ "headline": "Strained credit profile: health 41/100 under baseline, 22 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Hilton Worldwide Holdings Inc. enters the simulation with $1.0B of cash and short-term investments against $12.7B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 41, with the unluckiest tenth of paths at 36 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 98%.",
+ "key_risks": [
+  {
+   "risk": "Severe demand collapse",
+   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 22."
+  }
+ ],
+ "resilience": [
+  "Cash of $1.0B covers the next four quarters of maturities ($322M).",
+  "A committed credit facility of about $999M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 22 (−19 vs baseline), breach probability 0.2%, sub-investment-grade at horizon 11%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 38 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 38 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 38 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 5%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 40 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 41 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 42 (+1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $1.0B vs $322M).",
+  "Variable-cost ratio versus the calibrated 56% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

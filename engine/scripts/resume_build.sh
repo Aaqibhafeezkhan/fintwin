@@ -12,3 +12,4 @@ for t in $TICKERS; do
 done
 uv run python -m fintwin.export GOLDEN
 uv run python -m fintwin.export BACKTEST
+uv run python -m fintwin.notes
