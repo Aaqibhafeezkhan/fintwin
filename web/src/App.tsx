@@ -69,6 +69,14 @@ export default function App() {
             {index && !index.companies[ticker] && <option value={ticker}>{ticker} (live)</option>}
           </select>
         </label>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const t = new FormData(e.currentTarget).get("t")?.toString().trim().toUpperCase();
+          if (t) go(COMPANY_TABS.has(view) ? view : "twin", t);
+        }}>
+          <input type="search" name="t" placeholder="Any ticker…" aria-label="Load any ticker" size={11}
+            title="Tickers outside the snapshot are built live by the local API (python -m fintwin.api)" />
+        </form>
         <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">{dark ? "☀" : "☾"}</button>
       </header>
 

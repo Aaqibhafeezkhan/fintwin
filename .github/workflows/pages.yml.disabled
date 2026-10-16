@@ -1,0 +1,17 @@
+# Rename to pages.yml to publish the dashboard on GitHub Pages (static: no server needed).
+name: pages
+on: { push: { branches: [main] }, workflow_dispatch: {} }
+permissions: { contents: read, pages: write, id-token: write }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: { name: github-pages }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci && npm run build
+        working-directory: web
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: web/dist }
+      - uses: actions/deploy-pages@v4

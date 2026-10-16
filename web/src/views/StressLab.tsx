@@ -154,7 +154,7 @@ export function StressLab({ c, meta, preset, setPreset }: { c: Company; meta: Me
                   </div>
                 );
               })}
-              <p className="muted">Solved by bisection with common random numbers; "survives" means even the largest shock tested leaves breach probability below 50%.</p>
+              <p className="muted">Solved by bisection with common random numbers. A breach means cash is exhausted after every funding source; "survives" means the company can still fund itself, often by borrowing at junk spreads, so check the rating outcome.</p>
             </div>
           </Card>
           <Card title="What hurts most" sub="Change in health score from each shock on its own, vs baseline">
