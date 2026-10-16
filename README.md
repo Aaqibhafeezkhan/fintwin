@@ -35,7 +35,7 @@ The twin is also honest about where it fails: [docs/BACKTEST.md](docs/BACKTEST.m
 | **Calibrated Monte Carlo** | Robust (MAD) volatilities, Student-t tails, demand–margin correlation, a Vasicek short rate, and a Markov recession regime with NBER base rates and company-specific GDP sensitivity. |
 | **Stress tools** | 8 crisis presets, free sliders and 6 CFO levers. Reverse stress testing answers "how big a shock breaks it?". Tornado charts and Sobol global sensitivity (with bootstrap CIs) show what matters. |
 | **Analyst notes** | A rule-based analyst turns each company's simulation into a credit-memo-style note: verdict, evidenced risks, buffers, scenario commentary, watch list. It is deterministic, so every figure is correct by construction. An optional LLM module writes freer prose from the same fact sheet and machine-checks its figures, if you supply your own key. |
-| **Dashboard** | Editorial research-terminal design, light and dark. A ⌘K / Ctrl K company switcher over 94 companies, a live stress lab, a filterable 94 × 8 scenario matrix and an evidence page. Everything runs client-side in a Web Worker, so no server is needed. An optional local API adds any ticker live. |
+| **Dashboard** | Editorial research-terminal design, light and dark. The landing page runs a live Monte Carlo you can steer. There is a Ctrl K / ⌘K company switcher, a stress lab whose scenarios are shareable as links, a distribution view of 94 companies × 8 crises, peer context on every company, and keyboard shortcuts (press `?`). Everything runs client-side in a Web Worker, so no server is needed. |
 
 | | |
 |---|---|

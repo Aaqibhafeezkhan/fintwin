@@ -3,6 +3,7 @@ import { Scatter } from "../charts/Scatter";
 import { loadCalibration, type Calibration, type Index } from "../data";
 import { fixed, pct, prettyName, shortcutLabel } from "../format";
 import { IconArrow, Meter, Metric, Section, Status } from "../ui";
+import { HeroSim } from "./HeroSim";
 
 const FEATURED: Record<string, string> = {
   CCL: "Cruise operator that lost almost all revenue in 2020",
@@ -13,7 +14,7 @@ const FEATURED: Record<string, string> = {
   NFLX: "Subscription business funded by debt",
 };
 
-export function OverviewView({ index, onOpen, onGo }: { index: Index; onOpen: (t: string) => void; onGo: (v: string) => void }) {
+export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; onOpen: (t: string) => void; onGo: (v: string) => void; onStress: (preset: string) => void }) {
   const [cal, setCal] = useState<Calibration | null>(null);
   useEffect(() => { loadCalibration().then(setCal); }, []);
   const xs = cal?.cross_section;
@@ -25,16 +26,21 @@ export function OverviewView({ index, onOpen, onGo }: { index: Index; onOpen: (t
   return (
     <div className="fade-in">
       <Section>
-        <div className="eyebrow" style={{ marginBottom: 14 }}>A financial digital twin of {Object.keys(index.companies).length} public companies</div>
-        <h1 className="display h-xl" style={{ maxWidth: 900 }}>What happens to a company's cash when the world breaks?</h1>
-        <p className="lede" style={{ marginTop: 18 }}>
-          FinTwin reads each company's SEC filings, rebuilds its finances as a system of stocks, flows and feedback
-          loops, and replays the next three years 5,000 times under the crisis you choose. All of it runs in your browser.
-        </p>
-        <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap" }}>
-          <button className="btn" style={{ background: "var(--ink)", color: "var(--page)", borderColor: "var(--ink)", padding: "9px 16px", display: "inline-flex", gap: 8, alignItems: "center" }}
-            onClick={() => onGo("stress")}>Stress-test Carnival <IconArrow /></button>
-          <button className="btn" style={{ padding: "9px 16px" }} onClick={() => onGo("backtest")}>See the evidence</button>
+        <div className="hero">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 14 }}>A financial digital twin of {Object.keys(index.companies).length} public companies</div>
+            <h1 className="display h-xl">What happens to a company's cash when the world breaks?</h1>
+            <p className="lede" style={{ marginTop: 18 }}>
+              FinTwin reads each company's SEC filings, rebuilds its finances as a system of stocks, flows and feedback
+              loops, and replays the next three years thousands of times under the crisis you choose, right in your browser.
+            </p>
+            <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap" }}>
+              <button className="btn" style={{ background: "var(--ink)", color: "var(--page)", borderColor: "var(--ink)", padding: "9px 16px", display: "inline-flex", gap: 8, alignItems: "center" }}
+                onClick={() => onStress("pandemic")}>Stress-test Carnival <IconArrow /></button>
+              <button className="btn" style={{ padding: "9px 16px" }} onClick={() => onGo("backtest")}>See the evidence</button>
+            </div>
+          </div>
+          <HeroSim meta={index.meta} onOpen={onStress} />
         </div>
       </Section>
 

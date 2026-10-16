@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FanChart, FanLegend } from "../charts/FanChart";
-import { loadMemo, type Company, type Memo, type Meta } from "../data";
+import { StripPlot } from "../charts/StripPlot";
+import { loadMemo, type Company, type Index, type Memo, type Meta } from "../data";
 import { RATINGS } from "../engine/ratings";
 import { fixed, futureQuarters, money, moneyTick, pct, prettyName, quarterLabel } from "../format";
 import { HealthScale, IconArrow, IconExternal, Meter, Metric, MetricText, Section, Status } from "../ui";
@@ -19,7 +20,7 @@ const PARAMS: [string, string, (p: Company["params"]) => string][] = [
   ["cash_floor", "Minimum operating cash", (p) => money(p.cash_floor)],
 ];
 
-export function TwinView({ c, meta, onStress, onMachine }: { c: Company; meta: Meta; onStress: (preset: string) => void; onMachine: () => void }) {
+export function TwinView({ c, meta, index, onStress, onMachine, onOpen }: { c: Company; meta: Meta; index: Index; onStress: (preset: string) => void; onMachine: () => void; onOpen: (t: string) => void }) {
   const [memo, setMemo] = useState<Memo | null>(null);
   useEffect(() => { setMemo(null); loadMemo(c.ticker).then(setMemo); }, [c.ticker]);
   const base = c.presets.base;
@@ -71,6 +72,18 @@ export function TwinView({ c, meta, onStress, onMachine }: { c: Company; meta: M
         <Metric label="Coverage under 1.5×" value={base.p_icr_below_1_5 * 100} format={(v) => v.toFixed(0)} unit="%"
           foot="probability within 3 years" info="Below 1.5× interest coverage the synthetic rating is single-B or worse and the twin narrows access to new debt." />
       </div>
+
+      {/* ---------- peers ---------- */}
+      {index.companies[c.ticker] && (
+        <Section eyebrow="Context" title={`Among ${Object.keys(index.companies).length} companies`}
+          note={`Each dot is one company's twin; ${c.sector || "sector"} peers in blue. Hover any dot to compare, click to open it.`}>
+          <StripPlot compact height={40} focus={c.ticker} peers={c.sector}
+            rows={[{ key: "base", label: "Baseline" }, { key: "recession", label: "Recession" }, { key: "pandemic", label: "Demand freeze" }]}
+            items={Object.entries(index.companies).map(([t, e]) => ({ id: t, name: e.name, group: e.sector,
+              values: { base: e.matrix.base.health, recession: e.matrix.recession.health, pandemic: e.matrix.pandemic.health } }))}
+            onPick={onOpen} />
+        </Section>
+      )}
 
       {/* ---------- analyst notes ---------- */}
       {memo && (

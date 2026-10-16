@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { loadCompany, loadIndex, type Company, type Index } from "./data";
 import { prettyName, shortcutLabel } from "./format";
@@ -34,7 +34,8 @@ function useTheme() {
 
 export default function App() {
   const [route, setRoute] = useHashState("overview");
-  const [viewRaw, tickerRaw, presetRaw] = route.split("/");
+  const [pathPart, query = ""] = route.split("?");
+  const [viewRaw, tickerRaw, presetRaw] = pathPart.split("/");
   const view = NAV.some(([k]) => k === viewRaw) ? viewRaw : "overview";
   const [lastTicker, setLastTicker] = useState("CCL");
   const ticker = (tickerRaw || lastTicker).toUpperCase();
@@ -42,6 +43,7 @@ export default function App() {
   const [company, setCompany] = useState<Company | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [palette, setPalette] = useState(false);
+  const [help, setHelp] = useState(false);
   const [dark, toggleTheme] = useTheme();
 
   useEffect(() => { loadIndex().then(setIndex).catch((e) => setError(String(e))); }, []);
@@ -55,7 +57,12 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const typing = (e.target as HTMLElement)?.matches?.("input, textarea, select");
-      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) { e.preventDefault(); setPalette(true); }
+      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) { e.preventDefault(); setPalette(true); return; }
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "?") setHelp((h) => !h);
+      else if (e.key === "Escape") setHelp(false);
+      else if (e.key === "t") toggleThemeRef.current();
+      else if (/^[1-7]$/.test(e.key)) navRef.current(NAV[+e.key - 1][0]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -65,7 +72,11 @@ export default function App() {
     document.title = `${name}FinTwin`;
   }, [company, view]);
 
+  const navRef = useRef<(v: string) => void>(() => {});
+  const toggleThemeRef = useRef<() => void>(() => {});
   const go = (v: string, t?: string, p?: string) => setRoute([v, COMPANY_VIEWS.has(v) ? (t ?? ticker) : undefined, p].filter(Boolean).join("/"));
+  navRef.current = (v: string) => go(v);
+  toggleThemeRef.current = toggleTheme;
   const openCompany = (t: string) => go(COMPANY_VIEWS.has(view) ? view : "twin", t);
   const entry = index?.companies[ticker];
 
@@ -99,14 +110,14 @@ export default function App() {
         {error && <p className="callout" style={{ marginBottom: 24 }}>{error}</p>}
         {!index ? <Skeleton h={420} /> : (
           <>
-            {view === "overview" && <OverviewView index={index} onOpen={(t) => go("twin", t)} onGo={(v) => go(v)} />}
+            {view === "overview" && <OverviewView index={index} onOpen={(t) => go("twin", t)} onGo={(v) => go(v)} onStress={(p) => go("stress", "CCL", p)} />}
             {COMPANY_VIEWS.has(view) && (!company || company.ticker !== ticker) && !error && <Skeleton h={520} />}
             {view === "twin" && company?.ticker === ticker && (
-              <TwinView c={company} meta={index.meta} onStress={(p) => go("stress", ticker, p)} onMachine={() => go("machine", ticker)} />
+              <TwinView c={company} meta={index.meta} index={index} onStress={(p) => go("stress", ticker, p)} onMachine={() => go("machine", ticker)} onOpen={(t) => go("twin", t)} />
             )}
             {view === "stress" && company?.ticker === ticker && (
-              <StressLab key={ticker} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"}
-                setPreset={(p) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}`)} />
+              <StressLab key={ticker} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"} query={query}
+                setPreset={(p, q) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}${q ? `?${q}` : ""}`)} />
             )}
             {view === "machine" && company?.ticker === ticker && <MachineView c={company} meta={index.meta} />}
             {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
@@ -116,9 +127,22 @@ export default function App() {
         )}
       </main>
 
+      {help && (
+        <div className="palette-backdrop" onMouseDown={() => setHelp(false)}>
+          <div className="palette fade-in" style={{ padding: "18px 20px" }} role="dialog" aria-label="Keyboard shortcuts" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="eyebrow" style={{ marginBottom: 12 }}>Keyboard shortcuts</div>
+            <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 18px", margin: 0 }}>
+              {[[`${shortcutLabel} or /`, "Find a company"], ["1 – 7", NAV.map(([, l]) => l).join(" · ")], ["T", "Toggle light and dark"], ["?", "Show or hide this panel"], ["Esc", "Close"]].map(([k, d]) => (
+                <Fragment key={k}><dt><span className="kbd">{k}</span></dt><dd className="sub" style={{ margin: 0 }}>{d}</dd></Fragment>
+              ))}
+            </dl>
+          </div>
+        </div>
+      )}
+
       <footer className="footer">
         <span>Data: SEC EDGAR XBRL filings and FRED, snapshot {index?.meta.generated}. Research project, not investment advice.</span>
-        <span><a href="https://github.com/SpiliosDimakopoulos/fintwin" target="_blank" rel="noreferrer">Source</a> · <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf" target="_blank" rel="noreferrer">Paper</a></span>
+        <span><button className="btn-link" onClick={() => setHelp(true)}>Shortcuts <span className="kbd">?</span></button> · <a href="https://github.com/SpiliosDimakopoulos/fintwin" target="_blank" rel="noreferrer">Source</a> · <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf" target="_blank" rel="noreferrer">Paper</a></span>
       </footer>
     </div>
   );

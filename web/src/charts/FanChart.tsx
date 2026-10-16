@@ -139,7 +139,8 @@ export function FanChart(p: Props) {
             </g>
           ))}
           {p.samplePaths?.map((sp, i) => (
-            <path key={i} d={medLine(sp)} fill="none" stroke={p.layers[0]?.color} strokeWidth={1} opacity={0.18} />
+            <path key={i} d={medLine(sp)} fill="none" stroke={p.layers[p.layers.length - 1]?.color} strokeWidth={1} opacity={0.32}
+              pathLength={1} className="draw-path" style={{ animationDelay: `${(i % 20) * 22}ms` }} />
           ))}
           {p.layers.map((l) => (
             <path key={l.label} d={medLine(l.bands[2])} fill="none" stroke={l.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Index } from "../data";
 import { pct } from "../format";
+import { StripPlot } from "../charts/StripPlot";
 import { Section } from "../ui";
 
 type Metric = "health" | "p_breach";
@@ -21,6 +22,7 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
   const [mode, setMode] = useState<Mode>("level");
   const [q, setQ] = useState("");
   const [sector, setSector] = useState("all");
+  const [view, setView] = useState<"table" | "dist">("dist");
   const sectors = useMemo(() => [...new Set(Object.values(index.companies).map((e) => e.sector))].filter(Boolean).sort(), [index]);
 
   const value = (t: string, k: string) => {
@@ -65,6 +67,10 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
       </Section>
 
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", margin: "-6px 0 16px" }}>
+        <div className="segmented" role="group" aria-label="View">
+          <button aria-pressed={view === "dist"} onClick={() => setView("dist")}>Distribution</button>
+          <button aria-pressed={view === "table"} onClick={() => setView("table")}>Table</button>
+        </div>
         <input type="search" placeholder="Filter by ticker or name" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter companies" style={{ width: 220 }} />
         <select value={sector} onChange={(e) => setSector(e.target.value)} aria-label="Sector">
           <option value="all">All sectors</option>
@@ -74,14 +80,24 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
           <button aria-pressed={metric === "health"} onClick={() => setMetric("health")}>Health score</button>
           <button aria-pressed={metric === "p_breach"} onClick={() => setMetric("p_breach")}>Runs out of cash</button>
         </div>
-        <div className="segmented" role="group" aria-label="Values">
+        {view === "table" && <div className="segmented" role="group" aria-label="Values">
           <button aria-pressed={mode === "level"} onClick={() => setMode("level")}>Level</button>
           <button aria-pressed={mode === "change"} onClick={() => setMode("change")}>Change vs baseline</button>
-        </div>
+        </div>}
         <span className="muted" style={{ marginLeft: "auto" }}>{rows.length} shown</span>
       </div>
 
-      <div className="table-wrap" style={{ maxHeight: "72vh", overflowY: "auto", border: "1px solid var(--rule)", borderRadius: 10, background: "var(--paper)" }}>
+      {view === "dist" && (
+        <div className="panel" style={{ padding: "20px 20px 12px" }}>
+          <StripPlot rows={presets.map(([k, v]) => ({ key: k, label: v.label }))}
+            items={rows.map(([t, e]) => ({ id: t, name: e.name, group: e.sector,
+              values: Object.fromEntries(presets.map(([k]) => [k, metric === "health" ? e.matrix[k].health : e.matrix[k].p_breach * 100])) }))}
+            focus={rows.length === 1 ? rows[0][0] : undefined} peers={sector !== "all" ? sector : undefined} onPick={onOpen} />
+          <p className="muted" style={{ marginTop: 10 }}>{metric === "health" ? "Health score, 0–100" : "Probability of running out of cash, %"} · each dot is one company
+            {sector !== "all" ? ` · ${sector} highlighted` : ""}. Filter by name to pin a company.</p>
+        </div>
+      )}
+      {view === "table" && <><div className="table-wrap" style={{ maxHeight: "72vh", overflowY: "auto", border: "1px solid var(--rule)", borderRadius: 10, background: "var(--paper)" }}>
         <table style={{ borderCollapse: "separate", borderSpacing: 0 }}>
           <thead>
             <tr>
@@ -122,7 +138,7 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
         <span><span className="sw" style={{ background: "var(--wash)" }} />neutral</span>
         <span><span className="sw" style={{ background: tint(1) }} />{metric === "health" ? "stronger" : "safer"}</span>
         <span className="muted" style={{ marginLeft: "auto" }}>Leverage thresholds are not sector-adjusted, so regulated utilities read weaker than a credit analyst would rate them.</span>
-      </div>
+      </div></>}
     </div>
   );
 }

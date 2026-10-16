@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Columns, ProbLine, Tornado } from "../charts/Bars";
 import { FanChart, FanLegend } from "../charts/FanChart";
+import { ShockPreview } from "../charts/ShockPreview";
 import { SobolChart } from "../charts/SobolChart";
 import type { Company, Meta } from "../data";
 import { INVESTMENT_GRADE_MIN_RANK, RATINGS } from "../engine/ratings";
@@ -39,12 +40,45 @@ const LEVERS: { key: keyof Levers; label: string; desc: string }[] = [
 ];
 const clampIcr = (bands: number[][]) => bands.map((r) => r.map((v) => Math.max(Math.min(v, 30), -10)));
 
-export function StressLab({ c, meta, preset: initialPreset, setPreset: syncUrl }: { c: Company; meta: Meta; preset: string; setPreset: (p: string) => void }) {
-  // Local state drives the UI; the URL is kept in sync so a scenario can be shared as a link.
-  const [preset, setPresetState] = useState(meta.presets[initialPreset] ? initialPreset : "pandemic");
-  const setPreset = (p: string) => { setPresetState(p); syncUrl(p); };
-  const [knobs, setKnobs] = useState<Knobs>(() => ({ ...meta.presets[meta.presets[initialPreset] ? initialPreset : "pandemic"].knobs }));
-  const [levers, setLevers] = useState<Levers>(meta.levers);
+/** Scenario state <-> URL query: only what differs from the preset (knobs) or the defaults (levers). */
+function decode(query: string, meta: Meta, preset: string): { knobs: Knobs; levers: Levers } {
+  const q = new URLSearchParams(query);
+  const knobs: Knobs = { ...(meta.presets[preset]?.knobs ?? {}) };
+  for (const pair of (q.get("k") ?? "").split(";").filter(Boolean)) {
+    const [name, v] = pair.split(":");
+    if (name in KNOB_DEFAULTS && Number.isFinite(+v)) (knobs as Record<string, number>)[name] = +v;
+  }
+  const levers = { ...meta.levers };
+  for (const name of (q.get("off") ?? "").split(",").filter(Boolean)) if (name in levers) levers[name as keyof Levers] = false;
+  for (const name of (q.get("on") ?? "").split(",").filter(Boolean)) if (name in levers) levers[name as keyof Levers] = true;
+  return { knobs, levers };
+}
+function encode(knobs: Knobs, levers: Levers, meta: Meta, preset: string): string {
+  const ref = { ...KNOB_DEFAULTS, ...(meta.presets[preset]?.knobs ?? {}) };
+  const k = { ...KNOB_DEFAULTS, ...knobs };
+  const diff = (Object.keys(KNOB_DEFAULTS) as KnobKey[]).filter((n) => k[n] !== ref[n]).map((n) => `${n}:${k[n]}`);
+  const off = (Object.keys(levers) as (keyof Levers)[]).filter((n) => !levers[n] && meta.levers[n]);
+  const on = (Object.keys(levers) as (keyof Levers)[]).filter((n) => levers[n] && !meta.levers[n]);
+  const q = new URLSearchParams();
+  if (diff.length) q.set("k", diff.join(";"));
+  if (off.length) q.set("off", off.join(","));
+  if (on.length) q.set("on", on.join(","));
+  return q.toString().replace(/%3A/g, ":").replace(/%3B/g, ";").replace(/%2C/g, ",");
+}
+
+export function StressLab({ c, meta, preset: initialPreset, query = "", setPreset: syncUrl }: {
+  c: Company; meta: Meta; preset: string; query?: string; setPreset: (p: string, q: string) => void;
+}) {
+  // Local state drives the UI; the URL mirrors it so any scenario can be shared as a link.
+  const startPreset = meta.presets[initialPreset] || initialPreset === "custom" ? initialPreset : "pandemic";
+  const [preset, setPreset] = useState(startPreset);
+  const [knobs, setKnobs] = useState<Knobs>(() => decode(query, meta, startPreset).knobs);
+  const [levers, setLevers] = useState<Levers>(() => decode(query, meta, startPreset).levers);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => { syncUrl(preset, encode(knobs, levers, meta, preset)); }, [preset, knobs, levers]); // eslint-disable-line react-hooks/exhaustive-deps
+  const copyLink = () => {
+    navigator.clipboard?.writeText(location.href).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); });
+  };
   const [nPaths, setNPaths] = useState(5000);
   const [showPaths, setShowPaths] = useState(false);
   const stress = useSimulation(c.params, knobs, levers, nPaths);
@@ -54,8 +88,8 @@ export function StressLab({ c, meta, preset: initialPreset, setPreset: syncUrl }
   const k = { ...KNOB_DEFAULTS, ...knobs };
   const isBase = Object.entries(k).every(([kk, v]) => v === KNOB_DEFAULTS[kk as KnobKey]);
   const s = stress.summary, b = base.summary;
-  const title = preset === "custom" ? "Custom scenario" : meta.presets[preset].label;
-  const desc = preset === "custom" ? "Your own combination of shocks." : meta.presets[preset].desc;
+  const title = meta.presets[preset]?.label ?? "Custom scenario";
+  const desc = meta.presets[preset]?.desc ?? "Your own combination of shocks.";
 
   const choose = (key: string) => { setPreset(key); setKnobs({ ...meta.presets[key].knobs }); };
   const layers = (key: "cash" | "health" | "revenue" | "icr") => {
@@ -75,6 +109,7 @@ export function StressLab({ c, meta, preset: initialPreset, setPreset: syncUrl }
             <button key={key} className="chip" aria-pressed={preset === key} onClick={() => choose(key)} title={v.desc}>{v.label}</button>
           ))}
         </div>
+        <div style={{ margin: "14px 0 2px" }}><ShockPreview knobs={k} T={T} /></div>
         {GROUPS.map((g) => (
           <div key={g.title}>
             <h4>{g.title}</h4>
@@ -107,6 +142,7 @@ export function StressLab({ c, meta, preset: initialPreset, setPreset: syncUrl }
             {stress.busy ? <><span className="busy-dot" /> simulating</> : `${stress.ms.toFixed(0)} ms in browser`}
           </span>
         </div>
+        <button className="btn" style={{ width: "100%", marginTop: 10 }} onClick={copyLink}>{copied ? "Link copied" : "Copy link to this scenario"}</button>
       </aside>
 
       <div>
