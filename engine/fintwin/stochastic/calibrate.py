@@ -5,6 +5,8 @@ Every parameter records how it was obtained in `p["_sources"]`, so the dashboard
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -77,6 +79,12 @@ def fit_vasicek(short_rate: pd.Series) -> dict:
 
 
 def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows fall back to documented defaults
+        return _calibrate(c, macro, horizon)
+
+
+def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     q = c.quarters.copy()
     src: dict[str, str] = {}
     rev = q["revenue"]
@@ -118,7 +126,7 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
     rho_m = _clip(rho_m, 0.0, 0.9, 0.5)
     sigma_m = _clip(sigma_m, 0.002, 0.08, 0.01)
     margin_hist = (ebitda / rev).tail(16)
-    target_margin = float(np.nanmedian(margin_hist)) - 0.05
+    target_margin = _clip(np.nanmedian(margin_hist) - 0.05, -0.5, 0.8, 0.05)
 
     # correlation between demand and margin shocks (aligned tails)
     n = min(len(resid_g), len(resid_m))
@@ -132,6 +140,8 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
     dso = _clip((t4["receivables"] / t4["revenue"]).mean() * DAYS_Q, 0, 200, 30)
     dio = _clip((t4["inventory"] / cost_t4).mean() * DAYS_Q, 0, 600, 0)
     dpo = _clip((t4["payables"] / cost_t4).mean() * DAYS_Q, 0, 365, 45)
+    ddays = _clip((t4["deferred_revenue"] / t4["revenue"]).mean() * DAYS_Q, 0, 400, 0)
+    src["ddays"] = "customer deposits / deferred revenue in days of revenue (cash collected in advance)"
 
     t8 = q.tail(8)
     ppe_prev = q["ppe"].shift(1).tail(8)
@@ -139,7 +149,7 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
     capex_ratio = _clip(np.nanmedian(t8["capex"] / t8["revenue"]), 0.0, 0.6, 0.05)
     sbc_ratio = _clip(np.nanmedian(t8["sbc"] / t8["revenue"]), 0.0, 0.3, 0.0)
 
-    nwc = q["receivables"] + q["inventory"] - q["payables"]
+    nwc = q["receivables"] + q["inventory"] - q["payables"] - q["deferred_revenue"]
     explained = q["net_income"] + q["da"] + q["sbc"] - nwc.diff()
     ocf_ratio = _clip(np.nanmedian(((q["cfo"] - explained) / rev).tail(8)), -0.4, 0.4, 0.0)
     src["ocf_ratio"] = "median unexplained operating cash flow / revenue (e.g. content spend, deferred revenue)"
@@ -158,6 +168,17 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
         coupon = 0.04
         src["coupon"] = "assumption: 4% (no interest expense reported)"
 
+    # Rollover policy: share of maturing debt replaced with new debt, inferred from the 2-year debt trend.
+    debt_change_8q = float(q["total_debt"].iloc[-1] - q["total_debt"].iloc[-9]) if n_hist > 8 else 0.0
+    yearly_maturity = max(float(sum(c.maturities[:1])) if c.maturities else debt0 / 6, debt0 / 20, 1.0)
+    refi_ratio = _clip(1 + debt_change_8q / (2 * yearly_maturity), 0.0, 1.0, 1.0)
+    src["refi_ratio"] = "share of maturities refinanced, inferred from the last 8 quarters' debt trend"
+    debt_hist = q["total_debt"].tail(21)
+    rel = (debt_hist.diff() / debt_hist.shift(1).where(debt_hist.shift(1) > 0)).dropna()
+    sigma_fin = _clip(1.4826 * float(np.median(np.abs(rel - rel.median()))) if len(rel) >= 6 else np.nan,
+                      0.005, 0.15, 0.03)
+    src["sigma_fin"] = "robust s.d. of quarterly % debt changes (discretionary financing), last 20 quarters"
+
     div_q = float(q["dividends"].tail(2).mean())
     fcf8 = (t8["cfo"] - t8["capex"]).clip(lower=0).sum()
     bb_ratio = _clip(t8["buybacks"].sum() / fcf8 if fcf8 > 0 else 0.0, 0.0, 1.2, 0.0)
@@ -175,6 +196,8 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
     quarterly_costs = F + v * rev.tail(4).mean()
     cash_floor = 0.2 * quarterly_costs
     src["cash_floor"] = "assumption: minimum operating cash = 20% of a quarter's cash costs"
+    cash_target = max(0.6 * cash0, 1.5 * cash_floor)
+    src["cash_target"] = "assumption: treasury raises new debt when cash falls below 60% of today's level"
 
     # maturity ladder (annual -> quarterly). Stale or missing ladders fall back to a 6-year average life.
     ladder_q = np.zeros(horizon)
@@ -200,14 +223,15 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
 
     # ---- initial stocks ----
     ar0, inv0, ap0 = float(last["receivables"]), float(last["inventory"]), float(last["payables"])
+    def0 = float(last["deferred_revenue"])
     ppe0 = float(last["ppe"]) if np.isfinite(last["ppe"]) else 0.0
     equity0 = float(last["equity"])
     assets0 = float(last["assets"])
     liabilities0 = float(last["liabilities"]) if np.isfinite(last["liabilities"]) else assets0 - equity0
-    other_net0 = equity0 + ap0 + debt0 - (cash0 + ar0 + inv0 + ppe0)
-    other_liab0 = max(liabilities0 - ap0 - debt0, 0.0)
+    other_net0 = equity0 + ap0 + def0 + debt0 - (cash0 + ar0 + inv0 + ppe0)
+    other_liab0 = max(liabilities0 - ap0 - def0 - debt0, 0.0)
     ca, cl = last["current_assets"], last["current_liabilities"]
-    wc_other0 = float((ca - cl) - (cash0 + ar0 + inv0 - ap0)) if np.isfinite(ca) and np.isfinite(cl) else 0.0
+    wc_other0 = float((ca - cl) - (cash0 + ar0 + inv0 - ap0 - def0)) if np.isfinite(ca) and np.isfinite(cl) else 0.0
     retained0 = float(last["retained_earnings"]) if np.isfinite(last["retained_earnings"]) else 0.0
 
     hist4 = q.tail(4)
@@ -226,15 +250,19 @@ def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
         "t_df": df, "rho_gm": rho_gm,
         "F": F, "v": v, "rho_m": rho_m, "sigma_m": sigma_m, "infl": 0.006,
         "target_margin": target_margin, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
-        "dso": dso, "dio": dio, "dpo": dpo, "dep_rate": dep_rate, "capex_ratio": capex_ratio,
+        "dso": dso, "dio": dio, "dpo": dpo, "ddays": ddays, "tau_ar": 1.0, "tau_inv": 2.0, "dep_rate": dep_rate, "capex_ratio": capex_ratio,
         "maint_capex": 0.8, "sbc_ratio": sbc_ratio, "ocf_ratio": ocf_ratio, "tax_rate": tax_rate,
-        "coupon": coupon, "floating": 0.1, "div_q": div_q, "bb_ratio": bb_ratio,
+        "coupon": coupon, "floating": 0.1, "refi_ratio": refi_ratio, "sigma_fin": sigma_fin, "cash_target": cash_target, "div_q": div_q, "bb_ratio": bb_ratio,
         "revolver_cap": revolver_cap, "cash_floor": cash_floor, "maturities_q": ladder_q.tolist(),
         "r0": float(m["short_rate"].iloc[-1]), "term_premium": term_premium, **vas,
-        "cash0": cash0, "ar0": ar0, "inv0": inv0, "ap0": ap0, "ppe0": ppe0, "debt0": debt0,
+        "cash0": cash0, "ar0": ar0, "inv0": inv0, "ap0": ap0, "def0": def0, "ppe0": ppe0, "debt0": debt0,
         "equity0": equity0, "other_net0": other_net0, "other_liab0": other_liab0,
         "wc_other0": wc_other0, "retained0": retained0,
         "ebit_ttm0": ebit4.tolist(), "ebitda_ttm0": ebitda4.tolist(), "interest_ttm0": int4.tolist(),
         "_sources": src,
     }
-    return p
+    bad = [k for k, val in p.items() if isinstance(val, (float, np.floating)) and not np.isfinite(val)]
+    bad += [k for k, val in p.items() if isinstance(val, list) and not np.all(np.isfinite(np.asarray(val, float)))]
+    if bad:
+        raise ValueError(f"{c.ticker}: non-finite calibrated parameters {bad}")
+    return {k: (float(val) if isinstance(val, np.floating) else val) for k, val in p.items()}

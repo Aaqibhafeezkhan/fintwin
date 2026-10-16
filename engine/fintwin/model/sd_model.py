@@ -8,7 +8,8 @@ Loops:   R1 leverage -> coverage -> rating spread -> interest -> cash -> revolve
          B1 cash below floor -> capex, dividend and buyback cuts
          B2 margin squeeze -> delayed fixed-cost cuts
 
-The core is deterministic given pre-drawn standardized shocks `eps` [N, T, 3] (revenue, margin, rate),
+The core is deterministic given pre-drawn standardized shocks `eps` [N, T, 4]
+(revenue, margin, rate, discretionary financing),
 so a second implementation (TypeScript, in the browser) can be checked against it number for number.
 Everything is vectorized across the N Monte Carlo paths.
 """
@@ -21,7 +22,7 @@ from .ratings import ICR_LOWER, SPREADS
 DAYS_Q = 91.25
 OUTPUTS = ["revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver",
            "liquidity", "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity",
-           "issued", "fixed_cost_mult"]
+           "issued", "fixed_cost_mult", "debt_issued"]
 
 
 def _rank(icr):
@@ -34,8 +35,8 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     p:      calibrated parameters (see stochastic.calibrate.calibrate)
     scn:    per-quarter scenario arrays of length T: sales_shock, rate_shift, spread_shift,
             cost_shift, dio_shift, refi_access
-    eps:    standardized shocks [N, T, 3]
-    levers: CFO responses: cut_capex, cut_payouts, draw_revolver, issue_equity, cut_costs (bools)
+    eps:    standardized shocks [N, T, 4]
+    levers: CFO responses: cut_capex, cut_payouts, issue_debt, draw_revolver, issue_equity, cut_costs
     """
     N, T, _ = eps.shape
     f = np.float64
@@ -45,6 +46,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     ar = np.full(N, p["ar0"], f)
     inv = np.full(N, p["inv0"], f)
     ap = np.full(N, p["ap0"], f)
+    deferred = np.full(N, p["def0"], f)
     ppe = np.full(N, p["ppe0"], f)
     debt = np.full(N, p["debt0"], f)
     revolver = np.zeros(N, f)
@@ -70,13 +72,16 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     seasonal = np.asarray(p["seasonal"], f)
 
     for t in range(T):
-        e_g, e_m, e_r = eps[:, t, 0], eps[:, t, 1], eps[:, t, 2]
+        e_g, e_m, e_r, e_d = eps[:, t, 0], eps[:, t, 1], eps[:, t, 2], eps[:, t, 3]
 
         # --- revenue: AR(1) growth in deseasonalized level, then season and scenario shock ---
         g = p["mu"] + p["phi"] * (g_prev - p["mu"]) + p["sigma_g"] * e_g
         base = base * np.exp(g)
         g_prev = g
         rev = base * seasonal[(p["season0"] + t) % 4] * (1.0 + scn["sales_shock"][t])
+        override = scn.get("revenue_override")
+        if override is not None and np.isfinite(override[t]):
+            rev = np.full(N, override[t], f)  # conditional (structural) backtests feed realized revenue
 
         # --- costs: fixed (inflating, cuttable) + variable ratio with mean-reverting shocks ---
         m_dev = p["rho_m"] * m_dev + p["sigma_m"] * e_m
@@ -101,12 +106,15 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         tax = p["tax_rate"] * np.maximum(ebt, 0.0)
         ni = ebt - tax
 
-        # --- working capital ---
-        ar_new = p["dso"] / DAYS_Q * rev
-        inv_new = np.maximum(p["dio"] + scn["dio_shift"][t], 0.0) / DAYS_Q * costs
+        # --- working capital: receivables and inventory adjust toward targets with first-order delays
+        # (production and collections lag demand), payables and customer deposits move immediately ---
+        ar_new = ar + (p["dso"] / DAYS_Q * rev - ar) / p["tau_ar"]
+        inv_target = np.maximum(p["dio"] + scn["dio_shift"][t], 0.0) / DAYS_Q * costs
+        inv_new = inv + (inv_target - inv) / p["tau_inv"]
         ap_new = p["dpo"] / DAYS_Q * costs
-        d_nwc = (ar_new - ar) + (inv_new - inv) - (ap_new - ap)
-        ar, inv, ap = ar_new, inv_new, ap_new
+        def_new = p["ddays"] / DAYS_Q * rev
+        d_nwc = (ar_new - ar) + (inv_new - inv) - (ap_new - ap) - (def_new - deferred)
+        ar, inv, ap, deferred = ar_new, inv_new, ap_new, def_new
 
         sbc = p["sbc_ratio"] * rev
         other_cfo = p["ocf_ratio"] * rev
@@ -126,16 +134,27 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
             div = np.where(stressed, 0.0, div)
             bb = np.where(stressed, 0.0, bb)
 
-        # --- debt: maturities, refinancing (R2: market access depends on coverage) ---
+        # --- debt: maturities, rollover and new issuance.
+        # R2: market access shrinks as coverage deteriorates (distressed issuers only place part of
+        # what they need, at punitive spreads), and closes entirely in a credit freeze ---
         maturing = np.minimum(ladder[t], debt)
-        access = np.where(icr_prev >= 1.5, 1.0, np.where(icr_prev >= 0.8, 0.5, 0.0)) * scn["refi_access"][t]
-        refi = maturing * access
-        remaining = debt - maturing
-        new_debt = remaining + refi
-        coupon = np.where(new_debt > 0, (coupon * remaining + mkt_rate * refi) / np.maximum(new_debt, 1e-9), coupon)
-        debt = new_debt
-
+        access = np.where(icr_prev >= 1.5, 1.0, np.where(icr_prev >= 0.8, 0.6, 0.3)) * scn["refi_access"][t]
+        refi = maturing * p["refi_ratio"] * access
         cash = cash + cfo - capex - div - bb - maturing + refi
+        issued_debt = np.zeros(N, f)
+        if levers.get("issue_debt", True):
+            issued_debt = np.maximum(p["cash_target"] - cash, 0.0) * access
+            cash = cash + issued_debt
+        # discretionary financing (opportunistic issuance / early paydown), calibrated from history
+        disc = p["sigma_fin"] * debt * e_d
+        disc = np.where(disc > 0, disc * access, -np.minimum(-disc, np.maximum(cash - p["cash_target"], 0.0)))
+        cash = cash + disc
+        issued_debt = issued_debt + np.maximum(disc, 0.0)
+        remaining = debt - maturing + np.minimum(disc, 0.0)
+        new_debt = remaining + refi + issued_debt
+        coupon = np.where(new_debt > 0, (coupon * remaining + mkt_rate * (refi + issued_debt))
+                          / np.maximum(new_debt, 1e-9), coupon)
+        debt = new_debt
 
         # --- liquidity backstops: revolver, then equity ---
         floor = p["cash_floor"]
@@ -143,7 +162,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
             draw = np.clip(floor - cash, 0.0, np.maximum(p["revolver_cap"] - revolver, 0.0))
         else:
             draw = np.zeros(N, f)
-        repay = np.where(cash > 2 * floor, np.minimum(revolver, cash - 2 * floor), 0.0)
+        repay = np.where(cash > p["cash_target"], np.minimum(revolver, cash - p["cash_target"]), 0.0)
         revolver = revolver + draw - repay
         cash = cash + draw - repay
         issued = np.zeros(N, f)
@@ -177,7 +196,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         # --- Altman Z'' (book-value version for non-manufacturers) ---
         assets = cash + ar + inv + ppe + other_net + p["other_liab0"]
         liabilities = np.maximum(assets - equity, 1e-9)
-        working_cap = cash + ar + inv - ap + wc_other
+        working_cap = cash + ar + inv - ap - deferred + wc_other
         z = (6.56 * working_cap + 3.26 * ret_earn + 6.72 * ebit_hist.sum(1)) / np.maximum(assets, 1e-9) \
             + 1.05 * equity / liabilities
 
@@ -194,10 +213,11 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
                        ("fcf", cfo - capex), ("capex", capex), ("cash", cash), ("debt", debt),
                        ("revolver", revolver), ("liquidity", liquidity), ("interest", interest), ("icr", icr),
                        ("nd_ebitda", nd_ebitda), ("rating", rank), ("zscore", z), ("health", health),
-                       ("breach", breached), ("equity", equity), ("issued", issued), ("fixed_cost_mult", cut_mult)):
+                       ("breach", breached), ("equity", equity), ("issued", issued), ("fixed_cost_mult", cut_mult),
+                       ("debt_issued", issued_debt)):
             out[k][:, t] = val
 
         # identity residual: assets - liabilities - equity must stay at its initial value (zero by construction)
         out.setdefault("identity_gap", np.zeros((N, T), f))[:, t] = (
-            cash + ar + inv + ppe + other_net - ap - debt - revolver - equity)
+            cash + ar + inv + ppe + other_net - ap - deferred - debt - revolver - equity)
     return out

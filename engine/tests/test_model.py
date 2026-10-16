@@ -39,7 +39,7 @@ def test_same_seed_same_result(params):
 
 
 def test_zero_volatility_is_deterministic_across_paths(params):
-    p = {**params, "sigma_g": 0.0, "sigma_m": 0.0, "sigma_r": 0.0}
+    p = {**params, "sigma_g": 0.0, "sigma_m": 0.0, "sigma_r": 0.0, "sigma_fin": 0.0}
     out = run(p, n_paths=50)
     assert np.ptp(out["cash"], axis=0).max() < 1e-9
 

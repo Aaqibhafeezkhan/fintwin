@@ -26,6 +26,9 @@ DURATION = {
     "revenue": ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueServicesGross",
                 "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueGoodsNet"],
     "operating_income": ["OperatingIncomeLoss"],
+    "pretax_income": ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+                      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+                      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic"],
     "da": ["DepreciationDepletionAndAmortization", "DepreciationAndAmortization",
            "DepreciationAmortizationAndAccretionNet", "Depreciation"],
     "interest_expense": ["InterestExpense", "InterestExpenseNonoperating", "InterestAndDebtExpense",
@@ -46,7 +49,9 @@ INSTANT = {
                           "AvailableForSaleSecuritiesDebtSecuritiesCurrent"],
     "receivables": ["AccountsReceivableNetCurrent", "ReceivablesNetCurrent"],
     "inventory": ["InventoryNet", "InventoryNetOfAllowancesCustomerAdvancesAndProgressBillings"],
-    "payables": ["AccountsPayableCurrent"],
+    "payables": ["AccountsPayableCurrent", "AccountsPayableTradeCurrent", "AccountsPayableAndAccruedLiabilitiesCurrent"],
+    "deferred_revenue": ["ContractWithCustomerLiabilityCurrent", "CustomerDepositsCurrent", "DeferredRevenueCurrent",
+                         "CustomerAdvancesCurrent"],
     "ppe": ["PropertyPlantAndEquipmentNet",
             "PropertyPlantAndEquipmentAndFinanceLeaseRightOfUseAssetAfterAccumulatedDepreciationAndAmortization"],
     "assets": ["Assets"],
@@ -209,13 +214,22 @@ def load_company(ticker: str, asof: str | None = None, min_year: int = 2010) -> 
     for k in ["dividends", "buybacks", "sbc", "short_investments", "receivables", "inventory", "revolver_capacity"]:
         if q[k].isna().all():
             notes.append(f"{k}: no data, assumed 0")
-    zero_fill = ["dividends", "buybacks", "sbc", "short_investments", "receivables", "inventory",
+    # Some filers never tag operating income; rebuild it as pre-tax income plus interest expense.
+    if q["operating_income"].isna().any():
+        rebuilt = q["pretax_income"] + q["interest_expense"].fillna(0)
+        if q["operating_income"].isna().all():
+            notes.append("operating income rebuilt as pre-tax income + interest expense")
+        q["operating_income"] = q["operating_income"].fillna(rebuilt)
+    if q["payables"].isna().all():
+        notes.append("payables: no data, assumed 0")
+    zero_fill = ["dividends", "buybacks", "sbc", "short_investments", "receivables", "inventory", "deferred_revenue",
                  "debt_current", "ltd_current", "short_borrowings", "commercial_paper"]
     q[zero_fill] = q[zero_fill].fillna(0.0)
     # Balances are sticky: carry the last known value across occasional gaps.
     for k in ["ppe", "assets", "current_assets", "current_liabilities", "equity", "retained_earnings",
               "ltd_noncurrent", "debt_combined", "ltd_total", "payables", "revolver_capacity"]:
         q[k] = q[k].ffill(limit=2)
+    q["payables"] = q["payables"].fillna(0.0)
     q["total_debt"] = _total_debt(q)
     if q["liabilities"].isna().any():
         derived = q["assets"] - q["equity"]
