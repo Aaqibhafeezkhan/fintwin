@@ -504,7 +504,7 @@ with plt.rc_context({"font.family": "sans-serif", "font.size": 10, "axes.edgecol
              ("Trailing FCF margin", cp["fcf_margin"], ca["fcf_margin"]),
              ("All 13 benchmarks, fitted", {"rho": C["composite"]["rho"]}, {"rho": CA["composite"]["rho"]})]
     ypos = np.arange(len(preds))[::-1]
-    for i, (name, raw, abn) in enumerate(preds):
+    for i, (_name, raw, abn) in enumerate(preds):
         for dy, v, col in ((0.19, raw["rho"], BLUE), (-0.19, abn["rho"], ORANGE)):
             a1.barh(ypos[i] + dy, v, 0.34, color=col)
             a1.text(v + (0.015 if v >= 0 else -0.015), ypos[i] + dy, f"{v:.2f}", va="center",
