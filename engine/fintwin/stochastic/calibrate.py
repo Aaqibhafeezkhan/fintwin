@@ -197,6 +197,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     cash_floor = 0.2 * quarterly_costs
     src["cash_floor"] = "assumption: minimum operating cash = 20% of a quarter's cash costs"
     cash_target = max(0.6 * cash0, 1.5 * cash_floor)
+    cash_cap = 1.5 * max(cash0, cash_target)
+    src["cash_cap"] = "assumption: cash above 150% of today's level is swept into debt paydown"
     src["cash_target"] = "assumption: treasury raises new debt when cash falls below 60% of today's level"
 
     # maturity ladder (annual -> quarterly). Stale or missing ladders fall back to a 6-year average life.
@@ -252,7 +254,7 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         "target_margin": target_margin, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
         "dso": dso, "dio": dio, "dpo": dpo, "ddays": ddays, "tau_ar": 1.0, "tau_inv": 2.0, "dep_rate": dep_rate, "capex_ratio": capex_ratio,
         "maint_capex": 0.8, "sbc_ratio": sbc_ratio, "ocf_ratio": ocf_ratio, "tax_rate": tax_rate,
-        "coupon": coupon, "floating": 0.1, "refi_ratio": refi_ratio, "sigma_fin": sigma_fin, "cash_target": cash_target, "div_q": div_q, "bb_ratio": bb_ratio,
+        "coupon": coupon, "floating": 0.1, "refi_ratio": refi_ratio, "sigma_fin": sigma_fin, "cash_target": cash_target, "cash_cap": cash_cap, "div_q": div_q, "bb_ratio": bb_ratio,
         "revolver_cap": revolver_cap, "cash_floor": cash_floor, "maturities_q": ladder_q.tolist(),
         "r0": float(m["short_rate"].iloc[-1]), "term_premium": term_premium, **vas,
         "cash0": cash0, "ar0": ar0, "inv0": inv0, "ap0": ap0, "def0": def0, "ppe0": ppe0, "debt0": debt0,

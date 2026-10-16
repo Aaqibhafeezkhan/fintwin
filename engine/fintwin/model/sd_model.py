@@ -165,6 +165,10 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         repay = np.where(cash > p["cash_target"], np.minimum(revolver, cash - p["cash_target"]), 0.0)
         revolver = revolver + draw - repay
         cash = cash + draw - repay
+        # cash sweep: idle cash far above the treasury target pays down debt
+        sweep = np.minimum(np.maximum(cash - p["cash_cap"], 0.0), debt)
+        debt = debt - sweep
+        cash = cash - sweep
         issued = np.zeros(N, f)
         if levers.get("issue_equity", False):
             issued = np.maximum(floor - cash, 0.0) * (access > 0)

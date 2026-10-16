@@ -107,6 +107,10 @@ export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number,
       const repay = cash > p.cash_target ? Math.min(revolver, cash - p.cash_target) : 0;
       revolver = revolver + draw - repay;
       cash = cash + draw - repay;
+      // cash sweep: idle cash far above the treasury target pays down debt
+      const sweep = Math.min(Math.max(cash - p.cash_cap, 0), debt);
+      debt = debt - sweep;
+      cash = cash - sweep;
       let issued = 0;
       if (levers.issue_equity) {
         issued = access > 0 ? Math.max(floor - cash, 0) : 0;

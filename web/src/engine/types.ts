@@ -6,7 +6,7 @@ export type Params = {
   target_margin: number; cut_delay: number; cut_speed: number; cut_floor: number;
   dso: number; dio: number; dpo: number; ddays: number; tau_ar: number; tau_inv: number;
   dep_rate: number; capex_ratio: number; maint_capex: number; sbc_ratio: number; ocf_ratio: number;
-  tax_rate: number; coupon: number; floating: number; refi_ratio: number; sigma_fin: number; cash_target: number;
+  tax_rate: number; coupon: number; floating: number; refi_ratio: number; sigma_fin: number; cash_target: number; cash_cap: number;
   div_q: number; bb_ratio: number; revolver_cap: number; cash_floor: number; maturities_q: number[];
   r0: number; term_premium: number; kappa: number; theta: number; sigma_r: number;
   cash0: number; ar0: number; inv0: number; ap0: number; def0: number; ppe0: number; debt0: number;

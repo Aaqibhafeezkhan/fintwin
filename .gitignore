@@ -8,3 +8,4 @@ engine/.cache/
 node_modules/
 web/dist/
 *.egg-info/
+tools/node_modules/

@@ -147,12 +147,14 @@ def build(tickers: list[str], with_backtests: bool = True) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     index_path = OUT / "index.json"
     index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else {"companies": {}}
+    failed: list[str] = []
     for t in tickers:
         t0 = time.time()
         try:
             block = company_block(t, macro)
         except Exception as e:
             print(f"  {t}: FAILED {type(e).__name__}: {e}")
+            failed.append(t)
             continue
         _write(OUT / "companies" / f"{t}.json", block)
         index["companies"][t] = {
@@ -167,6 +169,13 @@ def build(tickers: list[str], with_backtests: bool = True) -> None:
         golden_cases(macro)
 
     if with_backtests:
+        build_backtests()
+    if failed:
+        raise SystemExit(f"failed: {failed}")
+
+
+def build_backtests() -> None:
+    if True:
         bt = {"cutoffs": CUTOFFS, "forecast": {}, "aggregate": {}}
         for t in SHOWCASE:
             for ck in CUTOFFS:
@@ -189,6 +198,8 @@ if __name__ == "__main__":
     args = [a.upper() for a in sys.argv[1:]]
     if args == ["GOLDEN"]:
         golden_cases(macro_quarterly())
+    elif args == ["BACKTEST"]:
+        build_backtests()
     elif args:
         build(args, with_backtests=False)
     else:
