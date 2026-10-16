@@ -196,10 +196,11 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
 
 
 # ---------------------------------------------------------------- COVID cross-section
-def covid_section(xs: pd.DataFrame) -> dict:
-    sp = xs[~xs["bankrupt"] & xs["real_burn"].notna()].reset_index(drop=True)
-    sev = -sp["real_burn"].to_numpy(float)  # positive = more cash burned
-    severe = (sp["real_burn"] < -10).to_numpy(float)
+def covid_section(xs: pd.DataFrame, outcome: str = "real_burn") -> dict:
+    """outcome: `real_burn` (raw worst cumulative FCF) or `real_abn_burn` (relative to the pre-2020 run-rate)."""
+    sp = xs[~xs["bankrupt"] & xs[outcome].notna()].reset_index(drop=True)
+    sev = -sp[outcome].to_numpy(float)  # positive = more cash burned
+    severe = (sp[outcome] < -10).to_numpy(float)
     R = risk_frame(sp, "h_pandemic", "pb_pandemic")
     sector = sp["sector"].to_numpy()
     out: dict = {"n": int(len(sp)), "n_severe": int(severe.sum())}
@@ -349,7 +350,8 @@ def covid_section(xs: pd.DataFrame) -> dict:
     z = R["altman_z2"].to_numpy(float)
     zq = pd.qcut(pd.Series(z).rank(method="first"), 5, labels=False).to_numpy()
     out["quintiles_altman"] = {"severe_share": [float(severe[(zq == i) & np.isfinite(z)].mean()) for i in range(5)]}
-    out["rows"] = sp[["ticker", "name", "sector", "h_pandemic", "real_burn", "real_rev_drop"]].to_dict("records")
+    keep = ["ticker", "name", "sector", "h_pandemic", "real_burn", "real_rev_drop", "real_abn_burn"]
+    out["rows"] = sp[[c for c in keep if c in sp]].to_dict("records")
     return out
 
 
@@ -403,7 +405,7 @@ def bankruptcy_section(xs: pd.DataFrame) -> dict:
         "paired": {
             f"{a}_minus_{b}": paired(auc, R[a].to_numpy(float)[small], R[b].to_numpy(float)[small], y[small])
             for a in ("twin", "twin_base")
-            for b in ("altman_z2", "icr", "size", *(["formula"] if "formula" in res else []))
+            for b in ("altman_z2", "icr", "size", "fcf_margin", *(["formula"] if "formula" in res else []))
         },
     }
     out["stress_minus_baseline"] = paired(auc, twin, R["twin_base"].to_numpy(float), y)
@@ -431,8 +433,10 @@ def _events(p: pd.DataFrame) -> dict[str, np.ndarray]:
     cov[~np.isfinite(icrmin)] = np.nan
     div = np.where(p["y_div_payer"].fillna(False).astype(bool), p["y_div_cut"].fillna(False).astype(float), np.nan)
     burn = p["y_burn8"].to_numpy(float)
+    abn = _col(p, "y_abn_burn8").to_numpy(float)
     return {
         "severe_burn": np.where(np.isfinite(burn), (burn < -10).astype(float), np.nan),
+        "abnormal_burn": np.where(np.isfinite(abn), (abn < -10).astype(float), np.nan),
         "coverage_collapse": cov,
         "dividend_cut": div,
     }
@@ -494,6 +498,8 @@ def panel_section(p: pd.DataFrame) -> dict:
     }
     for name, y in ev.items():
         m = np.isfinite(y)
+        if m.sum() < 100:  # outcome not available in this run
+            continue
         res: dict = {"n": int(m.sum()), "events": int(np.nansum(y)), "base_rate": float(np.nanmean(y))}
         uni = {}
         twin = R["twin"].to_numpy(float)
@@ -503,7 +509,7 @@ def panel_section(p: pd.DataFrame) -> dict:
             if sel.sum() < 20:  # predictor not available in this run
                 continue
             entry: dict = {"auc": auc(x[sel], y[sel]), "n": int(sel.sum())}
-            if name == "severe_burn":
+            if name in ("severe_burn", "abnormal_burn"):
                 entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=B_PANEL))
                 if k != "twin":
                     entry["twin_minus"] = paired(auc, twin, x, y, firms, B_PANEL)
@@ -635,6 +641,7 @@ def main(cache: Path) -> dict:
     res: dict = {
         "n_files": len(list(cache.glob("*.json"))),
         "covid": covid_section(xs),
+        **({"covid_abnormal": covid_section(xs, "real_abn_burn")} if "real_abn_burn" in xs else {}),
         "bankruptcy": bankruptcy_section(xs),
         "panel": panel_section(panel),
         "forecasts": forecast_section(fc),

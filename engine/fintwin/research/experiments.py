@@ -169,7 +169,51 @@ def covid(ticker: str, full: pd.DataFrame | None) -> dict | None:
     out["sector_adjusted"] = _run({**p, "sector_tol": tol}, FREEZE, {}, 2000, 8, 7)
     out["features"] = features(hist, p)
     out["realized"] = covid_outcomes(hist, full) if full is not None else {}
+    out["structural"] = structural(hist, raw, full) if full is not None else {}
     return out
+
+
+def structural(hist: CompanyData, p: dict, full: pd.DataFrame, n_q: int = 8) -> dict:
+    """Feed the revenue that actually followed the cutoff into the twin and compare its cash response with reality.
+
+    Predicting *which* shock hits a company is the scenario's job; translating a given revenue path into cash is
+    the simulation's job. This isolates the second. Benchmarks use the same realized revenue: the trailing FCF (and
+    operating-cash-flow) margin applied to it, and the trailing FCF run-rate, which ignores revenue altogether.
+    Outputs are worst cumulative values over the window, % of trailing revenue, and per-quarter paths.
+    """
+    pre = hist.quarters
+    nxt = full[full.index > pre.index[-1] + pd.Timedelta(days=20)].head(n_q)
+    rev_ttm = _ttm(pre, "revenue")
+    if len(nxt) < n_q or nxt["revenue"].isna().any() or not np.isfinite(rev_ttm) or rev_ttm <= 0:
+        return {}
+    T = int(p["horizon"])
+    scn = build_scenario({}, T)
+    override = np.full(T, np.nan)
+    override[:n_q] = nxt["revenue"].to_numpy(float)
+    scn["revenue_override"] = override
+    sim = simulate(p, scn, draw_shocks(p, 500, T, seed=3), DEFAULT_LEVERS)
+    fcf_sim = np.median(sim["fcf"][:, :n_q], axis=0)
+    cfo_sim = np.median(sim["cfo"][:, :n_q], axis=0)
+    cfo, capex = nxt["cfo"].to_numpy(float), nxt["capex"].to_numpy(float)
+    fcf_m = (_ttm(pre, "cfo") - _ttm(pre, "capex")) / rev_ttm
+    cfo_m = _ttm(pre, "cfo") / rev_ttm
+    rev = nxt["revenue"].to_numpy(float)
+
+    def worst(x):
+        return float(np.min(np.cumsum(x)) / rev_ttm * 100)
+
+    if not (np.isfinite(cfo).all() and np.isfinite(capex).all() and np.isfinite(fcf_m)):
+        return {}
+    return {
+        "real_fcf": worst(cfo - capex),
+        "twin_fcf": worst(fcf_sim),
+        "margin_fcf": worst(fcf_m * rev),
+        "runrate_fcf": worst(np.full(n_q, fcf_m * rev_ttm / 4)),
+        "real_cfo": worst(cfo),
+        "twin_cfo": worst(cfo_sim),
+        "margin_cfo": worst(cfo_m * rev),
+        "rev_change": float((rev.sum() / (n_q / 4) - rev_ttm) / rev_ttm * 100),
+    }
 
 
 def _abnormal_burn(pre: pd.DataFrame, window: pd.DataFrame, rev_ttm: float) -> float:
@@ -347,6 +391,7 @@ def company(ticker: str) -> dict:
                     "base_no_loops": _run(raw, {}, ABLATIONS["no_loops"], 1500, 12, 5),
                     "features": features(hist, p),
                     "outcome": _distress(hist, full_data.quarters),
+                    "structural": structural(hist, raw, full_data.quarters),
                 }
             )
         except Exception as e:
