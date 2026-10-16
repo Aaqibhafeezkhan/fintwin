@@ -13,6 +13,7 @@ The core is deterministic given pre-drawn shocks `eps` [N, T, 5]
 so a second implementation (TypeScript, in the browser) can be checked against it number for number.
 Everything is vectorized across the N Monte Carlo paths.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -20,9 +21,35 @@ import numpy as np
 from .ratings import ICR_LOWER, SPREADS
 
 DAYS_Q = 91.25
-OUTPUTS = ["revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver",
-           "liquidity", "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity",
-           "issued", "fixed_cost_mult", "debt_issued", "recession", "h_liq", "h_cov", "h_lev", "h_solv"]
+OUTPUTS = [
+    "revenue",
+    "ebitda",
+    "ebit",
+    "net_income",
+    "cfo",
+    "fcf",
+    "capex",
+    "cash",
+    "debt",
+    "revolver",
+    "liquidity",
+    "interest",
+    "icr",
+    "nd_ebitda",
+    "rating",
+    "zscore",
+    "health",
+    "breach",
+    "equity",
+    "issued",
+    "fixed_cost_mult",
+    "debt_issued",
+    "recession",
+    "h_liq",
+    "h_cov",
+    "h_lev",
+    "h_solv",
+]
 
 
 def _rank(icr):
@@ -78,7 +105,9 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
 
         # --- macro regime: Markov switching between expansion and recession (NBER base rates) ---
         if use_regime:
-            regime = np.where(regime > 0, np.where(u < p["rec_exit"], 0.0, 1.0), np.where(u < p["rec_hazard"], 1.0, 0.0))
+            regime = np.where(
+                regime > 0, np.where(u < p["rec_exit"], 0.0, 1.0), np.where(u < p["rec_hazard"], 1.0, 0.0)
+            )
         else:
             regime = np.zeros(N, f)
 
@@ -161,8 +190,9 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         issued_debt = issued_debt + np.maximum(disc, 0.0)
         remaining = debt - maturing + np.minimum(disc, 0.0)
         new_debt = remaining + refi + issued_debt
-        coupon = np.where(new_debt > 0, (coupon * remaining + mkt_rate * (refi + issued_debt))
-                          / np.maximum(new_debt, 1e-9), coupon)
+        coupon = np.where(
+            new_debt > 0, (coupon * remaining + mkt_rate * (refi + issued_debt)) / np.maximum(new_debt, 1e-9), coupon
+        )
         debt = new_debt
 
         # --- liquidity backstops: revolver, then equity ---
@@ -190,8 +220,11 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         low = margin < p["target_margin"]
         low_count = np.where(low, low_count + 1, 0)
         if levers.get("cut_costs", True):
-            cut_mult = np.where(low_count >= p["cut_delay"], np.maximum(cut_mult - p["cut_speed"], p["cut_floor"]),
-                                np.minimum(cut_mult + 0.5 * p["cut_speed"], 1.0))
+            cut_mult = np.where(
+                low_count >= p["cut_delay"],
+                np.maximum(cut_mult - p["cut_speed"], p["cut_floor"]),
+                np.minimum(cut_mult + 0.5 * p["cut_speed"], 1.0),
+            )
 
         # --- rolling TTM metrics ---
         ebit_hist = np.column_stack([ebit_hist[:, 1:], ebit])
@@ -210,8 +243,9 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         assets = cash + ar + inv + ppe + other_net + p["other_liab0"]
         liabilities = np.maximum(assets - equity, 1e-9)
         working_cap = cash + ar + inv - ap - deferred + wc_other
-        z = (6.56 * working_cap + 3.26 * ret_earn + 6.72 * ebit_hist.sum(1)) / np.maximum(assets, 1e-9) \
-            + 1.05 * equity / liabilities
+        z = (6.56 * working_cap + 3.26 * ret_earn + 6.72 * ebit_hist.sum(1)) / np.maximum(
+            assets, 1e-9
+        ) + 1.05 * equity / liabilities
 
         # --- health score 0-100 ---
         burn = np.maximum(fixed + interest + ladder[min(t + 1, T - 1)] * (1 - access), 1e-9)
@@ -226,16 +260,39 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         health = 0.3 * s_liq + 0.3 * s_cov + 0.2 * s_lev + 0.2 * s_solv
         health = np.where(breached, np.minimum(health, 25.0), health)
 
-        for k, val in (("revenue", rev), ("ebitda", ebitda), ("ebit", ebit), ("net_income", ni), ("cfo", cfo),
-                       ("fcf", cfo - capex), ("capex", capex), ("cash", cash), ("debt", debt),
-                       ("revolver", revolver), ("liquidity", liquidity), ("interest", interest), ("icr", icr),
-                       ("nd_ebitda", nd_ebitda), ("rating", rank), ("zscore", z), ("health", health),
-                       ("breach", breached), ("equity", equity), ("issued", issued), ("fixed_cost_mult", cut_mult),
-                       ("debt_issued", issued_debt), ("recession", regime),
-                       ("h_liq", s_liq), ("h_cov", s_cov), ("h_lev", s_lev), ("h_solv", s_solv)):
+        for k, val in (
+            ("revenue", rev),
+            ("ebitda", ebitda),
+            ("ebit", ebit),
+            ("net_income", ni),
+            ("cfo", cfo),
+            ("fcf", cfo - capex),
+            ("capex", capex),
+            ("cash", cash),
+            ("debt", debt),
+            ("revolver", revolver),
+            ("liquidity", liquidity),
+            ("interest", interest),
+            ("icr", icr),
+            ("nd_ebitda", nd_ebitda),
+            ("rating", rank),
+            ("zscore", z),
+            ("health", health),
+            ("breach", breached),
+            ("equity", equity),
+            ("issued", issued),
+            ("fixed_cost_mult", cut_mult),
+            ("debt_issued", issued_debt),
+            ("recession", regime),
+            ("h_liq", s_liq),
+            ("h_cov", s_cov),
+            ("h_lev", s_lev),
+            ("h_solv", s_solv),
+        ):
             out[k][:, t] = val
 
         # identity residual: assets - liabilities - equity must stay at its initial value (zero by construction)
         out.setdefault("identity_gap", np.zeros((N, T), f))[:, t] = (
-            cash + ar + inv + ppe + other_net - ap - deferred - debt - revolver - equity)
+            cash + ar + inv + ppe + other_net - ap - deferred - debt - revolver - equity
+        )
     return out

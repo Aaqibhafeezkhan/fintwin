@@ -4,6 +4,7 @@ export type PresetSummary = {
   health_score: number; health_p10: number; p_breach: number; p_icr_below_1_5: number;
   p_downgrade_below_ig: number; median_quarters_to_breach: number | null; rating_dist: number[];
   bands?: Record<string, number[][]>; p_breach_by_q?: number[];
+  components?: { liq: number; cov: number; lev: number; solv: number }; health_mean?: number;
 };
 
 export type ReverseItem = { label: string; unit: "pct" | "bp" | "pp"; p10: number | null; p50: number | null };
@@ -114,3 +115,7 @@ export async function loadCompany(ticker: string): Promise<Company> {
     return r.json();
   }
 }
+
+export type Vintage = { asof: string; last_quarter: string; health: number; health_p10: number; p_breach: number; params: Omit<import("./engine/types").Params, "_sources"> };
+export type Timeline = { ticker: string; series: { dates: string[]; revenue: (number | null)[]; cash: (number | null)[]; debt: (number | null)[] }; vintages: Vintage[] };
+export const loadTimeline = (t: string) => getJson<Timeline>(`data/timeline/${t}.json`).catch(() => null);

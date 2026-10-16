@@ -7,6 +7,7 @@
 Each shard writes self-contained files, so shards can run in parallel on separate machines and be merged by
 simply copying their output directories together before `aggregate`.
 """
+
 from __future__ import annotations
 
 import json
@@ -29,6 +30,7 @@ CACHE = Path(__file__).resolve().parents[1] / ".cache"
 
 def _json(path: Path, obj) -> None:
     from .export import _clean
+
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(_clean(obj), separators=(",", ":")), encoding="utf-8")
 
@@ -53,7 +55,9 @@ def shard(i: int, n: int) -> None:
     from .data.fred import macro_quarterly
     from .export import SHOWCASE, SOBOL_SET, company_block
 
-    tickers = [t for k, t in enumerate(universe.tickers() + [s for s in SHOWCASE if s not in universe.tickers()]) if k % n == i]
+    tickers = [
+        t for k, t in enumerate(universe.tickers() + [s for s in SHOWCASE if s not in universe.tickers()]) if k % n == i
+    ]
     macro = macro_quarterly()
     failed = {}
     for t in tickers:
@@ -64,7 +68,9 @@ def shard(i: int, n: int) -> None:
             res = company_cases(t)
             _json(DATA / "timeline" / f"{t}.json", res.pop("timeline"))
             _json(CACHE / "batch" / f"{t}.json", res)
-            print(f"  {t}: health {block['presets']['base']['health_score']:.0f}, {len(res['cases'])} forecasts ({time.time() - t0:.0f}s)")
+            print(
+                f"  {t}: health {block['presets']['base']['health_score']:.0f}, {len(res['cases'])} forecasts ({time.time() - t0:.0f}s)"
+            )
         except Exception as e:
             failed[t] = f"{type(e).__name__}: {e}"
             print(f"  {t}: FAILED {failed[t]}")
@@ -74,16 +80,22 @@ def shard(i: int, n: int) -> None:
 
 def build_index() -> dict:
     from .export import SHOWCASE, meta_block
+
     companies = {}
     for f in sorted((DATA / "companies").glob("*.json")):
         b = json.loads(f.read_text(encoding="utf-8"))
         companies[b["ticker"]] = {
-            "name": b["name"], "sector": b["sector"], "gics": b.get("gics", ""), "showcase": b["ticker"] in SHOWCASE,
+            "name": b["name"],
+            "sector": b["sector"],
+            "gics": b.get("gics", ""),
+            "showcase": b["ticker"] in SHOWCASE,
             "last_quarter": b["params"]["last_quarter"],
             "matrix": {k: {"health": v["health_score"], "p_breach": v["p_breach"]} for k, v in b["presets"].items()},
         }
-    index = {"companies": companies, "meta": {**meta_block(), "generated": date.today().isoformat(),
-                                               "n_companies": len(companies)}}
+    index = {
+        "companies": companies,
+        "meta": {**meta_block(), "generated": date.today().isoformat(), "n_companies": len(companies)},
+    }
     _json(DATA / "index.json", index)
     return index
 
@@ -93,18 +105,23 @@ def aggregate() -> None:
     from .data.fred import macro_quarterly
     from .export import build_backtests, golden_cases
     from .notes import build as notes
+
     idx = build_index()
     print(f"  index: {len(idx['companies'])} companies")
     r = calib()
-    print(f"  calibration: {r['n_companies']} companies, {r['n_forecasts']} forecasts, rho={r['cross_section']['spearman']:.2f}")
+    print(
+        f"  calibration: {r['n_companies']} companies, {r['n_forecasts']} forecasts, rho={r['cross_section']['spearman']:.2f}"
+    )
     golden_cases(macro_quarterly())
     build_backtests()
     notes()
     failed = {}
     for f in (CACHE / "failed").glob("*.json"):
         failed.update(json.loads(f.read_text(encoding="utf-8")))
-    _json(DATA / "build_report.json", {"generated": date.today().isoformat(), "failed": failed,
-                                        "n_companies": len(idx["companies"])})
+    _json(
+        DATA / "build_report.json",
+        {"generated": date.today().isoformat(), "failed": failed, "n_companies": len(idx["companies"])},
+    )
     print(f"  failed: {len(failed)} {list(failed)[:12]}")
 
 

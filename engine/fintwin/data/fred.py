@@ -1,4 +1,5 @@
 """FRED macro series via the public CSV endpoint (no API key), cached on disk."""
+
 from __future__ import annotations
 
 import io
@@ -10,9 +11,9 @@ import requests
 
 CACHE_DIR = Path(__file__).resolve().parents[2] / ".cache" / "fred"
 SERIES = {
-    "short_rate": "DGS3MO",    # 3-month Treasury, % p.a.
-    "long_rate": "DGS10",      # 10-year Treasury, % p.a.
-    "credit_spread": "BAA10Y", # Moody's Baa minus 10y Treasury, % p.a.
+    "short_rate": "DGS3MO",  # 3-month Treasury, % p.a.
+    "long_rate": "DGS10",  # 10-year Treasury, % p.a.
+    "credit_spread": "BAA10Y",  # Moody's Baa minus 10y Treasury, % p.a.
 }
 
 

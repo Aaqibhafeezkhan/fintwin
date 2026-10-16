@@ -3,6 +3,7 @@
 Every parameter records how it was obtained in `p["_sources"]`, so the dashboard can show
 "estimated from 16 quarters of filings" versus "assumption" for each number.
 """
+
 from __future__ import annotations
 
 import warnings
@@ -131,14 +132,19 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         if np.var(xg) > 0:
             beta_ols = float(np.cov(xg, yr)[0, 1] / np.var(xg, ddof=1))
     beta_gdp = _clip(0.5 * beta_ols + 0.5 * 1.5 if np.isfinite(beta_ols) else 1.5, 0.5, 5.0, 1.5)
-    src["beta_gdp"] = (f"revenue sensitivity to nominal GDP ({len(pairs)} quarters), shrunk 50% toward 1.5"
-                       if np.isfinite(beta_ols) else "assumption: cyclicality 1.5 (insufficient history)")
-    src["recession"] = (f"NBER recessions since 1947 ({reg['n_recessions']}): entry {reg['hazard']:.1%}/q, "
-                        f"mean length {1 / reg['exit']:.1f}q")
+    src["beta_gdp"] = (
+        f"revenue sensitivity to nominal GDP ({len(pairs)} quarters), shrunk 50% toward 1.5"
+        if np.isfinite(beta_ols)
+        else "assumption: cyclicality 1.5 (insufficient history)"
+    )
+    src["recession"] = (
+        f"NBER recessions since 1947 ({reg['n_recessions']}): entry {reg['hazard']:.1%}/q, "
+        f"mean length {1 / reg['exit']:.1f}q"
+    )
 
     # ---- cost structure: operating leverage ----
     ebitda = q["operating_income"] + q["da"].fillna(0)
-    costs = (rev - ebitda)
+    costs = rev - ebitda
     win = pd.DataFrame({"rev": rev, "costs": costs}).dropna().tail(16)
     F, v = _fixed_variable_split(win["rev"].values, win["costs"].values)
     src["F,v"] = f"constrained regression of cash operating costs on revenue, {len(win)} quarters"
@@ -196,8 +202,9 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     src["refi_ratio"] = "share of maturities refinanced, inferred from the last 8 quarters' debt trend"
     debt_hist = q["total_debt"].tail(21)
     rel = (debt_hist.diff() / debt_hist.shift(1).where(debt_hist.shift(1) > 0)).dropna()
-    sigma_fin = _clip(1.4826 * float(np.median(np.abs(rel - rel.median()))) if len(rel) >= 6 else np.nan,
-                      0.005, 0.15, 0.03)
+    sigma_fin = _clip(
+        1.4826 * float(np.median(np.abs(rel - rel.median()))) if len(rel) >= 6 else np.nan, 0.005, 0.15, 0.03
+    )
     src["sigma_fin"] = "robust s.d. of quarterly % debt changes (discretionary financing), last 20 quarters"
 
     div_q = float(q["dividends"].tail(2).mean())
@@ -271,24 +278,76 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     base_rev0 = float(deseason.iloc[-1])
 
     p = {
-        "ticker": c.ticker, "name": c.name, "last_quarter": q.index[-1].date().isoformat(), "horizon": horizon,
+        "ticker": c.ticker,
+        "name": c.name,
+        "last_quarter": q.index[-1].date().isoformat(),
+        "horizon": horizon,
         "history_quarters": n_hist,
-        "seasonal": seasonal.tolist(), "season0": season_next, "base_rev0": base_rev0,
-        "mu": mu, "phi": phi, "sigma_g": sigma_g, "g0": _clip(g.iloc[-1] if len(g) else mu, mu - 0.1, mu + 0.1, mu),
-        "t_df": df, "rho_gm": rho_gm,
-        "rec_hazard": reg["hazard"], "rec_exit": reg["exit"], "rec_drift": -beta_gdp * reg["gdp_shortfall_q"],
-        "rec_vol_mult": 1.5, "rec_state0": 1.0 if reg["in_recession_now"] else 0.0, "beta_gdp": beta_gdp,
-        "F": F, "v": v, "rho_m": rho_m, "sigma_m": sigma_m, "infl": 0.006,
-        "target_margin": target_margin, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
-        "dso": dso, "dio": dio, "dpo": dpo, "ddays": ddays, "tau_ar": 1.0, "tau_inv": 2.0, "dep_rate": dep_rate, "capex_ratio": capex_ratio,
-        "maint_capex": 0.8, "sbc_ratio": sbc_ratio, "ocf_ratio": ocf_ratio, "tax_rate": tax_rate,
-        "coupon": coupon, "floating": 0.1, "refi_ratio": refi_ratio, "sigma_fin": sigma_fin, "cash_target": cash_target, "cash_cap": cash_cap, "div_q": div_q, "bb_ratio": bb_ratio,
-        "revolver_cap": revolver_cap, "cash_floor": cash_floor, "maturities_q": ladder_q.tolist(),
-        "r0": float(m["short_rate"].iloc[-1]), "term_premium": term_premium, **vas,
-        "cash0": cash0, "ar0": ar0, "inv0": inv0, "ap0": ap0, "def0": def0, "ppe0": ppe0, "debt0": debt0,
-        "equity0": equity0, "other_net0": other_net0, "other_liab0": other_liab0,
-        "wc_other0": wc_other0, "retained0": retained0,
-        "ebit_ttm0": ebit4.tolist(), "ebitda_ttm0": ebitda4.tolist(), "interest_ttm0": int4.tolist(),
+        "seasonal": seasonal.tolist(),
+        "season0": season_next,
+        "base_rev0": base_rev0,
+        "mu": mu,
+        "phi": phi,
+        "sigma_g": sigma_g,
+        "g0": _clip(g.iloc[-1] if len(g) else mu, mu - 0.1, mu + 0.1, mu),
+        "t_df": df,
+        "rho_gm": rho_gm,
+        "rec_hazard": reg["hazard"],
+        "rec_exit": reg["exit"],
+        "rec_drift": -beta_gdp * reg["gdp_shortfall_q"],
+        "rec_vol_mult": 1.5,
+        "rec_state0": 1.0 if reg["in_recession_now"] else 0.0,
+        "beta_gdp": beta_gdp,
+        "F": F,
+        "v": v,
+        "rho_m": rho_m,
+        "sigma_m": sigma_m,
+        "infl": 0.006,
+        "target_margin": target_margin,
+        "cut_delay": 2,
+        "cut_speed": 0.04,
+        "cut_floor": 0.85,
+        "dso": dso,
+        "dio": dio,
+        "dpo": dpo,
+        "ddays": ddays,
+        "tau_ar": 1.0,
+        "tau_inv": 2.0,
+        "dep_rate": dep_rate,
+        "capex_ratio": capex_ratio,
+        "maint_capex": 0.8,
+        "sbc_ratio": sbc_ratio,
+        "ocf_ratio": ocf_ratio,
+        "tax_rate": tax_rate,
+        "coupon": coupon,
+        "floating": 0.1,
+        "refi_ratio": refi_ratio,
+        "sigma_fin": sigma_fin,
+        "cash_target": cash_target,
+        "cash_cap": cash_cap,
+        "div_q": div_q,
+        "bb_ratio": bb_ratio,
+        "revolver_cap": revolver_cap,
+        "cash_floor": cash_floor,
+        "maturities_q": ladder_q.tolist(),
+        "r0": float(m["short_rate"].iloc[-1]),
+        "term_premium": term_premium,
+        **vas,
+        "cash0": cash0,
+        "ar0": ar0,
+        "inv0": inv0,
+        "ap0": ap0,
+        "def0": def0,
+        "ppe0": ppe0,
+        "debt0": debt0,
+        "equity0": equity0,
+        "other_net0": other_net0,
+        "other_liab0": other_liab0,
+        "wc_other0": wc_other0,
+        "retained0": retained0,
+        "ebit_ttm0": ebit4.tolist(),
+        "ebitda_ttm0": ebitda4.tolist(),
+        "interest_ttm0": int4.tolist(),
         "_sources": src,
     }
     bad = [k for k, val in p.items() if isinstance(val, (float, np.floating)) and not np.isfinite(val)]
@@ -296,7 +355,11 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     if bad:
         raise ValueError(f"{c.ticker}: non-finite calibrated parameters {bad}")
     from ..universe import classify, sector_tolerance
+
     p["sector_tol"] = sector_tolerance(c.ticker)
-    src["sector_tol"] = (f"{classify(c.ticker)[0]} sector leverage norm (median net debt/EBITDA vs universe)"
-                         if p["sector_tol"] != 1.0 else "no sector adjustment")
+    src["sector_tol"] = (
+        f"{classify(c.ticker)[0]} sector leverage norm (median net debt/EBITDA vs universe)"
+        if p["sector_tol"] != 1.0
+        else "no sector adjustment"
+    )
     return {k: (float(val) if isinstance(val, np.floating) else val) for k, val in p.items()}

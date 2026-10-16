@@ -11,6 +11,7 @@ Design choices that make the memos trustworthy rather than decorative:
 
     uv run --extra ai python -m fintwin.memo CCL AAPL      # needs ANTHROPIC_API_KEY (or an `ant auth login` profile)
 """
+
 from __future__ import annotations
 
 import json
@@ -37,15 +38,30 @@ SCHEMA = {
         "verdict": {"type": "string", "enum": ["Strong", "Adequate", "Watch", "Weak", "Distressed"]},
         "headline": {"type": "string", "description": "One sentence, at most 25 words."},
         "summary": {"type": "string", "description": "3-4 sentences for a credit committee."},
-        "key_risks": {"type": "array", "items": {
-            "type": "object", "additionalProperties": False, "required": ["risk", "evidence"],
-            "properties": {"risk": {"type": "string"}, "evidence": {"type": "string"}}}},
+        "key_risks": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["risk", "evidence"],
+                "properties": {"risk": {"type": "string"}, "evidence": {"type": "string"}},
+            },
+        },
         "resilience": {"type": "array", "items": {"type": "string"}},
-        "scenario_notes": {"type": "array", "items": {
-            "type": "object", "additionalProperties": False, "required": ["scenario", "note"],
-            "properties": {"scenario": {"type": "string"}, "note": {"type": "string"}}}},
-        "watch_list": {"type": "array", "items": {"type": "string"},
-                       "description": "Observable indicators in future filings that would change the view."},
+        "scenario_notes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["scenario", "note"],
+                "properties": {"scenario": {"type": "string"}, "note": {"type": "string"}},
+            },
+        },
+        "watch_list": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Observable indicators in future filings that would change the view.",
+        },
     },
 }
 
@@ -87,9 +103,12 @@ def unverified_numbers(memo: dict, sheet: dict) -> list[float]:
 
 
 def write_memo(client: anthropic.Anthropic, sheet: dict, feedback: str | None = None) -> dict:
-    user = ("Fact sheet (JSON):\n" + json.dumps(sheet, indent=1) +
-            "\n\nWrite the credit memo. 3-5 key risks, 2-4 resilience factors, a note for each stress scenario"
-            " that matters for this company (at least 4), and 3-4 watch-list indicators.")
+    user = (
+        "Fact sheet (JSON):\n"
+        + json.dumps(sheet, indent=1)
+        + "\n\nWrite the credit memo. 3-5 key risks, 2-4 resilience factors, a note for each stress scenario"
+        " that matters for this company (at least 4), and 3-4 watch-list indicators."
+    )
     if feedback:
         user += "\n\n" + feedback
     resp = client.beta.messages.create(
@@ -106,8 +125,11 @@ def write_memo(client: anthropic.Anthropic, sheet: dict, feedback: str | None = 
     if resp.stop_reason == "max_tokens":
         raise RuntimeError("memo truncated at max_tokens")
     text = next(b.text for b in resp.content if b.type == "text")
-    return {"memo": json.loads(text), "model": resp.model,
-            "usage": {"input": resp.usage.input_tokens, "output": resp.usage.output_tokens}}
+    return {
+        "memo": json.loads(text),
+        "model": resp.model,
+        "usage": {"input": resp.usage.input_tokens, "output": resp.usage.output_tokens},
+    }
 
 
 def build(tickers: list[str]) -> None:
@@ -122,13 +144,30 @@ def build(tickers: list[str]) -> None:
         bad = unverified_numbers(r["memo"], sheet)
         attempts = 1
         if bad:
-            r = write_memo(client, sheet, feedback=f"Your previous draft used figures not in the fact sheet: {bad}. "
-                                                   "Remove or correct every one of them.")
+            r = write_memo(
+                client,
+                sheet,
+                feedback=f"Your previous draft used figures not in the fact sheet: {bad}. "
+                "Remove or correct every one of them.",
+            )
             bad = unverified_numbers(r["memo"], sheet)
             attempts = 2
-        (out_dir / f"{t}.json").write_text(json.dumps({
-            "ticker": t, "generated_by": r["model"], "as_of": c["params"]["last_quarter"], "attempts": attempts,
-            "unverified_numbers": bad, "fact_sheet": sheet, **r["memo"], "usage": r["usage"]}, indent=1), encoding="utf-8")
+        (out_dir / f"{t}.json").write_text(
+            json.dumps(
+                {
+                    "ticker": t,
+                    "generated_by": r["model"],
+                    "as_of": c["params"]["last_quarter"],
+                    "attempts": attempts,
+                    "unverified_numbers": bad,
+                    "fact_sheet": sheet,
+                    **r["memo"],
+                    "usage": r["usage"],
+                },
+                indent=1,
+            ),
+            encoding="utf-8",
+        )
         print(f"{t}: {r['memo']['verdict']} | attempts={attempts} unverified={bad} tokens={r['usage']}")
 
 

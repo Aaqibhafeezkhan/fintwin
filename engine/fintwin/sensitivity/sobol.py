@@ -6,6 +6,7 @@ Sobol indices decompose the variance of the output over the *joint* scenario spa
   ST_i = total share including all interactions (Jansen 1999 estimator)
 Common random numbers keep the Monte Carlo noise out of the decomposition.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,7 +30,7 @@ def _evaluate(p: dict, X: np.ndarray, eps: np.ndarray) -> np.ndarray:
     T = p["horizon"]
     out = np.empty(len(X))
     for i, row in enumerate(X):
-        knobs = {k: (round(v) if k in INTEGER else float(v)) for (k, *_), v in zip(FACTORS, row)}
+        knobs = {k: (round(v) if k in INTEGER else float(v)) for (k, *_), v in zip(FACTORS, row, strict=True)}
         res = simulate(p, build_scenario(knobs, T), eps, DEFAULT_LEVERS)
         out[i] = res["health"].mean()
     return out
@@ -60,12 +61,24 @@ def sobol(p: dict, n_base: int = 256, n_paths: int = 300, seed: int = 5, n_boot:
     b1, bt = np.array([b[0] for b in boot]), np.array([b[1] for b in boot])
     rows = []
     for i, (key, _, _, label) in enumerate(FACTORS):
-        rows.append({"knob": key, "label": label, "range": [float(lo[i]), float(hi[i])],
-                     "S1": float(np.clip(s1[i], 0, st[i] if st[i] > 0 else 1)), "ST": float(max(st[i], 0)),
-                     "S1_ci": np.percentile(b1[:, i], [5, 95]).clip(0).tolist(),
-                     "ST_ci": np.percentile(bt[:, i], [5, 95]).clip(0).tolist()})
+        rows.append(
+            {
+                "knob": key,
+                "label": label,
+                "range": [float(lo[i]), float(hi[i])],
+                "S1": float(np.clip(s1[i], 0, st[i] if st[i] > 0 else 1)),
+                "ST": float(max(st[i], 0)),
+                "S1_ci": np.percentile(b1[:, i], [5, 95]).clip(0).tolist(),
+                "ST_ci": np.percentile(bt[:, i], [5, 95]).clip(0).tolist(),
+            }
+        )
     rows.sort(key=lambda r: -r["ST"])
     out_sd = float(np.std(np.concatenate([fA, fB]), ddof=1))
     # interaction share: variance not explained by first-order effects
-    return {"rows": rows, "output_sd": out_sd, "interaction_share": float(max(0.0, 1 - sum(r["S1"] for r in rows))),
-            "n_runs": int(n_base * (k + 2)), "insensitive": out_sd < 1.0}
+    return {
+        "rows": rows,
+        "output_sd": out_sd,
+        "interaction_share": float(max(0.0, 1 - sum(r["S1"] for r in rows))),
+        "n_runs": int(n_base * (k + 2)),
+        "insensitive": out_sd < 1.0,
+    }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FanChart, FanLegend } from "../charts/FanChart";
 import { StripPlot } from "../charts/StripPlot";
+import { Waterfall } from "../charts/Waterfall";
 import { loadMemo, type Company, type Index, type Memo, type Meta } from "../data";
 import { RATINGS } from "../engine/ratings";
 import { fixed, futureQuarters, money, moneyTick, pct, prettyName, quarterLabel } from "../format";
@@ -20,7 +21,7 @@ const PARAMS: [string, string, (p: Company["params"]) => string][] = [
   ["cash_floor", "Minimum operating cash", (p) => money(p.cash_floor)],
 ];
 
-export function TwinView({ c, meta, index, onStress, onMachine, onOpen }: { c: Company; meta: Meta; index: Index; onStress: (preset: string) => void; onMachine: () => void; onOpen: (t: string) => void }) {
+export function TwinView({ c, meta, index, onStress, onMachine, onOpen, onRewind }: { c: Company; meta: Meta; index: Index; onStress: (preset: string) => void; onMachine: () => void; onOpen: (t: string) => void; onRewind: () => void }) {
   const [memo, setMemo] = useState<Memo | null>(null);
   useEffect(() => { setMemo(null); loadMemo(c.ticker).then(setMemo); }, [c.ticker]);
   const base = c.presets.base;
@@ -46,6 +47,7 @@ export function TwinView({ c, meta, index, onStress, onMachine, onOpen }: { c: C
             <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
               <button className="btn" style={{ background: "var(--ink)", color: "var(--page)", borderColor: "var(--ink)", display: "inline-flex", gap: 8, alignItems: "center" }}
                 onClick={() => onStress("pandemic")}>Stress-test {c.ticker} <IconArrow /></button>
+              <button className="btn" onClick={onRewind}>Rewind in time</button>
               <button className="btn" onClick={onMachine}>See the mechanics</button>
             </div>
           </div>
@@ -144,6 +146,14 @@ export function TwinView({ c, meta, index, onStress, onMachine, onOpen }: { c: C
           </table>
         </div>
       </Section>
+
+      {c.presets.pandemic?.components && base.components && (
+        <Section eyebrow="Attribution" title="Why a demand freeze hurts it"
+          note="Average health under the baseline and under a demand freeze, with the drop split into its four weighted components and the penalty for running out of cash.">
+          <Waterfall base={base.components} scen={c.presets.pandemic.components} baseMean={base.health_mean ?? base.health_score}
+            scenMean={c.presets.pandemic.health_mean ?? c.presets.pandemic.health_score} scenLabel="Demand freeze" />
+        </Section>
+      )}
 
       {/* ---------- history and baseline forecast ---------- */}
       <Section eyebrow="Baseline" title="Four years reported, three simulated" right={<FanLegend layers={[{ label: "Simulated", color: "var(--s1)" }]} />}>

@@ -1,4 +1,5 @@
 """One-at-a-time sensitivity of the health score and breach probability to each stress knob."""
+
 from __future__ import annotations
 
 from ..stochastic.mc import run, summarize
@@ -20,9 +21,13 @@ def tornado(p: dict, n_paths: int = 2000, seed: int = 13) -> list[dict]:
     rows = []
     for knob, value, label in FACTORS:
         s = summarize(run(p, {knob: value}, eps=eps))
-        rows.append({
-            "knob": knob, "value": value, "label": label,
-            "d_health": s["health_score"] - base["health_score"],
-            "d_p_breach": s["p_breach"] - base["p_breach"],
-        })
+        rows.append(
+            {
+                "knob": knob,
+                "value": value,
+                "label": label,
+                "d_health": s["health_score"] - base["health_score"],
+                "d_p_breach": s["p_breach"] - base["p_breach"],
+            }
+        )
     return sorted(rows, key=lambda r: r["d_health"])

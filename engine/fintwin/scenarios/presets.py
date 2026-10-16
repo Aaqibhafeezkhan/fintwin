@@ -1,5 +1,8 @@
 """Stress scenarios as a few interpretable knobs, expanded into per-quarter shock paths."""
+
 from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 
@@ -17,29 +20,74 @@ KNOBS = {
     "refi_freeze": (0, "Quarters with debt markets closed"),
 }
 
-PRESETS = {
+PRESETS: dict[str, dict[str, Any]] = {
     "base": {"label": "Baseline", "desc": "Calibrated business-as-usual dynamics.", "knobs": {}},
-    "rates_200": {"label": "Rates +200bp", "desc": "Persistent 2pp rise in short rates.",
-                  "knobs": {"rate_bp": 200}},
-    "sales_20": {"label": "Sales -20%", "desc": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-                 "knobs": {"sales_depth": 0.2}},
-    "recession": {"label": "Recession", "desc": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-                  "knobs": {"sales_depth": 0.12, "sales_duration": 3, "sales_recovery": 6, "rate_bp": -150,
-                            "spread_bp": 250, "spread_duration": 6, "cost_pp": 2.0, "cost_duration": 4}},
-    "pandemic": {"label": "Demand freeze", "desc": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-                 "knobs": {"sales_depth": 0.7, "sales_duration": 3, "sales_recovery": 8, "spread_bp": 400,
-                           "spread_duration": 6, "refi_freeze": 2, "rate_bp": -150}},
-    "stagflation": {"label": "Stagflation (2022)", "desc": "Rates +300bp, input costs +3pp, mild demand dip.",
-                    "knobs": {"rate_bp": 300, "cost_pp": 3.0, "cost_duration": 6, "sales_depth": 0.05,
-                              "sales_duration": 2, "sales_recovery": 4}},
-    "credit_crunch": {"label": "Credit crunch", "desc": "Debt markets closed for a year, spreads +500bp.",
-                      "knobs": {"refi_freeze": 4, "spread_bp": 500, "spread_duration": 4}},
-    "supply_chain": {"label": "Supply-chain shock", "desc": "Inventory +30 days, costs +3pp, sales -5%.",
-                     "knobs": {"dio_days": 30, "cost_pp": 3.0, "cost_duration": 4, "sales_depth": 0.05}},
+    "rates_200": {"label": "Rates +200bp", "desc": "Persistent 2pp rise in short rates.", "knobs": {"rate_bp": 200}},
+    "sales_20": {
+        "label": "Sales -20%",
+        "desc": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+        "knobs": {"sales_depth": 0.2},
+    },
+    "recession": {
+        "label": "Recession",
+        "desc": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+        "knobs": {
+            "sales_depth": 0.12,
+            "sales_duration": 3,
+            "sales_recovery": 6,
+            "rate_bp": -150,
+            "spread_bp": 250,
+            "spread_duration": 6,
+            "cost_pp": 2.0,
+            "cost_duration": 4,
+        },
+    },
+    "pandemic": {
+        "label": "Demand freeze",
+        "desc": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+        "knobs": {
+            "sales_depth": 0.7,
+            "sales_duration": 3,
+            "sales_recovery": 8,
+            "spread_bp": 400,
+            "spread_duration": 6,
+            "refi_freeze": 2,
+            "rate_bp": -150,
+        },
+    },
+    "stagflation": {
+        "label": "Stagflation (2022)",
+        "desc": "Rates +300bp, input costs +3pp, mild demand dip.",
+        "knobs": {
+            "rate_bp": 300,
+            "cost_pp": 3.0,
+            "cost_duration": 6,
+            "sales_depth": 0.05,
+            "sales_duration": 2,
+            "sales_recovery": 4,
+        },
+    },
+    "credit_crunch": {
+        "label": "Credit crunch",
+        "desc": "Debt markets closed for a year, spreads +500bp.",
+        "knobs": {"refi_freeze": 4, "spread_bp": 500, "spread_duration": 4},
+    },
+    "supply_chain": {
+        "label": "Supply-chain shock",
+        "desc": "Inventory +30 days, costs +3pp, sales -5%.",
+        "knobs": {"dio_days": 30, "cost_pp": 3.0, "cost_duration": 4, "sales_depth": 0.05},
+    },
 }
 
-DEFAULT_LEVERS = {"recessions": True, "cut_capex": True, "cut_payouts": True, "issue_debt": True, "draw_revolver": True, "issue_equity": False,
-                  "cut_costs": True}
+DEFAULT_LEVERS = {
+    "recessions": True,
+    "cut_capex": True,
+    "cut_payouts": True,
+    "issue_debt": True,
+    "draw_revolver": True,
+    "issue_equity": False,
+    "cut_costs": True,
+}
 
 
 def knobs_with_defaults(knobs: dict) -> dict:

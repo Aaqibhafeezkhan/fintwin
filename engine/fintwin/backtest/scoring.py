@@ -1,4 +1,5 @@
 """Probabilistic forecast scoring: interval coverage, PIT and CRPS."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -16,6 +17,7 @@ def crps_samples(samples: np.ndarray, y: float) -> float:
 
 def crps_gaussian(mu: float, sigma: float, y: float) -> float:
     from scipy.stats import norm
+
     sigma = max(sigma, 1e-12)
     z = (y - mu) / sigma
     return float(sigma * (z * (2 * norm.cdf(z) - 1) + 2 * norm.pdf(z) - 1 / np.sqrt(np.pi)))

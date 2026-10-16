@@ -9,6 +9,7 @@ Sector tolerance: leverage that would be alarming for a software company is norm
 For the health score only, each GICS sector gets a tolerance factor = its median net debt / EBITDA relative to
 the universe median, clipped to [1, 2]. It is derived from the data, not hand-tuned.
 """
+
 from __future__ import annotations
 
 import json
@@ -69,11 +70,16 @@ def compute_norms(leverage: dict[str, float]) -> dict:
     df = df[(df["sector"] != "") & df["nd_ebitda"].between(-5, 15)]
     overall = float(df["nd_ebitda"].median())
     by = df.groupby("sector")["nd_ebitda"].agg(["median", "count"])
-    tol = {s: (round(float(min(max(r["median"] / max(overall, 0.5), 1.0), 2.0)), 3) if r["count"] >= 3 else 1.0)
-           for s, r in by.iterrows()}
-    out = {"universe_median_nd_ebitda": round(overall, 3),
-           "sector_median_nd_ebitda": {s: round(float(r["median"]), 3) for s, r in by.iterrows()},
-           "tolerance": tol, "n": int(len(df))}
+    tol = {
+        s: (round(float(min(max(r["median"] / max(overall, 0.5), 1.0), 2.0)), 3) if r["count"] >= 3 else 1.0)
+        for s, r in by.iterrows()
+    }
+    out = {
+        "universe_median_nd_ebitda": round(overall, 3),
+        "sector_median_nd_ebitda": {s: round(float(r["median"]), 3) for s, r in by.iterrows()},
+        "tolerance": tol,
+        "n": int(len(df)),
+    }
     NORMS_JSON.write_text(json.dumps(out, indent=1), encoding="utf-8")
     _norms.cache_clear()
     return out

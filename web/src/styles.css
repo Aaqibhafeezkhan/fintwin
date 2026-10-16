@@ -333,3 +333,15 @@ tr.clickable:hover td { background: var(--wash); }
 @media (max-width: 1020px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
 .draw-path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.8s cubic-bezier(.2,.7,.2,1) forwards; }
 @media (prefers-reduced-motion: reduce) { .draw-path { animation: none; stroke-dashoffset: 0; } }
+
+/* ---------- time machine ---------- */
+.timeline-bar { display: flex; align-items: end; gap: 14px; border-bottom: 1px solid var(--rule-2); padding-bottom: 0; }
+.timeline-bar .play { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--ink); background: var(--ink); color: var(--page); cursor: pointer; flex: none; margin-bottom: 8px; font-size: 13px; }
+.timeline-bar .years { display: flex; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.timeline-bar .years button { flex: 1; min-width: 46px; background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 0 8px; cursor: pointer;
+  display: flex; flex-direction: column-reverse; align-items: center; gap: 6px; color: var(--muted); }
+.timeline-bar .years button:hover { color: var(--ink); }
+.timeline-bar .years button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.timeline-bar .yr { font-family: var(--font-mono); font-size: 12px; }
+.timeline-bar .mini { width: 10px; border-radius: 2px 2px 0 0; opacity: 0.85; transition: height 0.3s; }
+.timeline-bar .years button[aria-pressed="true"] .mini { opacity: 1; }

@@ -1,8 +1,8 @@
 import numpy as np
+from conftest import make_params
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from conftest import make_params
 from fintwin.model.ratings import rating_rank
 from fintwin.scenarios.presets import PRESETS, build_scenario
 from fintwin.stochastic.mc import run, summarize
@@ -16,14 +16,25 @@ def test_balance_sheet_balances_every_quarter(params):
 
 @settings(max_examples=40, deadline=None)
 @given(
-    depth=st.floats(0, 0.95), rate=st.integers(-300, 500), spread=st.integers(0, 800),
-    cost=st.floats(0, 10), freeze=st.integers(0, 12), dio=st.integers(0, 90),
-    equity=st.booleans(), revolver=st.booleans(),
+    depth=st.floats(0, 0.95),
+    rate=st.integers(-300, 500),
+    spread=st.integers(0, 800),
+    cost=st.floats(0, 10),
+    freeze=st.integers(0, 12),
+    dio=st.integers(0, 90),
+    equity=st.booleans(),
+    revolver=st.booleans(),
 )
 def test_identity_holds_under_any_scenario(depth, rate, spread, cost, freeze, dio, equity, revolver):
     p = make_params()
-    knobs = {"sales_depth": depth, "rate_bp": rate, "spread_bp": spread, "cost_pp": cost,
-             "refi_freeze": freeze, "dio_days": dio}
+    knobs = {
+        "sales_depth": depth,
+        "rate_bp": rate,
+        "spread_bp": spread,
+        "cost_pp": cost,
+        "refi_freeze": freeze,
+        "dio_days": dio,
+    }
     out = run(p, knobs, {"issue_equity": equity, "draw_revolver": revolver}, n_paths=200)
     scale = p["equity0"] + p["debt0"]
     assert np.abs(out["identity_gap"]).max() / scale < 1e-10
@@ -80,7 +91,7 @@ def test_equity_lever_prevents_breach_when_market_open(params):
 
 def test_rating_buckets():
     assert rating_rank(np.array([-5.0]))[0] == 0
-    assert rating_rank(np.array([2.6]))[0] == 9    # BBB
+    assert rating_rank(np.array([2.6]))[0] == 9  # BBB
     assert rating_rank(np.array([50.0]))[0] == 14  # AAA
 
 
@@ -111,6 +122,7 @@ def test_recession_regime_frequency_and_effect(params):
 
 def test_sobol_indices_are_sane(params):
     from fintwin.sensitivity.sobol import sobol
+
     rows = sobol(params, n_base=48, n_paths=100, n_boot=20)["rows"]
     st = {r["knob"]: r["ST"] for r in rows}
     assert all(0 <= r["S1"] <= 1.2 and 0 <= r["ST"] <= 1.5 for r in rows)
@@ -120,8 +132,13 @@ def test_sobol_indices_are_sane(params):
 
 def test_sector_tolerance_raises_health_of_levered_company(params):
     levered = {**params, "debt0": 4000.0, "maturities_q": [20.0] * 12}
-    levered["other_net0"] = levered["equity0"] + levered["ap0"] + levered["def0"] + levered["debt0"] - (
-        levered["cash0"] + levered["ar0"] + levered["inv0"] + levered["ppe0"])
+    levered["other_net0"] = (
+        levered["equity0"]
+        + levered["ap0"]
+        + levered["def0"]
+        + levered["debt0"]
+        - (levered["cash0"] + levered["ar0"] + levered["inv0"] + levered["ppe0"])
+    )
     eps = draw_shocks(levered, 800, levered["horizon"], seed=4)
     plain = summarize(run({**levered, "sector_tol": 1.0}, eps=eps))
     tolerant = summarize(run({**levered, "sector_tol": 2.0}, eps=eps))

@@ -4,6 +4,7 @@ Columns: 0 = demand (revenue growth), 1 = variable-cost margin, 2 = short rate, 
 4 = uniform(0,1) draw driving recession-regime transitions.
 Kept separate from the model core so both engines can be fed identical shocks in parity tests.
 """
+
 from __future__ import annotations
 
 import numpy as np

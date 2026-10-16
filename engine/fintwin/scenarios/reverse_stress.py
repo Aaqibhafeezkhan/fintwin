@@ -1,21 +1,28 @@
 """Reverse stress testing: instead of "what happens if X", ask "how big must X be to break the company?"."""
+
 from __future__ import annotations
 
-import numpy as np
+from typing import Any
 
 from ..stochastic.mc import run, summarize
 from ..stochastic.shocks import draw_shocks
 
-TARGETS = {
-    "sales_depth": {"lo": 0.0, "hi": 0.95, "base": {"sales_duration": 3, "sales_recovery": 6},
-                    "label": "Revenue drop (held 3 quarters)", "unit": "pct"},
+TARGETS: dict[str, dict[str, Any]] = {
+    "sales_depth": {
+        "lo": 0.0,
+        "hi": 0.95,
+        "base": {"sales_duration": 3, "sales_recovery": 6},
+        "label": "Revenue drop (held 3 quarters)",
+        "unit": "pct",
+    },
     "rate_bp": {"lo": 0.0, "hi": 1500.0, "base": {}, "label": "Interest-rate rise", "unit": "bp"},
     "cost_pp": {"lo": 0.0, "hi": 40.0, "base": {"cost_duration": 8}, "label": "Variable-cost increase", "unit": "pp"},
 }
 
 
-def breaking_point(p: dict, knob: str, target_p: float = 0.5, n_paths: int = 2000, seed: int = 21,
-                   iters: int = 18) -> float | None:
+def breaking_point(
+    p: dict, knob: str, target_p: float = 0.5, n_paths: int = 2000, seed: int = 21, iters: int = 18
+) -> float | None:
     """Smallest shock size at which P(liquidity breach within horizon) >= target_p.
 
     Uses common random numbers so P(breach) is monotone in the shock size and bisection is well-posed.
@@ -45,7 +52,8 @@ def reverse_stress(p: dict, n_paths: int = 2000) -> dict:
     out = {}
     for knob, spec in TARGETS.items():
         out[knob] = {
-            "label": spec["label"], "unit": spec["unit"],
+            "label": spec["label"],
+            "unit": spec["unit"],
             "p10": breaking_point(p, knob, 0.10, n_paths),
             "p50": breaking_point(p, knob, 0.50, n_paths),
         }

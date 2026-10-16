@@ -37,6 +37,7 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
             <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap" }}>
               <button className="btn" style={{ background: "var(--ink)", color: "var(--page)", borderColor: "var(--ink)", padding: "9px 16px", display: "inline-flex", gap: 8, alignItems: "center" }}
                 onClick={() => onStress("pandemic")}>Stress-test Carnival <IconArrow /></button>
+              <button className="btn" style={{ padding: "9px 16px" }} onClick={() => onGo("time")}>Rewind to February 2020</button>
               <button className="btn" style={{ padding: "9px 16px" }} onClick={() => onGo("backtest")}>See the evidence</button>
             </div>
           </div>

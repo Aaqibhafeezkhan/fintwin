@@ -7,6 +7,7 @@
    "misunderstood how the company reacts to it".
 3. Cross-sectional test - did the pre-COVID twin rank companies' vulnerability correctly?
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -15,14 +16,14 @@ from scipy.stats import spearmanr
 
 from ..data.facts import load_company
 from ..data.fred import macro_quarterly
-from ..scenarios.presets import PRESETS, build_scenario, DEFAULT_LEVERS
 from ..model.sd_model import simulate
+from ..scenarios.presets import DEFAULT_LEVERS, PRESETS, build_scenario
 from ..stochastic.calibrate import calibrate
 from ..stochastic.mc import run, summarize
 from ..stochastic.shocks import draw_shocks
 from .scoring import crps_gaussian, crps_samples, interval_hit, pit
 
-CUTOFFS = {
+CUTOFFS: dict[str, dict[str, str]] = {
     "pre_covid": {"date": "2020-02-20", "label": "Pre-COVID (data filed by 20 Feb 2020)", "stress": "pandemic"},
     "pre_hikes": {"date": "2022-01-31", "label": "Pre-rate-hikes (data filed by 31 Jan 2022)", "stress": "stagflation"},
 }
@@ -70,8 +71,11 @@ def forecast_backtest(ticker: str, cutoff_key: str, horizon: int = 8, n_paths: i
         "cash_like": base["cash"],
         "total_debt": base["debt"] + base["revolver"],
     }
-    stress_vars = {"revenue": stress["revenue"], "cash_like": stress["cash"],
-                   "total_debt": stress["debt"] + stress["revolver"]}
+    stress_vars = {
+        "revenue": stress["revenue"],
+        "cash_like": stress["cash"],
+        "total_debt": stress["debt"] + stress["revolver"],
+    }
     scores, series = {}, {}
     for var, sims in model_vars.items():
         y = real[var].values
@@ -80,38 +84,60 @@ def forecast_backtest(ticker: str, cutoff_key: str, horizon: int = 8, n_paths: i
             if not np.isfinite(y[h]):
                 continue
             mu_b, sd_b = _baseline(hist.quarters, var, h + 1)
-            rows.append({
-                "h": h + 1, "y": float(y[h]),
-                "hit50": interval_hit(sims[:, h], y[h], 50), "hit90": interval_hit(sims[:, h], y[h], 90),
-                "pit": pit(sims[:, h], y[h]),
-                "crps": crps_samples(sims[:, h], y[h]), "crps_baseline": crps_gaussian(mu_b, sd_b, y[h]),
-                "stress_hit90": interval_hit(stress_vars[var][:, h], y[h], 90),
-            })
+            rows.append(
+                {
+                    "h": h + 1,
+                    "y": float(y[h]),
+                    "hit50": interval_hit(sims[:, h], y[h], 50),
+                    "hit90": interval_hit(sims[:, h], y[h], 90),
+                    "pit": pit(sims[:, h], y[h]),
+                    "crps": crps_samples(sims[:, h], y[h]),
+                    "crps_baseline": crps_gaussian(mu_b, sd_b, y[h]),
+                    "stress_hit90": interval_hit(stress_vars[var][:, h], y[h], 90),
+                }
+            )
         if rows:
             df = pd.DataFrame(rows)
             scores[var] = {
                 "n": len(df),
-                "coverage50": float(df["hit50"].mean()), "coverage90": float(df["hit90"].mean()),
+                "coverage50": float(df["hit50"].mean()),
+                "coverage90": float(df["hit90"].mean()),
                 "stress_coverage90": float(df["stress_hit90"].mean()),
-                "crps": float(df["crps"].mean()), "crps_baseline": float(df["crps_baseline"].mean()),
+                "crps": float(df["crps"].mean()),
+                "crps_baseline": float(df["crps_baseline"].mean()),
                 "crps_skill": float(1 - df["crps"].mean() / max(df["crps_baseline"].mean(), 1e-9)),
                 "pit": df["pit"].round(3).tolist(),
             }
         hq = hist.quarters
-        hist_vals = {"revenue": hq["revenue"], "cash_like": hq["cash"] + hq["short_investments"],
-                     "total_debt": hq["total_debt"]}[var].tail(12)
+        hist_vals = {
+            "revenue": hq["revenue"],
+            "cash_like": hq["cash"] + hq["short_investments"],
+            "total_debt": hq["total_debt"],
+        }[var].tail(12)
         series[var] = {
-            "history": {"dates": [d.date().isoformat() for d in hist_vals.index], "values": hist_vals.round(0).tolist()},
-            "realized": {"dates": [d.date().isoformat() for d in real.index], "values": [None if not np.isfinite(v) else round(float(v)) for v in real[var].values]},
+            "history": {
+                "dates": [d.date().isoformat() for d in hist_vals.index],
+                "values": hist_vals.round(0).tolist(),
+            },
+            "realized": {
+                "dates": [d.date().isoformat() for d in real.index],
+                "values": [None if not np.isfinite(v) else round(float(v)) for v in real[var].values],
+            },
             "base_bands": np.percentile(sims, BANDS, axis=0).round(0).tolist(),
             "stress_bands": np.percentile(stress_vars[var], BANDS, axis=0).round(0).tolist(),
         }
 
     structural = structural_backtest(p, real, eps)
     return {
-        "ticker": ticker, "cutoff": cut["date"], "cutoff_label": cut["label"], "stress": cut["stress"],
-        "last_quarter_known": hist.quarters.index[-1].date().isoformat(), "horizon": H,
-        "scores": scores, "series": series, "structural": structural,
+        "ticker": ticker,
+        "cutoff": cut["date"],
+        "cutoff_label": cut["label"],
+        "stress": cut["stress"],
+        "last_quarter_known": hist.quarters.index[-1].date().isoformat(),
+        "horizon": H,
+        "scores": scores,
+        "series": series,
+        "structural": structural,
         "pre_shock": {"base": _headline(summarize(base)), "stress": _headline(summarize(stress))},
     }
 
@@ -145,9 +171,38 @@ def structural_backtest(p: dict, real: pd.DataFrame, eps: np.ndarray) -> dict:
     }
 
 
-UNIVERSE = ["AAPL", "MSFT", "GOOGL", "AMZN", "NFLX", "TSLA", "INTC", "BA", "CCL", "RCL", "NCLH", "DAL", "UAL",
-            "AAL", "MAR", "HLT", "M", "KSS", "CVX", "DIS", "NKE", "SBUX", "WMT", "KO", "PG", "JNJ", "CAT", "MGM",
-            "LVS", "EXPE"]
+UNIVERSE = [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "NFLX",
+    "TSLA",
+    "INTC",
+    "BA",
+    "CCL",
+    "RCL",
+    "NCLH",
+    "DAL",
+    "UAL",
+    "AAL",
+    "MAR",
+    "HLT",
+    "M",
+    "KSS",
+    "CVX",
+    "DIS",
+    "NKE",
+    "SBUX",
+    "WMT",
+    "KO",
+    "PG",
+    "JNJ",
+    "CAT",
+    "MGM",
+    "LVS",
+    "EXPE",
+]
 
 
 def cross_section(tickers: list[str] = UNIVERSE, n_paths: int = 2000) -> dict:
@@ -168,14 +223,18 @@ def cross_section(tickers: list[str] = UNIVERSE, n_paths: int = 2000) -> dict:
             pre_liq = p["cash0"]
             rev_ttm = float(hist.quarters["revenue"].tail(4).sum())
             debt_raise = float(win["total_debt"].max() - p["debt0"])
-            rows.append({
-                "ticker": t, "name": hist.name,
-                "health_base": sm_base["health_score"], "health_stress": sm_stress["health_score"],
-                "p_breach_stress": sm_stress["p_breach"],
-                "realized_burn_ratio": float(max(-fcf.min(), 0.0) / max(pre_liq, 1e-9)) if len(fcf) else None,
-                "realized_debt_raise_pct_rev": debt_raise / rev_ttm * 100,
-                "realized_min_cum_fcf_pct_rev": float(fcf.min() / rev_ttm * 100) if len(fcf) else None,
-            })
+            rows.append(
+                {
+                    "ticker": t,
+                    "name": hist.name,
+                    "health_base": sm_base["health_score"],
+                    "health_stress": sm_stress["health_score"],
+                    "p_breach_stress": sm_stress["p_breach"],
+                    "realized_burn_ratio": float(max(-fcf.min(), 0.0) / max(pre_liq, 1e-9)) if len(fcf) else None,
+                    "realized_debt_raise_pct_rev": debt_raise / rev_ttm * 100,
+                    "realized_min_cum_fcf_pct_rev": float(fcf.min() / rev_ttm * 100) if len(fcf) else None,
+                }
+            )
         except Exception as e:  # keep the study going; report what failed and why
             failed[t] = f"{type(e).__name__}: {e}"
     df = pd.DataFrame(rows)

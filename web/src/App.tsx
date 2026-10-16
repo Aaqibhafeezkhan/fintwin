@@ -10,13 +10,16 @@ import { MachineView } from "./views/MachineView";
 import { MethodView } from "./views/MethodView";
 import { OverviewView } from "./views/OverviewView";
 import { StressLab } from "./views/StressLab";
+import { TimeMachineView } from "./views/TimeMachineView";
 import { TwinView } from "./views/TwinView";
+import { VersusView } from "./views/VersusView";
 
 const NAV = [
-  ["overview", "Overview"], ["twin", "Company"], ["stress", "Stress lab"], ["machine", "Mechanics"],
-  ["compare", "Matrix"], ["backtest", "Evidence"], ["method", "Method"],
+  ["overview", "Overview"], ["twin", "Company"], ["stress", "Stress lab"], ["time", "Time machine"],
+  ["versus", "Compare"], ["compare", "Matrix"], ["backtest", "Evidence"], ["method", "Method"],
 ] as const;
-const COMPANY_VIEWS = new Set(["twin", "stress", "machine"]);
+const VIEWS = new Set<string>([...NAV.map(([k]) => k), "machine"]);
+const COMPANY_VIEWS = new Set(["twin", "stress", "machine", "time"]);
 const LIVE_API = import.meta.env.DEV;
 
 function useTheme() {
@@ -36,7 +39,7 @@ export default function App() {
   const [route, setRoute] = useHashState("overview");
   const [pathPart, query = ""] = route.split("?");
   const [viewRaw, tickerRaw, presetRaw] = pathPart.split("/");
-  const view = NAV.some(([k]) => k === viewRaw) ? viewRaw : "overview";
+  const view = VIEWS.has(viewRaw) ? viewRaw : "overview";
   const [lastTicker, setLastTicker] = useState("CCL");
   const ticker = (tickerRaw || lastTicker).toUpperCase();
   const [index, setIndex] = useState<Index | null>(null);
@@ -62,7 +65,7 @@ export default function App() {
       if (e.key === "?") setHelp((h) => !h);
       else if (e.key === "Escape") setHelp(false);
       else if (e.key === "t") toggleThemeRef.current();
-      else if (/^[1-7]$/.test(e.key)) navRef.current(NAV[+e.key - 1][0]);
+      else if (/^[1-8]$/.test(e.key)) navRef.current(NAV[+e.key - 1][0]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -113,13 +116,15 @@ export default function App() {
             {view === "overview" && <OverviewView index={index} onOpen={(t) => go("twin", t)} onGo={(v) => go(v)} onStress={(p) => go("stress", "CCL", p)} />}
             {COMPANY_VIEWS.has(view) && (!company || company.ticker !== ticker) && !error && <Skeleton h={520} />}
             {view === "twin" && company?.ticker === ticker && (
-              <TwinView c={company} meta={index.meta} index={index} onStress={(p) => go("stress", ticker, p)} onMachine={() => go("machine", ticker)} onOpen={(t) => go("twin", t)} />
+              <TwinView c={company} meta={index.meta} index={index} onStress={(p) => go("stress", ticker, p)} onMachine={() => go("machine", ticker)} onOpen={(t) => go("twin", t)} onRewind={() => go("time", ticker)} />
             )}
             {view === "stress" && company?.ticker === ticker && (
               <StressLab key={ticker} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"} query={query}
                 setPreset={(p, q) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}${q ? `?${q}` : ""}`)} />
             )}
             {view === "machine" && company?.ticker === ticker && <MachineView c={company} meta={index.meta} />}
+            {view === "time" && company?.ticker === ticker && <TimeMachineView key={ticker} ticker={ticker} name={company.name} meta={index.meta} />}
+            {view === "versus" && <VersusView index={index} pair={[tickerRaw, presetRaw]} onPair={(a, b2) => history.replaceState(null, "", `#versus/${a}/${b2}`)} onOpen={(t) => go("twin", t)} />}
             {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
             {view === "backtest" && <BacktestView onOpen={(t) => go("twin", t)} />}
             {view === "method" && <MethodView />}
@@ -132,7 +137,7 @@ export default function App() {
           <div className="palette fade-in" style={{ padding: "18px 20px" }} role="dialog" aria-label="Keyboard shortcuts" onMouseDown={(e) => e.stopPropagation()}>
             <div className="eyebrow" style={{ marginBottom: 12 }}>Keyboard shortcuts</div>
             <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 18px", margin: 0 }}>
-              {[[`${shortcutLabel} or /`, "Find a company"], ["1 – 7", NAV.map(([, l]) => l).join(" · ")], ["T", "Toggle light and dark"], ["?", "Show or hide this panel"], ["Esc", "Close"]].map(([k, d]) => (
+              {[[`${shortcutLabel} or /`, "Find a company"], ["1 – 8", NAV.map(([, l]) => l).join(" · ")], ["T", "Toggle light and dark"], ["?", "Show or hide this panel"], ["Esc", "Close"]].map(([k, d]) => (
                 <Fragment key={k}><dt><span className="kbd">{k}</span></dt><dd className="sub" style={{ margin: 0 }}>{d}</dd></Fragment>
               ))}
             </dl>

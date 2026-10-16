@@ -1,4 +1,5 @@
 """Monte Carlo driver: shocks -> model -> distribution summaries."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -12,8 +13,14 @@ BANDS = [5, 25, 50, 75, 95]
 BAND_VARS = ["revenue", "ebitda", "fcf", "cash", "liquidity", "debt", "icr", "nd_ebitda", "health", "zscore"]
 
 
-def run(p: dict, knobs: dict | None = None, levers: dict | None = None, n_paths: int = 5000,
-        seed: int = 7, eps: np.ndarray | None = None) -> dict:
+def run(
+    p: dict,
+    knobs: dict | None = None,
+    levers: dict | None = None,
+    n_paths: int = 5000,
+    seed: int = 7,
+    eps: np.ndarray | None = None,
+) -> dict:
     T = p["horizon"]
     scn = build_scenario(knobs or {}, T)
     lev = {**DEFAULT_LEVERS, **(levers or {})}
@@ -41,7 +48,9 @@ def summarize(out: dict) -> dict:
         "health_score": float(np.median(health_path_mean)),
         "health_p10": float(np.percentile(health_path_mean, 10)),
         "min_liquidity_bands": np.percentile(min_liq, BANDS).tolist(),
-        "median_quarters_to_breach": float(np.median(first_breach[first_breach >= 0])) if (first_breach >= 0).any() else None,
+        "median_quarters_to_breach": float(np.median(first_breach[first_breach >= 0]))
+        if (first_breach >= 0).any()
+        else None,
         "equity_needed_median": float(np.median(out["issued"].sum(1))),
         # mean component scores (paths x quarters) for the health waterfall; health_mean is their weighted
         # sum, minus the cap applied to paths that ran out of cash

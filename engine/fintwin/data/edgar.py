@@ -3,6 +3,7 @@
 SEC fair-access rules: declare a User-Agent with contact info and stay under 10 requests/s.
 data.sec.gov does not send CORS headers, so this always runs server-side / offline.
 """
+
 from __future__ import annotations
 
 import gzip

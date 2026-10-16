@@ -60,7 +60,7 @@ export function summarize(o: Outputs, nSample = 40): Summary {
   });
   const mean = (a: Float64Array) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i]; return s / a.length; };
   const components = { liq: mean(o.h_liq), cov: mean(o.h_cov), lev: mean(o.h_lev), solv: mean(o.h_solv) };
-  const healthMean = mean(o.health);
+  const healthAvg = mean(o.health);
   const ratingDist = new Array(RATINGS.length).fill(0);
   let icrLow = 0, subIG = 0, eqSum: number[] = [], debtSum: number[] = [];
   const healthMean = new Float64Array(N), minLiq = new Float64Array(N);
@@ -93,7 +93,7 @@ export function summarize(o: Outputs, nSample = 40): Summary {
   healthMean.forEach((h) => (healthHist[Math.min(Math.floor(h / 5), 19)] += 1 / N));
   const pick = Array.from({ length: Math.min(nSample, N) }, (_, j) => Math.floor((j * N) / Math.min(nSample, N)));
   return {
-    bands, pBreachByQ, pRecessionByQ, components, healthMean, pBreach: pBreachByQ[T - 1], pIcrBelow15: icrLow / N, pSubIG: subIG / N, ratingDist,
+    bands, pBreachByQ, pRecessionByQ, components, healthMean: healthAvg, pBreach: pBreachByQ[T - 1], pIcrBelow15: icrLow / N, pSubIG: subIG / N, ratingDist,
     healthScore: percentile(hs, 50), healthP10: percentile(hs, 10), healthHist,
     medianQuartersToBreach: breachQ.length ? med(breachQ) : null,
     minLiquidityBands: BANDS.map((b) => percentile(ml, b)),

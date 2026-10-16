@@ -8,21 +8,23 @@ Three problems this module solves:
 3. Look-ahead bias - restatements overwrite history. `asof` keeps only facts filed on or before a
    date, giving the point-in-time vintage an analyst would actually have seen.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
 
-from functools import lru_cache
-
-from .edgar import company_facts as _company_facts, ticker_to_cik
+from .edgar import company_facts as _company_facts
+from .edgar import ticker_to_cik
 
 
 @lru_cache(maxsize=2)
 def company_facts(cik: int) -> dict:
     return _company_facts(cik)
+
 
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "10-KT", "20-F", "40-F"}
 QUARTER_DAYS = (75, 105)
@@ -30,21 +32,39 @@ ALIGN_TOLERANCE_DAYS = 12
 
 # field -> ordered tag fallbacks. Duration concepts are flows over a period, instants are balances.
 DURATION = {
-    "revenue": ["RevenueFromContractWithCustomerExcludingAssessedTax", "Revenues", "SalesRevenueNet", "SalesRevenueServicesGross",
-                "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueGoodsNet"],
+    "revenue": [
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "Revenues",
+        "SalesRevenueNet",
+        "SalesRevenueServicesGross",
+        "RevenueFromContractWithCustomerIncludingAssessedTax",
+        "SalesRevenueGoodsNet",
+    ],
     "operating_income": ["OperatingIncomeLoss"],
-    "pretax_income": ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
-                      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
-                      "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic"],
-    "da": ["DepreciationDepletionAndAmortization", "DepreciationAndAmortization",
-           "DepreciationAmortizationAndAccretionNet", "Depreciation"],
-    "interest_expense": ["InterestExpense", "InterestExpenseNonoperating", "InterestAndDebtExpense",
-                         "InterestExpenseDebt"],
+    "pretax_income": [
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+        "IncomeLossFromContinuingOperationsBeforeIncomeTaxesDomestic",
+    ],
+    "da": [
+        "DepreciationDepletionAndAmortization",
+        "DepreciationAndAmortization",
+        "DepreciationAmortizationAndAccretionNet",
+        "Depreciation",
+    ],
+    "interest_expense": [
+        "InterestExpense",
+        "InterestExpenseNonoperating",
+        "InterestAndDebtExpense",
+        "InterestExpenseDebt",
+    ],
     "tax": ["IncomeTaxExpenseBenefit"],
     "net_income": ["NetIncomeLoss", "ProfitLoss"],
     "sbc": ["ShareBasedCompensation", "AllocatedShareBasedCompensationExpense"],
-    "cfo": ["NetCashProvidedByUsedInOperatingActivities",
-            "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"],
+    "cfo": [
+        "NetCashProvidedByUsedInOperatingActivities",
+        "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+    ],
     "capex": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"],
     "dividends": ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"],
     "buybacks": ["PaymentsForRepurchaseOfCommonStock"],
@@ -52,22 +72,36 @@ DURATION = {
     "imp_total": ["AssetImpairmentCharges"],
     "imp_gw_intang": ["GoodwillAndIntangibleAssetImpairment"],
     "imp_goodwill": ["GoodwillImpairmentLoss"],
-    "imp_intangible": ["ImpairmentOfIntangibleAssetsExcludingGoodwill",
-                       "ImpairmentOfIntangibleAssetsIndefinitelivedExcludingGoodwill"],
+    "imp_intangible": [
+        "ImpairmentOfIntangibleAssetsExcludingGoodwill",
+        "ImpairmentOfIntangibleAssetsIndefinitelivedExcludingGoodwill",
+    ],
     "imp_longlived": ["ImpairmentOfLongLivedAssetsHeldForUse"],
 }
 INSTANT = {
-    "cash": ["CashAndCashEquivalentsAtCarryingValue",
-             "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"],
-    "short_investments": ["MarketableSecuritiesCurrent", "ShortTermInvestments",
-                          "AvailableForSaleSecuritiesDebtSecuritiesCurrent"],
+    "cash": ["CashAndCashEquivalentsAtCarryingValue", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"],
+    "short_investments": [
+        "MarketableSecuritiesCurrent",
+        "ShortTermInvestments",
+        "AvailableForSaleSecuritiesDebtSecuritiesCurrent",
+    ],
     "receivables": ["AccountsReceivableNetCurrent", "ReceivablesNetCurrent"],
     "inventory": ["InventoryNet", "InventoryNetOfAllowancesCustomerAdvancesAndProgressBillings"],
-    "payables": ["AccountsPayableCurrent", "AccountsPayableTradeCurrent", "AccountsPayableAndAccruedLiabilitiesCurrent"],
-    "deferred_revenue": ["ContractWithCustomerLiabilityCurrent", "CustomerDepositsCurrent", "DeferredRevenueCurrent",
-                         "CustomerAdvancesCurrent"],
-    "ppe": ["PropertyPlantAndEquipmentNet",
-            "PropertyPlantAndEquipmentAndFinanceLeaseRightOfUseAssetAfterAccumulatedDepreciationAndAmortization"],
+    "payables": [
+        "AccountsPayableCurrent",
+        "AccountsPayableTradeCurrent",
+        "AccountsPayableAndAccruedLiabilitiesCurrent",
+    ],
+    "deferred_revenue": [
+        "ContractWithCustomerLiabilityCurrent",
+        "CustomerDepositsCurrent",
+        "DeferredRevenueCurrent",
+        "CustomerAdvancesCurrent",
+    ],
+    "ppe": [
+        "PropertyPlantAndEquipmentNet",
+        "PropertyPlantAndEquipmentAndFinanceLeaseRightOfUseAssetAfterAccumulatedDepreciationAndAmortization",
+    ],
     "assets": ["Assets"],
     "liabilities": ["Liabilities"],
     "current_assets": ["AssetsCurrent"],
@@ -100,9 +134,9 @@ class CompanyData:
     cik: int
     name: str
     asof: str | None
-    quarters: pd.DataFrame                 # index = quarter end (Timestamp)
+    quarters: pd.DataFrame  # index = quarter end (Timestamp)
     provenance: dict[str, dict[str, str]]  # field -> {period end iso: accession}
-    maturities: list[float]                # principal due in years 1..5 and after year 5
+    maturities: list[float]  # principal due in years 1..5 and after year 5
     maturities_date: str | None
     notes: list[str] = field(default_factory=list)
 
@@ -177,7 +211,7 @@ def _align(series: dict, spine: list[pd.Timestamp]) -> tuple[list[float], dict[s
     vals, prov = [], {}
     for q in spine:
         diffs = np.abs((ends - np.datetime64(q)).astype("timedelta64[D]").astype(int))
-        i = int(diffs.argmin())
+        i = int(np.argmin(diffs))
         if diffs[i] <= ALIGN_TOLERANCE_DAYS:
             v, accn = series[pd.Timestamp(ends[i])]
             vals.append(v)
@@ -193,7 +227,9 @@ def _total_debt(q: pd.DataFrame) -> pd.Series:
     parts = q[["ltd_current", "short_borrowings", "commercial_paper"]]
     current = current.fillna(parts.sum(axis=1, min_count=1)).fillna(0.0)
     split = current + q["ltd_noncurrent"]
-    total = split.fillna(q["debt_combined"]).fillna(q["ltd_total"] + q[["short_borrowings", "commercial_paper"]].sum(axis=1))
+    total = split.fillna(q["debt_combined"]).fillna(
+        q["ltd_total"] + q[["short_borrowings", "commercial_paper"]].sum(axis=1)
+    )
     return total.fillna(0.0)
 
 
@@ -237,7 +273,9 @@ def load_company(ticker: str, asof: str | None = None, min_year: int = 2010) -> 
     # Adjusted operating income: add back non-cash impairments. Tags overlap (a cash-flow total vs. its components),
     # so take the largest of the alternative measurements per quarter rather than summing them.
     parts = q[["imp_goodwill", "imp_intangible", "imp_longlived"]].fillna(0).sum(axis=1)
-    impairment = pd.concat([q["imp_total"].fillna(0), q["imp_gw_intang"].fillna(0), parts], axis=1).max(axis=1).clip(lower=0)
+    impairment = (
+        pd.concat([q["imp_total"].fillna(0), q["imp_gw_intang"].fillna(0), parts], axis=1).max(axis=1).clip(lower=0)
+    )
     q["impairment"] = impairment
     q["operating_income_reported"] = q["operating_income"]
     q["operating_income"] = q["operating_income"] + impairment
@@ -245,15 +283,38 @@ def load_company(ticker: str, asof: str | None = None, min_year: int = 2010) -> 
         notes.append(f"operating income adjusted for impairments in {int(impairment.gt(0).sum())} quarters")
     if q["payables"].isna().all():
         notes.append("payables: no data, assumed 0")
-    zero_fill = ["dividends", "buybacks", "sbc", "short_investments", "receivables", "inventory", "deferred_revenue",
-                 "debt_current", "ltd_current", "short_borrowings", "commercial_paper"]
+    zero_fill = [
+        "dividends",
+        "buybacks",
+        "sbc",
+        "short_investments",
+        "receivables",
+        "inventory",
+        "deferred_revenue",
+    ]
     q[zero_fill] = q[zero_fill].fillna(0.0)
     # Balances are sticky: carry the last known value across occasional gaps.
-    for k in ["cash", "ppe", "assets", "current_assets", "current_liabilities", "equity", "retained_earnings",
-              "ltd_noncurrent", "debt_combined", "ltd_total", "payables", "revolver_capacity"]:
+    for k in [
+        "cash",
+        "ppe",
+        "assets",
+        "current_assets",
+        "current_liabilities",
+        "equity",
+        "retained_earnings",
+        "ltd_noncurrent",
+        "debt_combined",
+        "ltd_total",
+        "payables",
+        "revolver_capacity",
+    ]:
         q[k] = q[k].ffill(limit=2)
     q["payables"] = q["payables"].fillna(0.0)
+    # Debt components stay NaN until the total is assembled: an untagged DebtCurrent must fall back to its
+    # parts (LongTermDebtCurrent, commercial paper, short-term borrowings), not count as zero.
     q["total_debt"] = _total_debt(q)
+    debt_parts = ["debt_current", "ltd_current", "short_borrowings", "commercial_paper"]
+    q[debt_parts] = q[debt_parts].fillna(0.0)
     if q["liabilities"].isna().any():
         derived = q["assets"] - q["equity"]
         if q["liabilities"].isna().all():

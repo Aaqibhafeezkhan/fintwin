@@ -8,6 +8,7 @@ calibrated on point-in-time filings and forecasts the next 4 quarters. Online co
 rescales interval widths using only forecasts made at *earlier* cutoffs, so the calibrated coverage is itself
 out-of-sample.
 """
+
 from __future__ import annotations
 
 import json
@@ -36,13 +37,100 @@ Q = [5, 25, 50, 75, 95]
 
 # S&P 100-style large caps outside financials, plus the travel / leisure names most exposed to 2020.
 UNIVERSE_XL = [
-    "AAPL", "MSFT", "AMZN", "GOOGL", "META", "NVDA", "TSLA", "AVGO", "ORCL", "ADBE", "CRM", "CSCO", "INTC", "AMD",
-    "QCOM", "TXN", "IBM", "ACN", "INTU", "NFLX", "DIS", "CMCSA", "T", "VZ", "TMUS", "CHTR", "WMT", "COST", "HD",
-    "LOW", "TGT", "NKE", "SBUX", "MCD", "KO", "PEP", "PG", "CL", "MDLZ", "PM", "MO", "KHC", "JNJ", "PFE", "MRK",
-    "ABBV", "LLY", "BMY", "AMGN", "GILD", "UNH", "CVS", "MDT", "ABT", "TMO", "DHR", "BA", "LMT", "RTX", "GD",
-    "CAT", "DE", "HON", "MMM", "GE", "UPS", "FDX", "UNP", "EMR", "CVX", "COP", "NEE", "DUK", "SO", "LIN", "DOW",
-    "BKNG", "CCL", "RCL", "NCLH", "DAL", "UAL", "AAL", "LUV", "MAR", "HLT", "M", "KSS", "MGM", "LVS", "WYNN",
-    "EXPE", "ABNB", "UBER",
+    "AAPL",
+    "MSFT",
+    "AMZN",
+    "GOOGL",
+    "META",
+    "NVDA",
+    "TSLA",
+    "AVGO",
+    "ORCL",
+    "ADBE",
+    "CRM",
+    "CSCO",
+    "INTC",
+    "AMD",
+    "QCOM",
+    "TXN",
+    "IBM",
+    "ACN",
+    "INTU",
+    "NFLX",
+    "DIS",
+    "CMCSA",
+    "T",
+    "VZ",
+    "TMUS",
+    "CHTR",
+    "WMT",
+    "COST",
+    "HD",
+    "LOW",
+    "TGT",
+    "NKE",
+    "SBUX",
+    "MCD",
+    "KO",
+    "PEP",
+    "PG",
+    "CL",
+    "MDLZ",
+    "PM",
+    "MO",
+    "KHC",
+    "JNJ",
+    "PFE",
+    "MRK",
+    "ABBV",
+    "LLY",
+    "BMY",
+    "AMGN",
+    "GILD",
+    "UNH",
+    "CVS",
+    "MDT",
+    "ABT",
+    "TMO",
+    "DHR",
+    "BA",
+    "LMT",
+    "RTX",
+    "GD",
+    "CAT",
+    "DE",
+    "HON",
+    "MMM",
+    "GE",
+    "UPS",
+    "FDX",
+    "UNP",
+    "EMR",
+    "CVX",
+    "COP",
+    "NEE",
+    "DUK",
+    "SO",
+    "LIN",
+    "DOW",
+    "BKNG",
+    "CCL",
+    "RCL",
+    "NCLH",
+    "DAL",
+    "UAL",
+    "AAL",
+    "LUV",
+    "MAR",
+    "HLT",
+    "M",
+    "KSS",
+    "MGM",
+    "LVS",
+    "WYNN",
+    "EXPE",
+    "ABNB",
+    "UBER",
 ]
 
 
@@ -66,9 +154,14 @@ def _vintage(hist, origin: str | None, macro) -> dict:
     """The twin as it stood at one point in time: horizon-12 parameters and its baseline verdict."""
     p12 = calibrate(hist, macro, 12)
     sm = summarize(simulate(p12, build_scenario({}, 12), draw_shocks(p12, 1500, 12, seed=5), DEFAULT_LEVERS))
-    return {"asof": origin or "latest", "last_quarter": hist.quarters.index[-1].date().isoformat(),
-            "health": sm["health_score"], "health_p10": sm["health_p10"], "p_breach": sm["p_breach"],
-            "params": {k: v for k, v in p12.items() if k != "_sources"}}
+    return {
+        "asof": origin or "latest",
+        "last_quarter": hist.quarters.index[-1].date().isoformat(),
+        "health": sm["health_score"],
+        "health_p10": sm["health_p10"],
+        "p_breach": sm["p_breach"],
+        "params": {k: v for k, v in p12.items() if k != "_sources"},
+    }
 
 
 def company_cases(ticker: str, n_paths: int = 2000) -> dict:
@@ -88,16 +181,23 @@ def company_cases(ticker: str, n_paths: int = 2000) -> dict:
                 continue
             p = calibrate(hist, macro_quarterly(origin), H)
             eps = draw_shocks(p, n_paths, H, seed=11)
-            sims = {flag: simulate(p, build_scenario({}, H), eps, {**DEFAULT_LEVERS, "recessions": flag})
-                    for flag in (True, False)}
+            sims = {
+                flag: simulate(p, build_scenario({}, H), eps, {**DEFAULT_LEVERS, "recessions": flag})
+                for flag in (True, False)
+            }
             for var, key in (("revenue", "revenue"), ("cash_like", "cash")):
                 for h in range(H):
                     y = float(real[var].iloc[h])
                     if not np.isfinite(y):
                         continue
                     mu_b, sd_b = _baseline(hist.quarters, var, h + 1)
-                    row = {"origin": origin, "var": var, "h": h + 1, "y": y,
-                           "crps_baseline": crps_gaussian(mu_b, sd_b, y)}
+                    row = {
+                        "origin": origin,
+                        "var": var,
+                        "h": h + 1,
+                        "y": y,
+                        "crps_baseline": crps_gaussian(mu_b, sd_b, y),
+                    }
                     for flag, out in sims.items():
                         x = out[key][:, h]
                         tag = "reg" if flag else "noreg"
@@ -114,12 +214,21 @@ def company_cases(ticker: str, n_paths: int = 2000) -> dict:
     cash_like = full["cash"] + full["short_investments"]
     timeline = {
         "ticker": ticker,
-        "series": {"dates": [d.date().isoformat() for d in full.index],
-                   "revenue": full["revenue"].round(0).tolist(), "cash": cash_like.round(0).tolist(),
-                   "debt": full["total_debt"].round(0).tolist()},
+        "series": {
+            "dates": [d.date().isoformat() for d in full.index],
+            "revenue": full["revenue"].round(0).tolist(),
+            "cash": cash_like.round(0).tolist(),
+            "debt": full["total_debt"].round(0).tolist(),
+        },
         "vintages": vintages,
     }
-    return {"ticker": ticker, "cases": cases, "skipped": skipped, "covid": covid_row(ticker, full), "timeline": timeline}
+    return {
+        "ticker": ticker,
+        "cases": cases,
+        "skipped": skipped,
+        "covid": covid_row(ticker, full),
+        "timeline": timeline,
+    }
 
 
 def covid_row(ticker: str, full: pd.DataFrame) -> dict | None:
@@ -137,9 +246,14 @@ def covid_row(ticker: str, full: pd.DataFrame) -> dict | None:
         rev_ttm = float(hist.quarters["revenue"].tail(4).sum())
         if not len(fcf):
             return None
-        return {"ticker": ticker, "name": hist.name, "health_stress": st["health_score"], "p_breach_stress": st["p_breach"],
-                "realized_min_cum_fcf_pct_rev": float(fcf.min() / rev_ttm * 100),
-                "realized_debt_raise_pct_rev": float((win["total_debt"].max() - p["debt0"]) / rev_ttm * 100)}
+        return {
+            "ticker": ticker,
+            "name": hist.name,
+            "health_stress": st["health_score"],
+            "p_breach_stress": st["p_breach"],
+            "realized_min_cum_fcf_pct_rev": float(fcf.min() / rev_ttm * 100),
+            "realized_debt_raise_pct_rev": float((win["total_debt"].max() - p["debt0"]) / rev_ttm * 100),
+        }
     except Exception:
         return None
 
@@ -148,10 +262,15 @@ def _scores(df: pd.DataFrame, tag: str) -> pd.DataFrame:
     q = np.array(df[f"q_{tag}"].tolist())
     y = df["y"].values
     half90, half50 = (q[:, 4] - q[:, 0]) / 2, (q[:, 3] - q[:, 1]) / 2
-    return pd.DataFrame({"s90": np.abs(y - q[:, 2]) / np.maximum(half90, 1e-9),
-                         "s50": np.abs(y - q[:, 2]) / np.maximum(half50, 1e-9),
-                         "hit90": (y >= q[:, 0]) & (y <= q[:, 4]), "hit50": (y >= q[:, 1]) & (y <= q[:, 3])},
-                        index=df.index)
+    return pd.DataFrame(
+        {
+            "s90": np.abs(y - q[:, 2]) / np.maximum(half90, 1e-9),
+            "s50": np.abs(y - q[:, 2]) / np.maximum(half50, 1e-9),
+            "hit90": (y >= q[:, 0]) & (y <= q[:, 4]),
+            "hit50": (y >= q[:, 1]) & (y <= q[:, 3]),
+        },
+        index=df.index,
+    )
 
 
 def aggregate() -> dict:
@@ -159,8 +278,13 @@ def aggregate() -> dict:
     per = [json.loads(f.read_text(encoding="utf-8")) for f in files]
     df = pd.DataFrame([c | {"ticker": r["ticker"]} for r in per for c in r["cases"]])
     df["year"] = df["origin"].str[:4].astype(int)
-    res: dict = {"n_companies": int(df["ticker"].nunique()), "n_forecasts": int(len(df)),
-                 "origins": ORIGINS, "horizon": H, "vars": {}}
+    res: dict = {
+        "n_companies": int(df["ticker"].nunique()),
+        "n_forecasts": int(len(df)),
+        "origins": ORIGINS,
+        "horizon": H,
+        "vars": {},
+    }
     for var, g in df.groupby("var"):
         g = g.copy()
         sc = _scores(g, "reg")
@@ -177,19 +301,30 @@ def aggregate() -> dict:
             conf50 += list(gy["s50"] <= c50)
         eval_mask = g["year"].isin(list(factors))
         pit = np.histogram(g["pit_reg"], bins=10, range=(0, 1))[0] / len(g)
-        by_year = {int(y): {"cov90": float(gy["hit90"].mean()), "n": int(len(gy)),
-                            "skill": float(1 - gy["crps_reg"].mean() / gy["crps_baseline"].mean())}
-                   for y, gy in g.groupby("year")}
+        by_year = {
+            int(y): {
+                "cov90": float(gy["hit90"].mean()),
+                "n": int(len(gy)),
+                "skill": float(1 - gy["crps_reg"].mean() / gy["crps_baseline"].mean()),
+            }
+            for y, gy in g.groupby("year")
+        }
         res["vars"][var] = {
             "n": int(len(g)),
-            "raw": {"coverage90": float(g.loc[eval_mask, "hit90"].mean()), "coverage50": float(g.loc[eval_mask, "hit50"].mean())},
+            "raw": {
+                "coverage90": float(g.loc[eval_mask, "hit90"].mean()),
+                "coverage50": float(g.loc[eval_mask, "hit50"].mean()),
+            },
             "conformal": {"coverage90": float(np.mean(conf90)), "coverage50": float(np.mean(conf50))},
             "conformal_factors": factors,
             "crps_skill_vs_naive": float(1 - g["crps_reg"].mean() / g["crps_baseline"].mean()),
             "median_case_skill": float((1 - g["crps_reg"] / g["crps_baseline"]).median()),
             "share_cases_beating_naive": float((g["crps_reg"] < g["crps_baseline"]).mean()),
-            "regime_ablation": {"crps_with": float(g["crps_reg"].mean()), "crps_without": float(g["crps_noreg"].mean()),
-                                "improvement_pct": float((1 - g["crps_reg"].mean() / g["crps_noreg"].mean()) * 100)},
+            "regime_ablation": {
+                "crps_with": float(g["crps_reg"].mean()),
+                "crps_without": float(g["crps_noreg"].mean()),
+                "improvement_pct": float((1 - g["crps_reg"].mean() / g["crps_noreg"].mean()) * 100),
+            },
             "pit_hist": pit.round(4).tolist(),
             "by_year": by_year,
             "by_horizon": {int(h): float(gh["hit90"].mean()) for h, gh in g.groupby("h")},
@@ -200,16 +335,20 @@ def aggregate() -> dict:
     rng = np.random.default_rng(0)
     boot = []
     for _ in range(2000):
-        b = xs.sample(len(xs), replace=True, random_state=int(rng.integers(1e9)))
+        b = xs.sample(len(xs), replace=True, random_state=int(rng.integers(1_000_000_000)))
         boot.append(spearmanr(b["health_stress"], b["realized_min_cum_fcf_pct_rev"])[0])
     # decile view: realized burn of the twin's most vs least fragile fifth
     xs["quintile"] = pd.qcut(xs["health_stress"].rank(method="first"), 5, labels=False)
     quint = xs.groupby("quintile")["realized_min_cum_fcf_pct_rev"].median().round(1).tolist()
     severe = (xs["realized_min_cum_fcf_pct_rev"] < -10).groupby(xs["quintile"]).mean().round(3).tolist()
     res["cross_section"] = {
-        "n": int(len(xs)), "spearman": float(rho), "p_value": float(pval),
+        "n": int(len(xs)),
+        "spearman": float(rho),
+        "p_value": float(pval),
         "ci95": [float(np.nanpercentile(boot, 2.5)), float(np.nanpercentile(boot, 97.5))],
-        "quintile_median_burn": quint, "quintile_share_severe_burn": severe, "rows": rows,
+        "quintile_median_burn": quint,
+        "quintile_share_severe_burn": severe,
+        "rows": rows,
     }
     res["skipped"] = {r["ticker"]: r["skipped"] for r in per if r["skipped"]}
     OUT.write_text(json.dumps(res, separators=(",", ":")), encoding="utf-8")
@@ -223,11 +362,28 @@ if __name__ == "__main__":
         r = aggregate()
         print(json.dumps({k: v for k, v in r.items() if k not in ("vars", "cross_section", "skipped")}))
         for var, v in r["vars"].items():
-            print(var, {k: v[k] for k in ("n", "raw", "conformal", "crps_skill_vs_naive", "share_cases_beating_naive",
-                                          "regime_ablation")})
+            print(
+                var,
+                {
+                    k: v[k]
+                    for k in (
+                        "n",
+                        "raw",
+                        "conformal",
+                        "crps_skill_vs_naive",
+                        "share_cases_beating_naive",
+                        "regime_ablation",
+                    )
+                },
+            )
         cs = r["cross_section"]
-        print("cross-section", {k: cs[k] for k in ("n", "spearman", "p_value", "ci95", "quintile_median_burn",
-                                                    "quintile_share_severe_burn")})
+        print(
+            "cross-section",
+            {
+                k: cs[k]
+                for k in ("n", "spearman", "p_value", "ci95", "quintile_median_burn", "quintile_share_severe_burn")
+            },
+        )
     else:
         CACHE.mkdir(parents=True, exist_ok=True)
         t = arg.upper()

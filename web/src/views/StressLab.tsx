@@ -3,6 +3,7 @@ import { Columns, ProbLine, Tornado } from "../charts/Bars";
 import { FanChart, FanLegend } from "../charts/FanChart";
 import { ShockPreview } from "../charts/ShockPreview";
 import { SobolChart } from "../charts/SobolChart";
+import { Waterfall } from "../charts/Waterfall";
 import type { Company, Meta } from "../data";
 import { INVESTMENT_GRADE_MIN_RANK, RATINGS } from "../engine/ratings";
 import { KNOB_DEFAULTS } from "../engine/scenario";
@@ -197,6 +198,13 @@ export function StressLab({ c, meta, preset: initialPreset, query = "", setPrese
                   format={(x) => `${fixed(x, 1)}×`} tick={(x) => `${x}×`} />
               </div>
             </div>
+
+            {!isBase && (
+              <Section eyebrow="Attribution" title="Why the score moves"
+                note="The change in average health, split into its four weighted components plus the penalty for paths that run out of cash.">
+                <Waterfall base={b.components} scen={s.components} baseMean={b.healthMean} scenMean={s.healthMean} scenLabel={title} />
+              </Section>
+            )}
 
             <Section eyebrow="Timing and ratings" title="When it breaks, and where the rating lands">
               <div className="cols-2">

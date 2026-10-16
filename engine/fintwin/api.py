@@ -4,6 +4,7 @@
 
 The static dashboard works without it (it reads JSON snapshots); this only adds tickers outside the snapshot.
 """
+
 from __future__ import annotations
 
 import json
@@ -30,10 +31,10 @@ def company(ticker: str) -> Response:
         raise HTTPException(400, "invalid ticker")
     try:
         return Response(_build(t), media_type="application/json")
-    except KeyError:
-        raise HTTPException(404, f"{t} is not a known SEC ticker")
+    except KeyError as e:
+        raise HTTPException(404, f"{t} is not a known SEC ticker") from e
     except Exception as e:  # data gaps for unusual filers (banks, foreign issuers, custom taxonomies)
-        raise HTTPException(422, f"{t}: could not build a twin ({type(e).__name__}: {e})")
+        raise HTTPException(422, f"{t}: could not build a twin ({type(e).__name__}: {e})") from e
 
 
 if __name__ == "__main__":
