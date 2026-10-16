@@ -1,0 +1,171 @@
+{
+ "ticker": "EME",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "EMCOR Group, Inc.",
+  "ticker": "EME",
+  "sector": "Construction & Engineering",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$18.6B",
+   "cash_and_short_term_investments": "$924M",
+   "total_debt": "$0M",
+   "synthetic_rating_today": "n/a",
+   "debt_maturing_next_4_quarters": "$0M",
+   "committed_credit_facility": "$1.5B",
+   "customer_deposits_days_of_revenue": 47
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$853M",
+   "variable_cost_share_of_revenue_pct": 68,
+   "trend_growth_pct_per_year": 11.8,
+   "demand_volatility_pct_per_quarter": 2.3,
+   "average_cost_of_debt_pct": 4.7,
+   "revenue_sensitivity_to_gdp": 1.4
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 90,
+    "health_score_unluckiest_10pct": 89,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 90,
+    "health_score_unluckiest_10pct": 89,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 88,
+    "health_score_unluckiest_10pct": 88,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 88,
+    "health_score_unluckiest_10pct": 87,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 69,
+    "health_score_unluckiest_10pct": 66,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 88,
+    "health_score_unluckiest_10pct": 88,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 90,
+    "health_score_unluckiest_10pct": 89,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 85,
+    "health_score_unluckiest_10pct": 85,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 0,
+    "prob_sub_investment_grade_at_horizon_pct": 0
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "28pp cost increase",
+    "shock_for_10pct_breach": "27pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Inventory +45 days": -5.6,
+   "Revenue -30%": -2.6,
+   "Costs +5pp": -1.5,
+   "Spreads +400bp": 0.0,
+   "Debt markets shut 4q": 0.0,
+   "Rates +300bp": 0.1
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 90/100 under baseline, 69 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "EMCOR Group, Inc. enters the simulation with $924M of cash and short-term investments against $0M of debt. Across 5,000 simulated 12-quarter futures the median health score is 90, with the unluckiest tenth of paths at 89 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is inventory +45 days, which moves the health score by -5.6 points.",
+ "key_risks": [
+  {
+   "risk": "Customer-deposit refunds",
+   "evidence": "About 47 days of revenue are held as customer deposits; a demand stop turns them into a cash outflow on top of operating losses."
+  }
+ ],
+ "resilience": [
+  "Cash of $924M covers the next four quarters of maturities ($0M).",
+  "A committed credit facility of about $1.5B backstops liquidity (size assumed: not tagged in filings).",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach.",
+  "It would take a revenue collapse of more than half to make a cash shortfall likely."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 69 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 85 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 88 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 88 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 88 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 90 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 90 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $924M vs $0M).",
+  "Variable-cost ratio versus the calibrated 68% of revenue: a sustained rise signals margin squeeze.",
+  "Customer-deposit balance: falling deposits are the earliest sign of weakening forward demand.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

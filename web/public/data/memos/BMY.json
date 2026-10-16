@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "BRISTOL MYERS SQUIBB CO",
   "ticker": "BMY",
-  "sector": "Pharma",
+  "sector": "Pharmaceuticals",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -40,55 +40,55 @@
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
     "health_score_0_100": 87,
-    "health_score_unluckiest_10pct": 85,
+    "health_score_unluckiest_10pct": 86,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 85,
-    "health_score_unluckiest_10pct": 83,
+    "health_score_0_100": 86,
+    "health_score_unluckiest_10pct": 84,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 85,
-    "health_score_unluckiest_10pct": 83,
+    "health_score_0_100": 86,
+    "health_score_unluckiest_10pct": 84,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 44,
-    "health_score_unluckiest_10pct": 39,
+    "health_score_0_100": 46,
+    "health_score_unluckiest_10pct": 40,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 85,
-    "health_score_unluckiest_10pct": 84,
+    "health_score_0_100": 86,
+    "health_score_unluckiest_10pct": 85,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 85,
-    "health_score_unluckiest_10pct": 84,
+    "health_score_0_100": 86,
+    "health_score_unluckiest_10pct": 85,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 84,
-    "health_score_unluckiest_10pct": 82,
+    "health_score_0_100": 85,
+    "health_score_unluckiest_10pct": 84,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -109,17 +109,17 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -4.2,
-   "Inventory +45 days": -2.0,
-   "Debt markets shut 4q": -1.0,
-   "Costs +5pp": -0.9,
-   "Spreads +400bp": -0.4,
-   "Rates +300bp": -0.3
+   "Revenue -30%": -3.7,
+   "Inventory +45 days": -1.9,
+   "Debt markets shut 4q": -1.1,
+   "Costs +5pp": -0.6,
+   "Spreads +400bp": -0.3,
+   "Rates +300bp": -0.2
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 87/100 under baseline, 44 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "BRISTOL MYERS SQUIBB CO enters the simulation with $11.1B of cash and short-term investments against $43.1B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 87, with the unluckiest tenth of paths at 86 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.2 points.",
+ "headline": "Healthy credit profile: health 87/100 under baseline, 46 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "BRISTOL MYERS SQUIBB CO enters the simulation with $11.1B of cash and short-term investments against $43.1B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 87, with the unluckiest tenth of paths at 86 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -3.7 points.",
  "key_risks": [
   {
    "risk": "Operating leverage",
@@ -135,27 +135,27 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 44 (−43 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 46 (−41 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 84 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 85 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 85 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 86 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 85 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 86 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 85 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 86 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 85 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 86 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",

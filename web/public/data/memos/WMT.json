@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "Walmart Inc.",
   "ticker": "WMT",
-  "sector": "Retail",
+  "sector": "Consumer Staples Merchandise Retail",
   "last_reported_quarter": "2026-07-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$728.5B",
    "cash_and_short_term_investments": "$11.5B",
-   "total_debt": "$36.5B",
+   "total_debt": "$50.4B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$13.9B",
    "committed_credit_facility": "$58.3B",
@@ -25,22 +25,22 @@
    "variable_cost_share_of_revenue_pct": 70,
    "trend_growth_pct_per_year": 5.3,
    "demand_volatility_pct_per_quarter": 1.7,
-   "average_cost_of_debt_pct": 5.3,
+   "average_cost_of_debt_pct": 3.9,
    "revenue_sensitivity_to_gdp": 0.7
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 75,
-    "health_score_unluckiest_10pct": 73,
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 72,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 75,
-    "health_score_unluckiest_10pct": 73,
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 72,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -48,7 +48,7 @@
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
     "health_score_0_100": 66,
-    "health_score_unluckiest_10pct": 59,
+    "health_score_unluckiest_10pct": 60,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 7,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -58,21 +58,21 @@
     "health_score_0_100": 65,
     "health_score_unluckiest_10pct": 59,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 9,
+    "prob_interest_coverage_below_1_5x_pct": 10,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 9,
-    "health_score_unluckiest_10pct": 7,
+    "health_score_0_100": 10,
+    "health_score_unluckiest_10pct": 8,
     "prob_liquidity_breach_pct": 100.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 62
+    "prob_sub_investment_grade_at_horizon_pct": 68
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 66,
-    "health_score_unluckiest_10pct": 60,
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 61,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 3,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -87,51 +87,51 @@
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 69,
-    "health_score_unluckiest_10pct": 64,
+    "health_score_0_100": 70,
+    "health_score_unluckiest_10pct": 66,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_interest_coverage_below_1_5x_pct": 4,
     "prob_sub_investment_grade_at_horizon_pct": 0
    }
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "92% revenue drop",
-    "shock_for_10pct_breach": "88% revenue drop"
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "90% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
     "shock_for_10pct_breach": "not reached"
    },
    "Variable-cost increase": {
-    "shock_for_50pct_breach": "16pp cost increase",
-    "shock_for_10pct_breach": "15pp cost increase"
+    "shock_for_50pct_breach": "17pp cost increase",
+    "shock_for_10pct_breach": "16pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -19.3,
-   "Costs +5pp": -8.5,
-   "Inventory +45 days": -2.6,
-   "Debt markets shut 4q": -0.3,
+   "Revenue -30%": -18.6,
+   "Costs +5pp": -7.8,
+   "Inventory +45 days": -1.4,
+   "Debt markets shut 4q": -0.1,
    "Spreads +400bp": -0.0,
    "Rates +300bp": -0.0
   },
   "global_sensitivity_total_order_pct": {
-   "Revenue shock": 81,
+   "Revenue shock": 80,
    "Inventory build-up": 30,
+   "Debt-market freeze": 16,
    "Variable costs": 14,
-   "Debt-market freeze": 13,
    "Interest rates": 0,
    "Credit spreads": 0
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 75/100 under baseline, 9 under demand freeze; the company breaks (50% breach odds) at a 92% revenue drop.",
- "summary": "Walmart Inc. enters the simulation with $11.5B of cash and short-term investments against $36.5B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 75, with the unluckiest tenth of paths at 73 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 81% of the variance of the health score across the stress space, and interactions between shocks add 5%.",
+ "headline": "Healthy credit profile: health 74/100 under baseline, 10 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Walmart Inc. enters the simulation with $11.5B of cash and short-term investments against $50.4B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 74, with the unluckiest tenth of paths at 72 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 80% of the variance of the health score across the stress space, and interactions between shocks add 7%.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 19.3 points and raises breach odds by 0.0 percentage points; fixed costs are about 24% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 18.6 points and raises breach odds by 0.0 percentage points; fixed costs are about 24% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Refinancing wall",
@@ -147,31 +147,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 9 (−66 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 62%."
+   "note": "Health 10 (−64 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 68%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 65 (−10 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 65 (−9 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 66 (−9 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 66 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 66 (−9 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 67 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 69 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 70 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 74 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 74 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 75 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 74 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

@@ -35,10 +35,10 @@ Carnival survived by raising roughly $19B of net new debt, much of it secured at
 
 ## Structural test
 
-When the twin is fed the *realized* revenue path, its cumulative free cash flow over Q1 2020–Q4 2021 is **−$12.8B, against an actual −$17.6B**. That is the right direction and shape (quarterly correlation 0.66), with burn under-estimated by about 28%. The gap comes from fixed ship costs and deposit refunds running above the calibrated cost structure. An industry-specific "fleet lay-up cost" parameter would be the natural next refinement.
+When the twin is fed the *realized* revenue path, its cumulative free cash flow over Q1 2020–Q4 2021 is **−$12.8B, against an actual −$17.6B**. That is the right direction and shape (quarterly correlation 0.66), with burn under-estimated by about 27%. The gap comes from fixed ship costs and deposit refunds running above the calibrated cost structure. An industry-specific "fleet lay-up cost" parameter would be the natural next refinement.
 
 ## Takeaways
 
 * The twin **cannot forecast** the shock, and the unconditional fan missed it entirely. That is the correct behaviour, and the backtest reports it.
-* The twin **does rank fragility**. Before COVID, its stress health score put the three cruise lines and Boeing near the bottom of 88 companies (Spearman ρ = 0.51 with realized cash burn, p < 10⁻⁶).
+* The twin **does rank fragility**. Before COVID, its stress health score put all three cruise lines in the most fragile 27% of 331 S&P 500 companies, and Boeing second from the bottom (Spearman ρ = 0.39 with realized cash burn, p < 10⁻¹²).
 * In the Stress Lab, flipping on *Emergency equity raise* and running *Demand freeze* reproduces the strategy Carnival actually used to survive.

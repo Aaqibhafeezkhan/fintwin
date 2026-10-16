@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "INTUIT INC.",
   "ticker": "INTU",
-  "sector": "Software",
+  "sector": "Application Software",
   "last_reported_quarter": "2026-07-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$21.4B",
    "cash_and_short_term_investments": "$4.7B",
-   "total_debt": "$6.4B",
+   "total_debt": "$7.7B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$1.2B",
    "committed_credit_facility": "$1.5B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 31,
    "trend_growth_pct_per_year": 10.2,
    "demand_volatility_pct_per_quarter": 7.2,
-   "average_cost_of_debt_pct": 4.5,
+   "average_cost_of_debt_pct": 3.9,
    "revenue_sensitivity_to_gdp": 1.0
   },
   "scenarios": {
@@ -63,16 +63,16 @@
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 64,
-    "health_score_unluckiest_10pct": 58,
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 56,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 1
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 86,
-    "health_score_unluckiest_10pct": 85,
+    "health_score_0_100": 85,
+    "health_score_unluckiest_10pct": 84,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 1,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -118,8 +118,8 @@
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 86/100 under baseline, 64 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "INTUIT INC. enters the simulation with $4.7B of cash and short-term investments against $6.4B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 86, with the unluckiest tenth of paths at 85 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -1.5 points.",
+ "headline": "Healthy credit profile: health 86/100 under baseline, 63 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "INTUIT INC. enters the simulation with $4.7B of cash and short-term investments against $7.7B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 86, with the unluckiest tenth of paths at 85 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -1.5 points.",
  "key_risks": [
   {
    "risk": "Operating leverage",
@@ -135,18 +135,18 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 64 (−22 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 63 (−23 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Sales -20%",
    "note": "Health 85 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
-   "scenario": "Credit crunch",
+   "scenario": "Recession",
    "note": "Health 85 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
-   "scenario": "Recession",
+   "scenario": "Credit crunch",
    "note": "Health 85 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
@@ -155,7 +155,7 @@
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 86 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 85 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",

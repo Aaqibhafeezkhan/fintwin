@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "LOCKHEED MARTIN CORP",
   "ticker": "LMT",
-  "sector": "Defense",
+  "sector": "Aerospace & Defense",
   "last_reported_quarter": "2026-06-28",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 67,
    "trend_growth_pct_per_year": 4.9,
    "demand_volatility_pct_per_quarter": 5.3,
-   "average_cost_of_debt_pct": 5.4,
+   "average_cost_of_debt_pct": 5.2,
    "revenue_sensitivity_to_gdp": 0.5
   },
   "scenarios": {
@@ -39,7 +39,7 @@
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 73,
+    "health_score_0_100": 74,
     "health_score_unluckiest_10pct": 64,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 2,
@@ -55,8 +55,8 @@
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 66,
-    "health_score_unluckiest_10pct": 53,
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 54,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 2,
     "prob_sub_investment_grade_at_horizon_pct": 3
@@ -67,7 +67,7 @@
     "health_score_unluckiest_10pct": 9,
     "prob_liquidity_breach_pct": 100.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 36
+    "prob_sub_investment_grade_at_horizon_pct": 35
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
@@ -79,7 +79,7 @@
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 72,
+    "health_score_0_100": 73,
     "health_score_unluckiest_10pct": 65,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 1,
@@ -105,25 +105,25 @@
    },
    "Variable-cost increase": {
     "shock_for_50pct_breach": "19pp cost increase",
-    "shock_for_10pct_breach": "16pp cost increase"
+    "shock_for_10pct_breach": "17pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -12.2,
-   "Costs +5pp": -5.9,
-   "Inventory +45 days": -3.4,
-   "Debt markets shut 4q": -0.9,
-   "Rates +300bp": -0.6,
+   "Revenue -30%": -12.1,
+   "Costs +5pp": -5.7,
+   "Inventory +45 days": -3.2,
+   "Debt markets shut 4q": -1.0,
+   "Rates +300bp": -0.5,
    "Spreads +400bp": -0.5
   }
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 74/100 under baseline, 15 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "LOCKHEED MARTIN CORP enters the simulation with $3.8B of cash and short-term investments against $20.5B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 74, with the unluckiest tenth of paths at 65 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -12.2 points.",
+ "summary": "LOCKHEED MARTIN CORP enters the simulation with $3.8B of cash and short-term investments against $20.5B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 74, with the unluckiest tenth of paths at 65 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -12.1 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 12.2 points and raises breach odds by 0.0 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 12.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Customer-deposit refunds",
@@ -139,11 +139,11 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 15 (−59 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 36%."
+   "note": "Health 15 (−59 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 35%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 66 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+   "note": "Health 67 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
   },
   {
    "scenario": "Stagflation (2022)",
@@ -159,11 +159,11 @@
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 72 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 73 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 73 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+   "note": "Health 74 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
   }
  ],
  "watch_list": [

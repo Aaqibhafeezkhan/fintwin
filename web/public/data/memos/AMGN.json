@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "AMGEN INC",
   "ticker": "AMGN",
-  "sector": "Biotech",
+  "sector": "Biotechnology",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$38.1B",
    "cash_and_short_term_investments": "$14.0B",
-   "total_debt": "$51.9B",
+   "total_debt": "$57.3B",
    "synthetic_rating_today": "A",
    "debt_maturing_next_4_quarters": "$3.6B",
    "committed_credit_facility": "$3.0B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 44,
    "trend_growth_pct_per_year": 7.1,
    "demand_volatility_pct_per_quarter": 3.2,
-   "average_cost_of_debt_pct": 5.2,
+   "average_cost_of_debt_pct": 4.8,
    "revenue_sensitivity_to_gdp": 0.7
   },
   "scenarios": {
@@ -39,8 +39,8 @@
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 81,
-    "health_score_unluckiest_10pct": 76,
+    "health_score_0_100": 82,
+    "health_score_unluckiest_10pct": 77,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -72,7 +72,7 @@
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
     "health_score_0_100": 78,
-    "health_score_unluckiest_10pct": 72,
+    "health_score_unluckiest_10pct": 73,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -87,7 +87,7 @@
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 78,
+    "health_score_0_100": 79,
     "health_score_unluckiest_10pct": 73,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -109,21 +109,21 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -9.0,
-   "Debt markets shut 4q": -3.2,
-   "Costs +5pp": -2.8,
-   "Spreads +400bp": -0.9,
+   "Revenue -30%": -9.1,
+   "Debt markets shut 4q": -3.1,
+   "Costs +5pp": -3.1,
+   "Spreads +400bp": -1.1,
    "Rates +300bp": -0.6,
    "Inventory +45 days": -0.5
   }
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 82/100 under baseline, 50 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "AMGEN INC enters the simulation with $14.0B of cash and short-term investments against $51.9B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 82, with the unluckiest tenth of paths at 77 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -9.0 points.",
+ "summary": "AMGEN INC enters the simulation with $14.0B of cash and short-term investments against $57.3B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 82, with the unluckiest tenth of paths at 77 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -9.1 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 9.0 points and raises breach odds by 0.0 percentage points; fixed costs are about 22% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 9.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 22% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -155,11 +155,11 @@
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 78 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 81 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 82 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

@@ -1,0 +1,170 @@
+{
+ "ticker": "MPC",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Marathon Petroleum Corp",
+  "ticker": "MPC",
+  "sector": "Oil & Gas Refining & Marketing",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$153.6B",
+   "cash_and_short_term_investments": "$7.8B",
+   "total_debt": "$32.8B",
+   "synthetic_rating_today": "AAA",
+   "debt_maturing_next_4_quarters": "$2.1B",
+   "committed_credit_facility": "$12.3B",
+   "customer_deposits_days_of_revenue": 0
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$9.8B",
+   "variable_cost_share_of_revenue_pct": 63,
+   "trend_growth_pct_per_year": -0.0,
+   "demand_volatility_pct_per_quarter": 13.7,
+   "average_cost_of_debt_pct": 4.2,
+   "revenue_sensitivity_to_gdp": 4.6
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 58,
+    "prob_liquidity_breach_pct": 0.4,
+    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_sub_investment_grade_at_horizon_pct": 18
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 0.4,
+    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_sub_investment_grade_at_horizon_pct": 18
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 76,
+    "health_score_unluckiest_10pct": 50,
+    "prob_liquidity_breach_pct": 0.6,
+    "prob_interest_coverage_below_1_5x_pct": 22,
+    "prob_sub_investment_grade_at_horizon_pct": 18
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 76,
+    "health_score_unluckiest_10pct": 50,
+    "prob_liquidity_breach_pct": 0.7,
+    "prob_interest_coverage_below_1_5x_pct": 22,
+    "prob_sub_investment_grade_at_horizon_pct": 19
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 34,
+    "health_score_unluckiest_10pct": 13,
+    "prob_liquidity_breach_pct": 7.8,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 34
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 76,
+    "health_score_unluckiest_10pct": 52,
+    "prob_liquidity_breach_pct": 0.6,
+    "prob_interest_coverage_below_1_5x_pct": 21,
+    "prob_sub_investment_grade_at_horizon_pct": 19
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 76,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 0.5,
+    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_sub_investment_grade_at_horizon_pct": 18
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 52,
+    "prob_liquidity_breach_pct": 0.5,
+    "prob_interest_coverage_below_1_5x_pct": 21,
+    "prob_sub_investment_grade_at_horizon_pct": 19
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "83% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "26pp cost increase",
+    "shock_for_10pct_breach": "22pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -2.3,
+   "Inventory +45 days": -2.2,
+   "Costs +5pp": -0.8,
+   "Debt markets shut 4q": -0.3,
+   "Rates +300bp": -0.0,
+   "Spreads +400bp": -0.0
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 77/100 under baseline, 34 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Marathon Petroleum Corp enters the simulation with $7.8B of cash and short-term investments against $32.8B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 77, with the unluckiest tenth of paths at 58 or below and a 0.4% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -2.3 points.",
+ "key_risks": [
+  {
+   "risk": "Severe demand collapse",
+   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 34."
+  }
+ ],
+ "resilience": [
+  "Cash of $7.8B covers the next four quarters of maturities ($2.1B).",
+  "A committed credit facility of about $12.3B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (AAA), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 34 (−43 vs baseline), breach probability 7.8%, sub-investment-grade at horizon 34%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 74 (−3 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 19%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 76 (−1 vs baseline), breach probability 0.6%, sub-investment-grade at horizon 18%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 76 (−1 vs baseline), breach probability 0.7%, sub-investment-grade at horizon 19%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 76 (−1 vs baseline), breach probability 0.6%, sub-investment-grade at horizon 19%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 76 (−1 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 18%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 77 (+0 vs baseline), breach probability 0.4%, sub-investment-grade at horizon 18%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $7.8B vs $2.1B).",
+  "Variable-cost ratio versus the calibrated 63% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

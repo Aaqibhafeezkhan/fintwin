@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "UNITEDHEALTH GROUP INC",
   "ticker": "UNH",
-  "sector": "Health insurance",
+  "sector": "Managed Health Care",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -47,32 +47,32 @@
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 74,
-    "health_score_unluckiest_10pct": 69,
+    "health_score_0_100": 75,
+    "health_score_unluckiest_10pct": 70,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 73,
-    "health_score_unluckiest_10pct": 68,
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 69,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 1,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 21,
-    "health_score_unluckiest_10pct": 16,
+    "health_score_0_100": 22,
+    "health_score_unluckiest_10pct": 17,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 4
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 74,
-    "health_score_unluckiest_10pct": 69,
+    "health_score_0_100": 75,
+    "health_score_unluckiest_10pct": 70,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -87,8 +87,8 @@
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 73,
-    "health_score_unluckiest_10pct": 69,
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 70,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -109,21 +109,21 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -13.7,
-   "Costs +5pp": -6.9,
-   "Inventory +45 days": -3.6,
+   "Revenue -30%": -12.7,
+   "Costs +5pp": -6.3,
+   "Inventory +45 days": -3.3,
    "Debt markets shut 4q": -0.8,
    "Spreads +400bp": -0.1,
    "Rates +300bp": -0.0
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 81/100 under baseline, 21 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "UNITEDHEALTH GROUP INC enters the simulation with $31.5B of cash and short-term investments against $73.3B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 81, with the unluckiest tenth of paths at 79 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -13.7 points.",
+ "headline": "Healthy credit profile: health 81/100 under baseline, 22 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "UNITEDHEALTH GROUP INC enters the simulation with $31.5B of cash and short-term investments against $73.3B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 81, with the unluckiest tenth of paths at 79 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -12.7 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 13.7 points and raises breach odds by 0.0 percentage points; fixed costs are about 20% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 12.7 points and raises breach odds by 0.0 percentage points; fixed costs are about 20% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -135,23 +135,23 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 21 (−60 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
+   "note": "Health 22 (−59 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 73 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 74 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 73 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 74 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 74 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 75 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 74 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 75 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",

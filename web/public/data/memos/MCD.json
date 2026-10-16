@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 36,
    "trend_growth_pct_per_year": 3.5,
    "demand_volatility_pct_per_quarter": 3.5,
-   "average_cost_of_debt_pct": 4.1,
+   "average_cost_of_debt_pct": 4.0,
    "revenue_sensitivity_to_gdp": 2.0
   },
   "scenarios": {
@@ -39,7 +39,7 @@
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 66,
+    "health_score_0_100": 67,
     "health_score_unluckiest_10pct": 64,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -63,7 +63,7 @@
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 50,
+    "health_score_0_100": 51,
     "health_score_unluckiest_10pct": 47,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 98,
@@ -79,7 +79,7 @@
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 67,
+    "health_score_0_100": 68,
     "health_score_unluckiest_10pct": 65,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -109,17 +109,17 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -4.5,
-   "Rates +300bp": -1.2,
-   "Costs +5pp": -0.9,
-   "Spreads +400bp": -0.8,
+   "Revenue -30%": -4.6,
+   "Rates +300bp": -1.4,
+   "Costs +5pp": -1.0,
+   "Spreads +400bp": -1.0,
    "Inventory +45 days": -0.8,
-   "Debt markets shut 4q": 0.3
+   "Debt markets shut 4q": 0.2
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 68/100 under baseline, 50 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "MCDONALDS CORP enters the simulation with $822M of cash and short-term investments against $39.9B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 68, with the unluckiest tenth of paths at 65 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.5 points.",
+ "headline": "Watch credit profile: health 68/100 under baseline, 51 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "MCDONALDS CORP enters the simulation with $822M of cash and short-term investments against $39.9B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 68, with the unluckiest tenth of paths at 65 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.6 points.",
  "key_risks": [
   {
    "risk": "Refinancing wall",
@@ -135,7 +135,7 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 50 (−18 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 51 (−17 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Sales -20%",
@@ -155,11 +155,11 @@
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 66 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 67 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 67 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 68 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

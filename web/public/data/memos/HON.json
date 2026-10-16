@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "HONEYWELL INTERNATIONAL INC",
   "ticker": "HON",
-  "sector": "Industrials",
+  "sector": "Industrial Conglomerates",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$38.1B",
    "cash_and_short_term_investments": "$9.2B",
-   "total_debt": "$26.2B",
+   "total_debt": "$34.0B",
    "synthetic_rating_today": "A",
    "debt_maturing_next_4_quarters": "$6.6B",
    "committed_credit_facility": "$3.0B",
@@ -25,70 +25,70 @@
    "variable_cost_share_of_revenue_pct": 56,
    "trend_growth_pct_per_year": 5.5,
    "demand_volatility_pct_per_quarter": 3.5,
-   "average_cost_of_debt_pct": 5.2,
+   "average_cost_of_debt_pct": 4.1,
    "revenue_sensitivity_to_gdp": 1.4
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 86,
-    "health_score_unluckiest_10pct": 81,
+    "health_score_0_100": 82,
+    "health_score_unluckiest_10pct": 78,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 84,
-    "health_score_unluckiest_10pct": 80,
+    "health_score_0_100": 80,
+    "health_score_unluckiest_10pct": 76,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 82,
-    "health_score_unluckiest_10pct": 78,
+    "health_score_0_100": 78,
+    "health_score_unluckiest_10pct": 74,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 82,
-    "health_score_unluckiest_10pct": 78,
+    "health_score_0_100": 78,
+    "health_score_unluckiest_10pct": 74,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 54,
-    "health_score_unluckiest_10pct": 49,
+    "health_score_0_100": 50,
+    "health_score_unluckiest_10pct": 46,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 2
+    "prob_sub_investment_grade_at_horizon_pct": 4
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 81,
-    "health_score_unluckiest_10pct": 77,
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 73,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
-    "prob_sub_investment_grade_at_horizon_pct": 0
+    "prob_sub_investment_grade_at_horizon_pct": 1
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 79,
-    "health_score_unluckiest_10pct": 77,
+    "health_score_0_100": 76,
+    "health_score_unluckiest_10pct": 73,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 83,
-    "health_score_unluckiest_10pct": 79,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 75,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -109,21 +109,21 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Debt markets shut 4q": -6.1,
-   "Revenue -30%": -5.2,
-   "Rates +300bp": -2.3,
-   "Spreads +400bp": -2.0,
-   "Costs +5pp": -1.9,
-   "Inventory +45 days": -1.9
+   "Revenue -30%": -5.6,
+   "Debt markets shut 4q": -5.1,
+   "Rates +300bp": -2.8,
+   "Spreads +400bp": -2.4,
+   "Costs +5pp": -2.0,
+   "Inventory +45 days": -1.5
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 86/100 under baseline, 54 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "HONEYWELL INTERNATIONAL INC enters the simulation with $9.2B of cash and short-term investments against $26.2B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 86, with the unluckiest tenth of paths at 81 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is debt markets shut 4q, which moves the health score by -6.1 points.",
+ "headline": "Healthy credit profile: health 82/100 under baseline, 50 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "HONEYWELL INTERNATIONAL INC enters the simulation with $9.2B of cash and short-term investments against $34.0B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 82, with the unluckiest tenth of paths at 78 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -5.6 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 5.2 points and raises breach odds by 0.0 percentage points; fixed costs are about 25% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 5.6 points and raises breach odds by 0.0 percentage points; fixed costs are about 25% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -135,31 +135,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 54 (−32 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 50 (−32 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 79 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 76 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 81 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 77 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 82 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 78 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 82 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 78 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 83 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 84 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 80 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

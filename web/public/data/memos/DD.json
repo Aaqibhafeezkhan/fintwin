@@ -1,0 +1,170 @@
+{
+ "ticker": "DD",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "DuPont de Nemours, Inc.",
+  "ticker": "DD",
+  "sector": "Industrial Conglomerates",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$7.0B",
+   "cash_and_short_term_investments": "$1.7B",
+   "total_debt": "$3.1B",
+   "synthetic_rating_today": "A-",
+   "debt_maturing_next_4_quarters": "$0M",
+   "committed_credit_facility": "$559M",
+   "customer_deposits_days_of_revenue": 0
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$502M",
+   "variable_cost_share_of_revenue_pct": 54,
+   "trend_growth_pct_per_year": 1.1,
+   "demand_volatility_pct_per_quarter": 3.9,
+   "average_cost_of_debt_pct": 5.2,
+   "revenue_sensitivity_to_gdp": 4.1
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 65,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 18,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 60,
+    "health_score_unluckiest_10pct": 50,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 58,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 61,
+    "health_score_unluckiest_10pct": 50,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 52,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 25,
+    "health_score_unluckiest_10pct": 18,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 36
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 62,
+    "health_score_unluckiest_10pct": 52,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 39,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 18,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 49,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 35,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "38pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -9.5,
+   "Inventory +45 days": -4.9,
+   "Costs +5pp": -2.2,
+   "Spreads +400bp": -0.5,
+   "Rates +300bp": -0.3,
+   "Debt markets shut 4q": -0.1
+  }
+ },
+ "verdict": "Watch",
+ "headline": "Watch credit profile: health 65/100 under baseline, 25 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "DuPont de Nemours, Inc. enters the simulation with $1.7B of cash and short-term investments against $3.1B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 65, with the unluckiest tenth of paths at 57 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -9.5 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 9.5 points and raises breach odds by 0.0 percentage points; fixed costs are about 35% of the cost base, so losses scale faster than revenue."
+  }
+ ],
+ "resilience": [
+  "Cash of $1.7B covers the next four quarters of maturities ($0M).",
+  "A committed credit facility of about $559M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A-), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 25 (−40 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 36%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 59 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 60 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 8%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 61 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 8%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 62 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 64 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 8%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 64 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 8%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $1.7B vs $0M).",
+  "Variable-cost ratio versus the calibrated 54% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

@@ -1,0 +1,178 @@
+{
+ "ticker": "APTV",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Aptiv PLC",
+  "ticker": "APTV",
+  "sector": "Automotive Parts & Equipment",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$18.7B",
+   "cash_and_short_term_investments": "$761M",
+   "total_debt": "$5.4B",
+   "synthetic_rating_today": "A+",
+   "debt_maturing_next_4_quarters": "$64M",
+   "committed_credit_facility": "$1.5B",
+   "customer_deposits_days_of_revenue": 2
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$912M",
+   "variable_cost_share_of_revenue_pct": 67,
+   "trend_growth_pct_per_year": -1.9,
+   "demand_volatility_pct_per_quarter": 7.7,
+   "average_cost_of_debt_pct": 4.4,
+   "revenue_sensitivity_to_gdp": 2.5
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 44,
+    "health_score_unluckiest_10pct": 32,
+    "prob_liquidity_breach_pct": 0.4,
+    "prob_interest_coverage_below_1_5x_pct": 88,
+    "prob_sub_investment_grade_at_horizon_pct": 75
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 43,
+    "health_score_unluckiest_10pct": 32,
+    "prob_liquidity_breach_pct": 0.5,
+    "prob_interest_coverage_below_1_5x_pct": 90,
+    "prob_sub_investment_grade_at_horizon_pct": 78
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 35,
+    "health_score_unluckiest_10pct": 25,
+    "prob_liquidity_breach_pct": 0.9,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 77
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 35,
+    "health_score_unluckiest_10pct": 25,
+    "prob_liquidity_breach_pct": 0.7,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 76
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 9,
+    "health_score_unluckiest_10pct": 8,
+    "prob_liquidity_breach_pct": 82.1,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 98
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 37,
+    "health_score_unluckiest_10pct": 26,
+    "prob_liquidity_breach_pct": 0.7,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 79
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 44,
+    "health_score_unluckiest_10pct": 32,
+    "prob_liquidity_breach_pct": 0.6,
+    "prob_interest_coverage_below_1_5x_pct": 89,
+    "prob_sub_investment_grade_at_horizon_pct": 74
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 37,
+    "health_score_unluckiest_10pct": 30,
+    "prob_liquidity_breach_pct": 0.5,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 80
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "72% revenue drop",
+    "shock_for_10pct_breach": "48% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "18pp cost increase",
+    "shock_for_10pct_breach": "13pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -13.1,
+   "Costs +5pp": -6.1,
+   "Inventory +45 days": -2.6,
+   "Rates +300bp": -0.6,
+   "Spreads +400bp": -0.5,
+   "Debt markets shut 4q": 0.8
+  }
+ },
+ "verdict": "Strained",
+ "headline": "Strained credit profile: health 44/100 under baseline, 9 under demand freeze; the company breaks (50% breach odds) at a 72% revenue drop.",
+ "summary": "Aptiv PLC enters the simulation with $761M of cash and short-term investments against $5.4B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 44, with the unluckiest tenth of paths at 32 or below and a 0.4% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -13.1 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 13.1 points and raises breach odds by 1.1 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 88% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  },
+  {
+   "risk": "Downgrade to speculative grade",
+   "evidence": "75% of baseline paths end the horizon below BBB."
+  }
+ ],
+ "resilience": [
+  "Cash of $761M covers the next four quarters of maturities ($64M).",
+  "A committed credit facility of about $1.5B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A+), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 9 (−35 vs baseline), breach probability 82.1%, sub-investment-grade at horizon 98%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 35 (−9 vs baseline), breach probability 0.9%, sub-investment-grade at horizon 77%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 35 (−9 vs baseline), breach probability 0.7%, sub-investment-grade at horizon 76%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 37 (−7 vs baseline), breach probability 0.7%, sub-investment-grade at horizon 79%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 37 (−7 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 80%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 43 (−1 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 78%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 44 (+0 vs baseline), breach probability 0.6%, sub-investment-grade at horizon 74%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $761M vs $64M).",
+  "Variable-cost ratio versus the calibrated 67% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

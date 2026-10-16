@@ -1,0 +1,26 @@
+{
+ "universe_median_nd_ebitda": 1.619,
+ "sector_median_nd_ebitda": {
+  "Communication Services": 1.687,
+  "Consumer Discretionary": 0.565,
+  "Consumer Staples": 2.205,
+  "Energy": 0.816,
+  "Health Care": 1.83,
+  "Industrials": 1.571,
+  "Information Technology": 0.674,
+  "Materials": 2.241,
+  "Utilities": 5.603
+ },
+ "tolerance": {
+  "Communication Services": 1.042,
+  "Consumer Discretionary": 1.0,
+  "Consumer Staples": 1.362,
+  "Energy": 1.0,
+  "Health Care": 1.13,
+  "Industrials": 1.0,
+  "Information Technology": 1.0,
+  "Materials": 1.384,
+  "Utilities": 2.0
+ },
+ "n": 385
+}

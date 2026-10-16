@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "Airbnb, Inc.",
   "ticker": "ABNB",
-  "sector": "Travel",
+  "sector": "Hotels, Resorts & Cruise Lines",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

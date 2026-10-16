@@ -29,7 +29,6 @@ EXTRAS = [
     ("KSS", "Kohl's", "Consumer Discretionary", "Broadline Retail"),
     ("WYNN", "Wynn Resorts", "Consumer Discretionary", "Casinos & Gaming"),
     ("INTC", "Intel", "Information Technology", "Semiconductors"),
-    ("WBA", "Walgreens Boots Alliance", "Consumer Staples", "Drug Retail"),
 ]
 
 

@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "GENERAL ELECTRIC CO",
   "ticker": "GE",
-  "sector": "Industrials",
+  "sector": "Aerospace & Defense",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 60,
    "trend_growth_pct_per_year": 11.9,
    "demand_volatility_pct_per_quarter": 7.8,
-   "average_cost_of_debt_pct": 3.2,
+   "average_cost_of_debt_pct": 2.9,
    "revenue_sensitivity_to_gdp": 0.5
   },
   "scenarios": {
@@ -63,10 +63,10 @@
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 82,
+    "health_score_0_100": 83,
     "health_score_unluckiest_10pct": 80,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_interest_coverage_below_1_5x_pct": 17,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Stagflation (2022)": {
@@ -118,7 +118,7 @@
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 88/100 under baseline, 82 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "headline": "Healthy credit profile: health 88/100 under baseline, 83 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
  "summary": "GENERAL ELECTRIC CO enters the simulation with $9.3B of cash and short-term investments against $19.2B of debt. Across 5,000 simulated 12-quarter futures the median health score is 88, with the unluckiest tenth of paths at 87 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is debt markets shut 4q, which moves the health score by -2.6 points.",
  "key_risks": [
   {
@@ -135,7 +135,7 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 82 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 83 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",

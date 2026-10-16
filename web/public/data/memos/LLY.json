@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "ELI LILLY & Co",
   "ticker": "LLY",
-  "sector": "Pharma",
+  "sector": "Pharmaceuticals",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -64,14 +64,14 @@
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
     "health_score_0_100": 89,
-    "health_score_unluckiest_10pct": 85,
+    "health_score_unluckiest_10pct": 86,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 96,
+    "health_score_0_100": 97,
     "health_score_unluckiest_10pct": 96,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -88,7 +88,7 @@
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
     "health_score_0_100": 96,
-    "health_score_unluckiest_10pct": 95,
+    "health_score_unluckiest_10pct": 96,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -110,7 +110,7 @@
   },
   "sensitivity_tornado_health_change": {
    "Debt markets shut 4q": -4.1,
-   "Inventory +45 days": -0.9,
+   "Inventory +45 days": -0.8,
    "Revenue -30%": -0.7,
    "Costs +5pp": -0.5,
    "Spreads +400bp": -0.4,
@@ -147,7 +147,7 @@
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 96 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 97 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Recession",

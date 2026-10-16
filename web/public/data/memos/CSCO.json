@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "CISCO SYSTEMS, INC.",
   "ticker": "CSCO",
-  "sector": "Technology",
+  "sector": "Communications Equipment",
   "last_reported_quarter": "2026-07-25",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

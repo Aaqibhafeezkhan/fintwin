@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "MICROSOFT CORP",
   "ticker": "MSFT",
-  "sector": "Technology",
+  "sector": "Systems Software",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$331.8B",
    "cash_and_short_term_investments": "$76.8B",
-   "total_debt": "$31.1B",
+   "total_debt": "$40.3B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$9.2B",
    "committed_credit_facility": "$26.5B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 22,
    "trend_growth_pct_per_year": 12.8,
    "demand_volatility_pct_per_quarter": 1.7,
-   "average_cost_of_debt_pct": 9.2,
+   "average_cost_of_debt_pct": 7.5,
    "revenue_sensitivity_to_gdp": 0.9
   },
   "scenarios": {
@@ -66,13 +66,13 @@
     "health_score_0_100": 87,
     "health_score_unluckiest_10pct": 85,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 95,
+    "prob_interest_coverage_below_1_5x_pct": 96,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
     "health_score_0_100": 98,
-    "health_score_unluckiest_10pct": 98,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -112,7 +112,7 @@
    "Revenue -30%": -1.8,
    "Debt markets shut 4q": -0.7,
    "Inventory +45 days": -0.7,
-   "Costs +5pp": -0.2,
+   "Costs +5pp": -0.3,
    "Spreads +400bp": -0.0,
    "Rates +300bp": 0.0
   },
@@ -127,7 +127,7 @@
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 98/100 under baseline, 87 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "MICROSOFT CORP enters the simulation with $76.8B of cash and short-term investments against $31.1B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 98, with the unluckiest tenth of paths at 98 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 86%.",
+ "summary": "MICROSOFT CORP enters the simulation with $76.8B of cash and short-term investments against $40.3B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 98, with the unluckiest tenth of paths at 98 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 87%.",
  "key_risks": [
   {
    "risk": "Operating leverage",

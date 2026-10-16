@@ -1,0 +1,174 @@
+{
+ "ticker": "MCHP",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "MICROCHIP TECHNOLOGY INC",
+  "ticker": "MCHP",
+  "sector": "Semiconductors",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$5.1B",
+   "cash_and_short_term_investments": "$272M",
+   "total_debt": "$5.4B",
+   "synthetic_rating_today": "A-",
+   "debt_maturing_next_4_quarters": "$1.0B",
+   "committed_credit_facility": "$410M",
+   "customer_deposits_days_of_revenue": 12
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$513M",
+   "variable_cost_share_of_revenue_pct": 29,
+   "trend_growth_pct_per_year": -6.0,
+   "demand_volatility_pct_per_quarter": 4.7,
+   "average_cost_of_debt_pct": 3.9,
+   "revenue_sensitivity_to_gdp": 1.2
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 56,
+    "prob_liquidity_breach_pct": 2.7,
+    "prob_interest_coverage_below_1_5x_pct": 7,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 66,
+    "health_score_unluckiest_10pct": 55,
+    "prob_liquidity_breach_pct": 3.0,
+    "prob_interest_coverage_below_1_5x_pct": 8,
+    "prob_sub_investment_grade_at_horizon_pct": 12
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 62,
+    "health_score_unluckiest_10pct": 50,
+    "prob_liquidity_breach_pct": 3.2,
+    "prob_interest_coverage_below_1_5x_pct": 8,
+    "prob_sub_investment_grade_at_horizon_pct": 10
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 51,
+    "prob_liquidity_breach_pct": 3.2,
+    "prob_interest_coverage_below_1_5x_pct": 7,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 19,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 86.9,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 38
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 52,
+    "prob_liquidity_breach_pct": 3.1,
+    "prob_interest_coverage_below_1_5x_pct": 8,
+    "prob_sub_investment_grade_at_horizon_pct": 14
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 57,
+    "prob_liquidity_breach_pct": 2.6,
+    "prob_interest_coverage_below_1_5x_pct": 6,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 53,
+    "prob_liquidity_breach_pct": 2.7,
+    "prob_interest_coverage_below_1_5x_pct": 7,
+    "prob_sub_investment_grade_at_horizon_pct": 10
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "68% revenue drop",
+    "shock_for_10pct_breach": "52% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "35pp cost increase",
+    "shock_for_10pct_breach": "27pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -7.4,
+   "Costs +5pp": -1.6,
+   "Inventory +45 days": -1.2,
+   "Rates +300bp": -1.1,
+   "Spreads +400bp": -0.9,
+   "Debt markets shut 4q": 0.2
+  }
+ },
+ "verdict": "Watch",
+ "headline": "Watch credit profile: health 67/100 under baseline, 19 under demand freeze; the company breaks (50% breach odds) at a 68% revenue drop.",
+ "summary": "MICROCHIP TECHNOLOGY INC enters the simulation with $272M of cash and short-term investments against $5.4B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 67, with the unluckiest tenth of paths at 56 or below and a 2.7% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -7.4 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 7.4 points and raises breach odds by 0.9 percentage points; fixed costs are about 58% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Refinancing wall",
+   "evidence": "$1.0B of debt matures in the next four quarters against $272M of cash; repayment depends on continued market access."
+  }
+ ],
+ "resilience": [
+  "A committed credit facility of about $410M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A-), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach.",
+  "It would take a revenue collapse of more than half to make a cash shortfall likely."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 19 (−48 vs baseline), breach probability 86.9%, sub-investment-grade at horizon 38%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 62 (−5 vs baseline), breach probability 3.2%, sub-investment-grade at horizon 10%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 63 (−4 vs baseline), breach probability 3.2%, sub-investment-grade at horizon 9%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 63 (−4 vs baseline), breach probability 3.1%, sub-investment-grade at horizon 14%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 64 (−3 vs baseline), breach probability 2.7%, sub-investment-grade at horizon 10%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 66 (−1 vs baseline), breach probability 3.0%, sub-investment-grade at horizon 12%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 67 (+0 vs baseline), breach probability 2.6%, sub-investment-grade at horizon 8%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $272M vs $1.0B).",
+  "Variable-cost ratio versus the calibrated 29% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

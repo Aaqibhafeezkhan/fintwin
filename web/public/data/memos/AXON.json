@@ -1,0 +1,179 @@
+{
+ "ticker": "AXON",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "AXON ENTERPRISE, INC.",
+  "ticker": "AXON",
+  "sector": "Aerospace & Defense",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$3.2B",
+   "cash_and_short_term_investments": "$673M",
+   "total_debt": "$1.7B",
+   "synthetic_rating_today": "C",
+   "debt_maturing_next_4_quarters": "$41M",
+   "committed_credit_facility": "$258M",
+   "customer_deposits_days_of_revenue": 77
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$122M",
+   "variable_cost_share_of_revenue_pct": 72,
+   "trend_growth_pct_per_year": 19.6,
+   "demand_volatility_pct_per_quarter": 4.0,
+   "average_cost_of_debt_pct": 6.3,
+   "revenue_sensitivity_to_gdp": 0.9
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 93,
+    "health_score_unluckiest_10pct": 89,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 92,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 93,
+    "health_score_unluckiest_10pct": 89,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 93,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 88,
+    "health_score_unluckiest_10pct": 83,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 88,
+    "health_score_unluckiest_10pct": 82,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 53,
+    "health_score_unluckiest_10pct": 46,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 89,
+    "health_score_unluckiest_10pct": 83,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 92,
+    "health_score_unluckiest_10pct": 88,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 94,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 86,
+    "health_score_unluckiest_10pct": 79,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "32pp cost increase",
+    "shock_for_10pct_breach": "28pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -7.8,
+   "Inventory +45 days": -4.1,
+   "Costs +5pp": -3.6,
+   "Debt markets shut 4q": -0.5,
+   "Spreads +400bp": -0.3,
+   "Rates +300bp": -0.1
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 93/100 under baseline, 53 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "AXON ENTERPRISE, INC. enters the simulation with $673M of cash and short-term investments against $1.7B of debt and a synthetic C rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 93, with the unluckiest tenth of paths at 89 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -7.8 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 7.8 points and raises breach odds by 0.0 percentage points; fixed costs are about 17% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 92% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  },
+  {
+   "risk": "Customer-deposit refunds",
+   "evidence": "About 77 days of revenue are held as customer deposits; a demand stop turns them into a cash outflow on top of operating losses."
+  }
+ ],
+ "resilience": [
+  "Cash of $673M covers the next four quarters of maturities ($41M).",
+  "A committed credit facility of about $258M backstops liquidity (size assumed: not tagged in filings).",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach.",
+  "It would take a revenue collapse of more than half to make a cash shortfall likely."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 53 (−40 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 86 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 88 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 88 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 89 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 92 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 93 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $673M vs $41M).",
+  "Variable-cost ratio versus the calibrated 72% of revenue: a sustained rise signals margin squeeze.",
+  "Customer-deposit balance: falling deposits are the earliest sign of weakening forward demand.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

@@ -25,7 +25,16 @@ YEARS = range(2013, 2025)
 
 
 def _fact(start, end, val, filed, form, accn):
-    return {"start": start, "end": end, "val": float(val), "filed": filed, "form": form, "accn": accn, "fy": 0, "fp": ""}
+    return {
+        "start": start,
+        "end": end,
+        "val": float(val),
+        "filed": filed,
+        "form": form,
+        "accn": accn,
+        "fy": 0,
+        "fp": "",
+    }
 
 
 def synthetic_companyfacts() -> dict:
@@ -42,8 +51,19 @@ def synthetic_companyfacts() -> dict:
             rev_level *= 1.012
             rev = rev_level * season[qi] * (1 + rng.normal(0, 0.02))
             oi = 0.15 * rev
-            vals = {"rev": rev, "oi": oi, "da": 0.05 * rev, "int": 12.0, "tax": 0.2 * (oi - 12), "ni": 0.8 * (oi - 12),
-                    "cfo": 0.8 * (oi - 12) + 0.05 * rev, "capex": 0.06 * rev, "div": 20.0, "bb": 15.0, "sbc": 0.01 * rev}
+            vals = {
+                "rev": rev,
+                "oi": oi,
+                "da": 0.05 * rev,
+                "int": 12.0,
+                "tax": 0.2 * (oi - 12),
+                "ni": 0.8 * (oi - 12),
+                "cfo": 0.8 * (oi - 12) + 0.05 * rev,
+                "capex": 0.06 * rev,
+                "div": 20.0,
+                "bb": 15.0,
+                "sbc": 0.01 * rev,
+            }
             end = f"{y}-{qe}"
             filed = f"{y + 1}-02-20" if qi == 3 else f"{y}-{(qi + 1) * 3 + 1:02d}-28"
             form, accn = ("10-K", f"k{y}") if qi == 3 else ("10-Q", f"q{y}{qi}")
@@ -58,24 +78,60 @@ def synthetic_companyfacts() -> dict:
                         dur.setdefault(k, []).append(_fact(f"{y}-{qi * 3 + 1:02d}-01", end, v, filed, form, accn))
                     if qi > 0:
                         dur.setdefault(k, []).append(_fact(f"{y}-01-01", end, ytd[k], filed, form, accn))
-            bs = {"cash": 300 + 2 * qi, "ar": 0.4 * rev, "inv": 0.3 * rev, "ap": 0.35 * rev, "ppe": 2000 + y, "assets": 4000 + 10 * y % 7,
-                  "liab": 2200, "ca": 1200, "cl": 700, "eq": 1800 + 10 * y % 7, "re": 900, "ltd_nc": 1000, "ltd_c": 100, "def": 0.1 * rev}
+            bs = {
+                "cash": 300 + 2 * qi,
+                "ar": 0.4 * rev,
+                "inv": 0.3 * rev,
+                "ap": 0.35 * rev,
+                "ppe": 2000 + y,
+                "assets": 4000 + 10 * y % 7,
+                "liab": 2200,
+                "ca": 1200,
+                "cl": 700,
+                "eq": 1800 + 10 * y % 7,
+                "re": 900,
+                "ltd_nc": 1000,
+                "ltd_c": 100,
+                "def": 0.1 * rev,
+            }
             for k, v in bs.items():
                 inst.setdefault(k, []).append({"end": end, "val": float(v), "filed": filed, "form": form, "accn": accn})
         for k, v in zip(("m1", "m2", "m3", "m4", "m5", "m6"), (100, 120, 130, 140, 150, 460), strict=True):
-            inst.setdefault(k, []).append({"end": f"{y}-12-31", "val": float(v), "filed": f"{y + 1}-02-20", "form": "10-K", "accn": f"k{y}"})
+            inst.setdefault(k, []).append(
+                {"end": f"{y}-12-31", "val": float(v), "filed": f"{y + 1}-02-20", "form": "10-K", "accn": f"k{y}"}
+            )
     tags = {
-        "rev": "Revenues", "oi": "OperatingIncomeLoss", "da": "DepreciationDepletionAndAmortization", "int": "InterestExpense",
-        "tax": "IncomeTaxExpenseBenefit", "ni": "NetIncomeLoss", "cfo": "NetCashProvidedByUsedInOperatingActivities",
-        "capex": "PaymentsToAcquirePropertyPlantAndEquipment", "div": "PaymentsOfDividends",
-        "bb": "PaymentsForRepurchaseOfCommonStock", "sbc": "ShareBasedCompensation",
-        "cash": "CashAndCashEquivalentsAtCarryingValue", "ar": "AccountsReceivableNetCurrent", "inv": "InventoryNet",
-        "ap": "AccountsPayableCurrent", "ppe": "PropertyPlantAndEquipmentNet", "assets": "Assets", "liab": "Liabilities",
-        "ca": "AssetsCurrent", "cl": "LiabilitiesCurrent", "eq": "StockholdersEquity", "re": "RetainedEarningsAccumulatedDeficit",
-        "ltd_nc": "LongTermDebtNoncurrent", "ltd_c": "LongTermDebtCurrent", "def": "ContractWithCustomerLiabilityCurrent",
-        "m1": "LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths", "m2": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearTwo",
-        "m3": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearThree", "m4": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFour",
-        "m5": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFive", "m6": "LongTermDebtMaturitiesRepaymentsOfPrincipalAfterYearFive",
+        "rev": "Revenues",
+        "oi": "OperatingIncomeLoss",
+        "da": "DepreciationDepletionAndAmortization",
+        "int": "InterestExpense",
+        "tax": "IncomeTaxExpenseBenefit",
+        "ni": "NetIncomeLoss",
+        "cfo": "NetCashProvidedByUsedInOperatingActivities",
+        "capex": "PaymentsToAcquirePropertyPlantAndEquipment",
+        "div": "PaymentsOfDividends",
+        "bb": "PaymentsForRepurchaseOfCommonStock",
+        "sbc": "ShareBasedCompensation",
+        "cash": "CashAndCashEquivalentsAtCarryingValue",
+        "ar": "AccountsReceivableNetCurrent",
+        "inv": "InventoryNet",
+        "ap": "AccountsPayableCurrent",
+        "ppe": "PropertyPlantAndEquipmentNet",
+        "assets": "Assets",
+        "liab": "Liabilities",
+        "ca": "AssetsCurrent",
+        "cl": "LiabilitiesCurrent",
+        "eq": "StockholdersEquity",
+        "re": "RetainedEarningsAccumulatedDeficit",
+        "ltd_nc": "LongTermDebtNoncurrent",
+        "ltd_c": "LongTermDebtCurrent",
+        "def": "ContractWithCustomerLiabilityCurrent",
+        "m1": "LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths",
+        "m2": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearTwo",
+        "m3": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearThree",
+        "m4": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFour",
+        "m5": "LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFive",
+        "m6": "LongTermDebtMaturitiesRepaymentsOfPrincipalAfterYearFive",
     }
     gaap = {tags[k]: {"units": {"USD": v}} for k, v in {**dur, **inst}.items()}
     return {"facts": {"us-gaap": gaap}}
@@ -87,11 +143,23 @@ def offline(monkeypatch):
     monkeypatch.setattr(facts, "company_facts", lambda cik: cf)
     monkeypatch.setattr(facts, "ticker_to_cik", lambda t: (123, "Synthetic Industries Inc"))
     gdp = pd.Series(np.full(80, 0.05), index=pd.date_range("2005-03-31", periods=80, freq="QE"))
-    monkeypatch.setattr(calibrate_mod, "recession_regime", lambda asof=None: {
-        "hazard": 0.045, "exit": 0.24, "gdp_shortfall_q": 0.01, "in_recession_now": False, "gdp_yoy": gdp, "n_recessions": 12})
+    monkeypatch.setattr(
+        calibrate_mod,
+        "recession_regime",
+        lambda asof=None: {
+            "hazard": 0.045,
+            "exit": 0.24,
+            "gdp_shortfall_q": 0.01,
+            "in_recession_now": False,
+            "gdp_yoy": gdp,
+            "n_recessions": 12,
+        },
+    )
     idx = pd.date_range("2000-03-31", "2025-12-31", freq="QE")
-    macro = pd.DataFrame({"short_rate": 0.02 + 0.01 * np.sin(np.arange(len(idx)) / 8), "long_rate": 0.035,
-                          "credit_spread": 0.02}, index=idx)
+    macro = pd.DataFrame(
+        {"short_rate": 0.02 + 0.01 * np.sin(np.arange(len(idx)) / 8), "long_rate": 0.035, "credit_spread": 0.02},
+        index=idx,
+    )
     return macro
 
 
@@ -115,7 +183,7 @@ def test_point_in_time_vintage_hides_later_filings(offline):
 def test_calibration_recovers_structure(offline):
     p = calibrate(facts.load_company("SYN"), offline, 12)
     assert 0.0 < p["mu"] < 0.03
-    assert p["seasonal"][3] > p["seasonal"][0]           # Q4 strongest season
+    assert p["seasonal"][3] > p["seasonal"][0]  # Q4 strongest season
     assert 0.3 < p["v"] < 1.0 and p["F"] >= 0
     assert p["coupon"] == pytest.approx(12 * 4 / 1100, rel=0.05)
     assert p["_sources"]["maturities"].startswith("XBRL maturity schedule")
@@ -144,6 +212,7 @@ def test_conformal_scores_and_norms(tmp_path, monkeypatch):
     sc = _scores(df, "reg")
     assert list(sc["hit90"]) == [True, True] and sc["s90"].iloc[1] == pytest.approx(1.0)
     import fintwin.universe as u
+
     monkeypatch.setattr(u, "NORMS_JSON", tmp_path / "norms.json")
     out = compute_norms({"NEE": 5.0, "DUK": 5.5, "SO": 6.0, "AAPL": 0.2, "MSFT": 0.1, "NVDA": -0.5, "ADBE": 0.3})
     assert out["tolerance"]["Utilities"] == 2.0

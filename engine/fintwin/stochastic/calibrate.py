@@ -220,7 +220,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         revolver_cap = 0.08 * rev_ttm
         src["revolver_cap"] = "assumption: committed facility = 8% of TTM revenue"
 
-    cash0 = float(last["cash"] + last["short_investments"])
+    # the latest quarter occasionally lacks the cash tag: carry the last reported balance forward
+    cash0 = float(q["cash"].ffill().iloc[-1] + q["short_investments"].fillna(0).iloc[-1])
     quarterly_costs = F + v * rev.tail(4).mean()
     # Minimum operating cash revealed by the company's own behaviour: half its 10th-percentile cash balance over
     # three years, bounded by 1% of quarterly revenue and 20% of quarterly costs. (A cost-based floor alone forces

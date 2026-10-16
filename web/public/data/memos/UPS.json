@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "UNITED PARCEL SERVICE INC",
   "ticker": "UPS",
-  "sector": "Logistics",
+  "sector": "Air Freight & Logistics",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -55,7 +55,7 @@
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 53,
+    "health_score_0_100": 52,
     "health_score_unluckiest_10pct": 40,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 9,
@@ -65,7 +65,7 @@
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
     "health_score_0_100": 9,
     "health_score_unluckiest_10pct": 5,
-    "prob_liquidity_breach_pct": 43.0,
+    "prob_liquidity_breach_pct": 44.9,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 71
    },
@@ -96,7 +96,7 @@
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "87% revenue drop",
+    "shock_for_50pct_breach": "86% revenue drop",
     "shock_for_10pct_breach": "80% revenue drop"
    },
    "Interest-rate rise": {
@@ -104,26 +104,26 @@
     "shock_for_10pct_breach": "not reached"
    },
    "Variable-cost increase": {
-    "shock_for_50pct_breach": "22pp cost increase",
+    "shock_for_50pct_breach": "21pp cost increase",
     "shock_for_10pct_breach": "20pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -19.1,
+   "Revenue -30%": -19.0,
    "Costs +5pp": -9.0,
-   "Rates +300bp": -1.0,
-   "Inventory +45 days": -0.8,
-   "Spreads +400bp": -0.8,
-   "Debt markets shut 4q": 1.9
+   "Rates +300bp": -0.9,
+   "Spreads +400bp": -0.7,
+   "Inventory +45 days": -0.7,
+   "Debt markets shut 4q": 2.0
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 66/100 under baseline, 9 under demand freeze; the company breaks (50% breach odds) at a 87% revenue drop.",
- "summary": "UNITED PARCEL SERVICE INC enters the simulation with $4.7B of cash and short-term investments against $24.5B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 66, with the unluckiest tenth of paths at 52 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -19.1 points.",
+ "headline": "Watch credit profile: health 66/100 under baseline, 9 under demand freeze; the company breaks (50% breach odds) at a 86% revenue drop.",
+ "summary": "UNITED PARCEL SERVICE INC enters the simulation with $4.7B of cash and short-term investments against $24.5B of debt and a synthetic A+ rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 66, with the unluckiest tenth of paths at 52 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -19.0 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 19.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 29% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 19.0 points and raises breach odds by 0.0 percentage points; fixed costs are about 29% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -135,7 +135,7 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 9 (−57 vs baseline), breach probability 43.0%, sub-investment-grade at horizon 71%."
+   "note": "Health 9 (−57 vs baseline), breach probability 44.9%, sub-investment-grade at horizon 71%."
   },
   {
    "scenario": "Sales -20%",
@@ -143,7 +143,7 @@
   },
   {
    "scenario": "Recession",
-   "note": "Health 53 (−13 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 7%."
+   "note": "Health 52 (−14 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 7%."
   },
   {
    "scenario": "Stagflation (2022)",

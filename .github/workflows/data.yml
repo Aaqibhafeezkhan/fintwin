@@ -67,6 +67,7 @@ jobs:
     needs: [norms, shard]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    permissions: { contents: write, actions: read }
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +92,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with: { path: web/dist }
       - uses: actions/upload-artifact@v4
-        with: { name: site-data, path: web/public/data/, retention-days: 30 }
+        with: { name: site-data, path: web/public/data/, retention-days: 90 }
+      - name: Record the refresh in the repository (small summary files only)
+        run: |
+          git config user.name "fintwin-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/public/data/build_report.json web/public/data/calibration.json web/public/data/index.json
+          git diff --cached --quiet || git commit -m "data: weekly refresh $(date -u +%Y-%m-%d)"
+          git push || echo "push skipped"
 
   deploy:
     needs: aggregate

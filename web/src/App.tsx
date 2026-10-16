@@ -148,7 +148,7 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <span>Data: SEC EDGAR XBRL filings and FRED, snapshot {index?.meta.generated}. Research project, not investment advice.</span>
+        <span><span className="live-dot" style={{ background: "var(--good)" }} />Data rebuilt {index?.meta.generated} from SEC EDGAR and FRED · refreshes automatically every Monday. Research project, not investment advice.</span>
         <span><button className="btn-link" onClick={() => setHelp(true)}>Shortcuts <span className="kbd">?</span></button> · <a href="https://github.com/SpiliosDimakopoulos/fintwin" target="_blank" rel="noreferrer">Source</a> · <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf" target="_blank" rel="noreferrer">Paper</a></span>
       </footer>
     </div>

@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "American Airlines Group Inc.",
   "ticker": "AAL",
-  "sector": "Airlines",
+  "sector": "Passenger Airlines",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$58.3B",
    "cash_and_short_term_investments": "$7.9B",
-   "total_debt": "$25.8B",
+   "total_debt": "$28.8B",
    "synthetic_rating_today": "C",
    "debt_maturing_next_4_quarters": "$4.0B",
    "committed_credit_facility": "$4.7B",
@@ -25,79 +25,79 @@
    "variable_cost_share_of_revenue_pct": 67,
    "trend_growth_pct_per_year": 3.2,
    "demand_volatility_pct_per_quarter": 4.2,
-   "average_cost_of_debt_pct": 6.7,
+   "average_cost_of_debt_pct": 5.8,
    "revenue_sensitivity_to_gdp": 5.0
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 42,
-    "health_score_unluckiest_10pct": 28,
-    "prob_liquidity_breach_pct": 0.1,
+    "health_score_0_100": 39,
+    "health_score_unluckiest_10pct": 26,
+    "prob_liquidity_breach_pct": 0.2,
     "prob_interest_coverage_below_1_5x_pct": 83,
     "prob_sub_investment_grade_at_horizon_pct": 28
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 41,
-    "health_score_unluckiest_10pct": 28,
+    "health_score_0_100": 39,
+    "health_score_unluckiest_10pct": 26,
     "prob_liquidity_breach_pct": 0.2,
     "prob_interest_coverage_below_1_5x_pct": 84,
     "prob_sub_investment_grade_at_horizon_pct": 33
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 28,
-    "health_score_unluckiest_10pct": 13,
-    "prob_liquidity_breach_pct": 0.4,
+    "health_score_0_100": 26,
+    "health_score_unluckiest_10pct": 12,
+    "prob_liquidity_breach_pct": 0.5,
     "prob_interest_coverage_below_1_5x_pct": 99,
-    "prob_sub_investment_grade_at_horizon_pct": 36
+    "prob_sub_investment_grade_at_horizon_pct": 38
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 29,
-    "health_score_unluckiest_10pct": 13,
-    "prob_liquidity_breach_pct": 0.3,
+    "health_score_0_100": 27,
+    "health_score_unluckiest_10pct": 12,
+    "prob_liquidity_breach_pct": 0.5,
     "prob_interest_coverage_below_1_5x_pct": 99,
-    "prob_sub_investment_grade_at_horizon_pct": 35
+    "prob_sub_investment_grade_at_horizon_pct": 37
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
     "health_score_0_100": 3,
     "health_score_unluckiest_10pct": 2,
-    "prob_liquidity_breach_pct": 66.4,
+    "prob_liquidity_breach_pct": 73.7,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 98
+    "prob_sub_investment_grade_at_horizon_pct": 99
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 31,
-    "health_score_unluckiest_10pct": 15,
+    "health_score_0_100": 28,
+    "health_score_unluckiest_10pct": 14,
     "prob_liquidity_breach_pct": 0.5,
     "prob_interest_coverage_below_1_5x_pct": 98,
-    "prob_sub_investment_grade_at_horizon_pct": 40
+    "prob_sub_investment_grade_at_horizon_pct": 42
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 40,
-    "health_score_unluckiest_10pct": 27,
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 25,
     "prob_liquidity_breach_pct": 0.3,
     "prob_interest_coverage_below_1_5x_pct": 84,
-    "prob_sub_investment_grade_at_horizon_pct": 25
+    "prob_sub_investment_grade_at_horizon_pct": 27
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 28,
-    "health_score_unluckiest_10pct": 13,
-    "prob_liquidity_breach_pct": 0.6,
+    "health_score_0_100": 26,
+    "health_score_unluckiest_10pct": 12,
+    "prob_liquidity_breach_pct": 0.8,
     "prob_interest_coverage_below_1_5x_pct": 98,
-    "prob_sub_investment_grade_at_horizon_pct": 44
+    "prob_sub_investment_grade_at_horizon_pct": 45
    }
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "82% revenue drop",
-    "shock_for_10pct_breach": "68% revenue drop"
+    "shock_for_50pct_breach": "81% revenue drop",
+    "shock_for_10pct_breach": "64% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
@@ -109,16 +109,16 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -21.5,
-   "Costs +5pp": -10.1,
-   "Inventory +45 days": -7.2,
-   "Debt markets shut 4q": -1.3,
-   "Rates +300bp": -0.7,
-   "Spreads +400bp": -0.6
+   "Revenue -30%": -20.6,
+   "Costs +5pp": -9.9,
+   "Inventory +45 days": -6.8,
+   "Debt markets shut 4q": -1.0,
+   "Rates +300bp": -0.9,
+   "Spreads +400bp": -0.7
   },
   "global_sensitivity_total_order_pct": {
    "Revenue shock": 91,
-   "Inventory build-up": 16,
+   "Inventory build-up": 15,
    "Variable costs": 11,
    "Debt-market freeze": 1,
    "Interest rates": 0,
@@ -126,12 +126,12 @@
   }
  },
  "verdict": "Strained",
- "headline": "Strained credit profile: health 42/100 under baseline, 3 under demand freeze; the company breaks (50% breach odds) at a 82% revenue drop.",
- "summary": "American Airlines Group Inc. enters the simulation with $7.9B of cash and short-term investments against $25.8B of debt and a synthetic C rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 42, with the unluckiest tenth of paths at 28 or below and a 0.1% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 91% of the variance of the health score across the stress space, and interactions between shocks add 6%.",
+ "headline": "Strained credit profile: health 39/100 under baseline, 3 under demand freeze; the company breaks (50% breach odds) at a 81% revenue drop.",
+ "summary": "American Airlines Group Inc. enters the simulation with $7.9B of cash and short-term investments against $28.8B of debt and a synthetic C rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 39, with the unluckiest tenth of paths at 26 or below and a 0.2% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 91% of the variance of the health score across the stress space, and interactions between shocks add 7%.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 21.5 points and raises breach odds by 0.2 percentage points; fixed costs are about 26% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 20.6 points and raises breach odds by 0.4 percentage points; fixed costs are about 26% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Thin interest coverage",
@@ -151,31 +151,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 3 (−39 vs baseline), breach probability 66.4%, sub-investment-grade at horizon 98%."
+   "note": "Health 3 (−36 vs baseline), breach probability 73.7%, sub-investment-grade at horizon 99%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 28 (−14 vs baseline), breach probability 0.6%, sub-investment-grade at horizon 44%."
+   "note": "Health 26 (−13 vs baseline), breach probability 0.8%, sub-investment-grade at horizon 45%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 28 (−14 vs baseline), breach probability 0.4%, sub-investment-grade at horizon 36%."
+   "note": "Health 26 (−13 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 38%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 29 (−13 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 35%."
+   "note": "Health 27 (−12 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 37%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 31 (−11 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 40%."
+   "note": "Health 28 (−11 vs baseline), breach probability 0.5%, sub-investment-grade at horizon 42%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 40 (−2 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 25%."
+   "note": "Health 38 (−1 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 27%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 41 (−1 vs baseline), breach probability 0.2%, sub-investment-grade at horizon 33%."
+   "note": "Health 39 (+0 vs baseline), breach probability 0.2%, sub-investment-grade at horizon 33%."
   }
  ],
  "watch_list": [

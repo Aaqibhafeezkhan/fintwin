@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "BOEING CO",
   "ticker": "BA",
-  "sector": "Aerospace",
+  "sector": "Aerospace & Defense",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

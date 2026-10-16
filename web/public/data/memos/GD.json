@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "GENERAL DYNAMICS CORP",
   "ticker": "GD",
-  "sector": "Defense",
+  "sector": "Aerospace & Defense",
   "last_reported_quarter": "2026-04-05",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

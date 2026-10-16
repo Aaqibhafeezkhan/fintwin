@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "LOWES COMPANIES INC",
   "ticker": "LOW",
-  "sector": "Retail",
+  "sector": "Home Improvement Retail",
   "last_reported_quarter": "2026-07-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$90.4B",
    "cash_and_short_term_investments": "$3.4B",
-   "total_debt": "$35.2B",
+   "total_debt": "$37.6B",
    "synthetic_rating_today": "n/a",
    "debt_maturing_next_4_quarters": "$2.7B",
    "committed_credit_facility": "$7.2B",
@@ -25,70 +25,70 @@
    "variable_cost_share_of_revenue_pct": 62,
    "trend_growth_pct_per_year": 2.3,
    "demand_volatility_pct_per_quarter": 2.8,
-   "average_cost_of_debt_pct": 5.8,
+   "average_cost_of_debt_pct": 5.6,
    "revenue_sensitivity_to_gdp": 0.5
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 57,
-    "health_score_unluckiest_10pct": 48,
-    "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 1,
-    "prob_sub_investment_grade_at_horizon_pct": 1
-   },
-   "Rates +200bp": {
-    "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 57,
-    "health_score_unluckiest_10pct": 48,
-    "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 1,
-    "prob_sub_investment_grade_at_horizon_pct": 1
-   },
-   "Sales -20%": {
-    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 45,
-    "health_score_unluckiest_10pct": 39,
-    "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 2,
-    "prob_sub_investment_grade_at_horizon_pct": 1
-   },
-   "Recession": {
-    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 46,
-    "health_score_unluckiest_10pct": 39,
-    "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 1,
-    "prob_sub_investment_grade_at_horizon_pct": 1
-   },
-   "Demand freeze": {
-    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 10,
-    "health_score_unluckiest_10pct": 7,
-    "prob_liquidity_breach_pct": 18.9,
-    "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 58
-   },
-   "Stagflation (2022)": {
-    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 47,
-    "health_score_unluckiest_10pct": 40,
-    "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 1,
-    "prob_sub_investment_grade_at_horizon_pct": 2
-   },
-   "Credit crunch": {
-    "description": "Debt markets closed for a year, spreads +500bp.",
     "health_score_0_100": 56,
     "health_score_unluckiest_10pct": 47,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 1,
     "prob_sub_investment_grade_at_horizon_pct": 1
    },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 56,
+    "health_score_unluckiest_10pct": 47,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 44,
+    "health_score_unluckiest_10pct": 38,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 45,
+    "health_score_unluckiest_10pct": 38,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 9,
+    "health_score_unluckiest_10pct": 6,
+    "prob_liquidity_breach_pct": 23.5,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 62
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 46,
+    "health_score_unluckiest_10pct": 39,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 55,
+    "health_score_unluckiest_10pct": 46,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 1,
+    "prob_sub_investment_grade_at_horizon_pct": 1
+   },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 51,
-    "health_score_unluckiest_10pct": 43,
+    "health_score_0_100": 50,
+    "health_score_unluckiest_10pct": 41,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 1,
     "prob_sub_investment_grade_at_horizon_pct": 2
@@ -97,33 +97,33 @@
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
-    "shock_for_10pct_breach": "95% revenue drop"
+    "shock_for_10pct_breach": "94% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
     "shock_for_10pct_breach": "not reached"
    },
    "Variable-cost increase": {
-    "shock_for_50pct_breach": "23pp cost increase",
+    "shock_for_50pct_breach": "22pp cost increase",
     "shock_for_10pct_breach": "21pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -16.0,
+   "Revenue -30%": -16.1,
    "Costs +5pp": -7.3,
    "Rates +300bp": -1.2,
-   "Spreads +400bp": -1.0,
+   "Spreads +400bp": -1.1,
    "Debt markets shut 4q": -1.0,
    "Inventory +45 days": 2.1
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 57/100 under baseline, 10 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "LOWES COMPANIES INC enters the simulation with $3.4B of cash and short-term investments against $35.2B of debt. Across 5,000 simulated 12-quarter futures the median health score is 57, with the unluckiest tenth of paths at 48 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -16.0 points.",
+ "headline": "Watch credit profile: health 56/100 under baseline, 9 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "LOWES COMPANIES INC enters the simulation with $3.4B of cash and short-term investments against $37.6B of debt. Across 5,000 simulated 12-quarter futures the median health score is 56, with the unluckiest tenth of paths at 47 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -16.1 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 16.0 points and raises breach odds by 0.0 percentage points; fixed costs are about 27% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 16.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 27% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -135,31 +135,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 10 (−47 vs baseline), breach probability 18.9%, sub-investment-grade at horizon 58%."
+   "note": "Health 9 (−47 vs baseline), breach probability 23.5%, sub-investment-grade at horizon 62%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 45 (−12 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 44 (−12 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 46 (−11 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 45 (−11 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 47 (−10 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 46 (−10 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 51 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 50 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 56 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 55 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 57 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 56 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   }
  ],
  "watch_list": [

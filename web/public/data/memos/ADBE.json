@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "ADOBE INC.",
   "ticker": "ADBE",
-  "sector": "Software",
+  "sector": "Application Software",
   "last_reported_quarter": "2026-08-28",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

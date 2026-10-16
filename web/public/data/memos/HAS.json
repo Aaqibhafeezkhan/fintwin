@@ -1,0 +1,178 @@
+{
+ "ticker": "HAS",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-28",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "HASBRO, INC.",
+  "ticker": "HAS",
+  "sector": "Leisure Products",
+  "last_reported_quarter": "2026-06-28",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$5.0B",
+   "cash_and_short_term_investments": "$880M",
+   "total_debt": "$3.5B",
+   "synthetic_rating_today": "AA",
+   "debt_maturing_next_4_quarters": "$590M",
+   "committed_credit_facility": "$398M",
+   "customer_deposits_days_of_revenue": 14
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$310M",
+   "variable_cost_share_of_revenue_pct": 61,
+   "trend_growth_pct_per_year": -6.6,
+   "demand_volatility_pct_per_quarter": 10.3,
+   "average_cost_of_debt_pct": 4.9,
+   "revenue_sensitivity_to_gdp": 0.6
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 67,
+    "health_score_unluckiest_10pct": 35,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 58,
+    "prob_sub_investment_grade_at_horizon_pct": 46
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 66,
+    "health_score_unluckiest_10pct": 35,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 60,
+    "prob_sub_investment_grade_at_horizon_pct": 48
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 58,
+    "health_score_unluckiest_10pct": 26,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 72,
+    "prob_sub_investment_grade_at_horizon_pct": 47
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 26,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 71,
+    "prob_sub_investment_grade_at_horizon_pct": 47
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 15,
+    "health_score_unluckiest_10pct": 10,
+    "prob_liquidity_breach_pct": 8.7,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 77
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 61,
+    "health_score_unluckiest_10pct": 28,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 69,
+    "prob_sub_investment_grade_at_horizon_pct": 50
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 30,
+    "prob_liquidity_breach_pct": 0.1,
+    "prob_interest_coverage_below_1_5x_pct": 58,
+    "prob_sub_investment_grade_at_horizon_pct": 45
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 29,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 66,
+    "prob_sub_investment_grade_at_horizon_pct": 49
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "85% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "37pp cost increase",
+    "shock_for_10pct_breach": "28pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -13.9,
+   "Inventory +45 days": -5.1,
+   "Costs +5pp": -4.5,
+   "Debt markets shut 4q": -3.0,
+   "Rates +300bp": -1.1,
+   "Spreads +400bp": -1.0
+  }
+ },
+ "verdict": "Watch",
+ "headline": "Watch credit profile: health 67/100 under baseline, 15 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "HASBRO, INC. enters the simulation with $880M of cash and short-term investments against $3.5B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 67, with the unluckiest tenth of paths at 35 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -13.9 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 13.9 points and raises breach odds by 0.2 percentage points; fixed costs are about 29% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 58% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  },
+  {
+   "risk": "Downgrade to speculative grade",
+   "evidence": "46% of baseline paths end the horizon below BBB."
+  }
+ ],
+ "resilience": [
+  "Cash of $880M covers the next four quarters of maturities ($590M).",
+  "A committed credit facility of about $398M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (AA), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 15 (−52 vs baseline), breach probability 8.7%, sub-investment-grade at horizon 77%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 58 (−9 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 47%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 59 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 49%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 59 (−8 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 47%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 61 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 50%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 64 (−3 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 45%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 66 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 48%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $880M vs $590M).",
+  "Variable-cost ratio versus the calibrated 61% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

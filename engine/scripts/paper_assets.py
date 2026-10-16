@@ -37,7 +37,7 @@ def m(name: str, value) -> None:
 
 
 def usd(x):
-    """Signed billions with a typographic minus, e.g. $-$\$12.1B."""
+    r"""Signed billions with a typographic minus, e.g. $-$\$12.1B."""
     return ("$-$" if x < 0 else "") + "\\$" + f"{abs(x) / 1e9:.1f}B"
 
 
@@ -106,7 +106,7 @@ plt.close(fig)
 
 # ---- Figure 2: PIT histograms + coverage by year ----
 fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.3))
-for ax, (var, title) in zip(axes[:2], (("revenue", "Revenue"), ("cash_like", "Cash"))):
+for ax, (var, title) in zip(axes[:2], (("revenue", "Revenue"), ("cash_like", "Cash")), strict=False):
     h = np.array(cal["vars"][var]["pit_hist"])
     ax.bar(np.arange(10) * 0.1 + 0.05, h, width=0.085, color=BLUE)
     ax.axhline(0.1, color=INK, lw=0.8, ls="--")
@@ -162,7 +162,7 @@ plt.close(fig)
 # ---- Figure 4: Sobol for three contrasting companies ----
 picks = [t for t in ("CCL", "BA", "INTC") if (DATA / "companies" / f"{t}.json").exists()]
 fig, axes = plt.subplots(1, len(picks), figsize=(7.0, 2.1), sharey=True)
-for ax, t in zip(np.atleast_1d(axes), picks):
+for ax, t in zip(np.atleast_1d(axes), picks, strict=False):
     sob = json.loads((DATA / "companies" / f"{t}.json").read_text(encoding="utf-8")).get("sobol")
     if not sob:
         continue

@@ -54,7 +54,7 @@ Four feedback loops govern the response to stress:
 \item \textbf{B1 cash conservation.} Under stress, payouts stop and capex falls to maintenance.
 \item \textbf{B2 delayed restructuring.} After two quarters below the target margin, fixed costs fall 4\% per quarter to a floor of $-15\%$.
 \end{itemize}
-A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%).
+A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%). Because leverage that would alarm a software company is normal for a regulated utility, the coverage and leverage components are scored against sector norms: each GICS sector receives a tolerance factor equal to its median net debt/EBITDA relative to the universe median, clipped to $[1,2]$. The factor is estimated from the data and affects the score only, not the dynamics.
 
 \subsection{Calibration}
 All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; the debt-rollover share from the two-year debt trend; and the minimum operating cash balance from the company's own revealed behaviour (half its 10th-percentile cash balance over three years). An earlier cost-proportional cash floor forced high-turnover, low-cash retailers to ``borrow up'' to cash levels they never hold; the large-sample evaluation exposed this bias, and the revealed floor cut the twin's cash-forecast CRPS for Walmart roughly ninefold. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
@@ -64,7 +64,7 @@ Eight presets (rates $+200$bp, sales $-20\%$, recession, demand freeze, stagflat
 
 \section{Evaluation}
 \subsection{Large-sample probabilistic calibration}
-For each of \NCompanies{} large non-financial companies and each yearly cutoff (15 February 2013--2025) we calibrate on point-in-time filings and forecast the next four reported quarters with 2{,}000 paths, yielding \NForecasts{} forecasts. We score with the CRPS against a seasonal random walk with historical spread and examine probability integral transform (PIT) histograms. Online split-conformal calibration \cite{vovk2005,gibbs2021} rescales each year's interval half-widths by the empirical quantile of normalized errors from \emph{earlier} cutoffs only.
+The universe is the current S\&P~500 outside Financials and Real Estate, plus a handful of former members relevant to 2020. For each of the \NCompanies{} companies and each yearly cutoff (15 February 2013--2025) we calibrate on point-in-time filings and forecast the next four reported quarters with 2{,}000 paths, yielding \NForecasts{} forecasts. We score with the CRPS against a seasonal random walk with historical spread and examine probability integral transform (PIT) histograms. Online split-conformal calibration \cite{vovk2005,gibbs2021} rescales each year's interval half-widths by the empirical quantile of normalized errors from \emph{earlier} cutoffs only.
 
 \begin{table}[h]
 \centering\small
@@ -114,14 +114,14 @@ Feeding the realized revenue path into the twin isolates its mechanics from its 
 The Python reference engine (NumPy) performs calibration, backtests and exports; a line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server and recomputes 5{,}000 paths per slider move. Golden runs exported from Python with identical pre-drawn shocks require agreement to $10^{-6}$ on eleven output series. A rule-based analyst turns each company's results into a credit-memo-style note (verdict, evidenced risks, buffers, scenario commentary, watch list) whose figures are taken directly from the simulation output.
 
 \section{Limitations}
-The twin covers non-financial corporates; filers relying on custom taxonomies cannot be parsed with generic tags. Unconditional fans cannot anticipate regime breaks: Carnival's revenue fell about 99\%, beyond the $-70\%$ preset. Balance-sheet forecasts are weaker than revenue forecasts because financing decisions are discretionary and modelled as calibrated noise. Conformal rescaling corrects average coverage but not conditional coverage in crisis years.
+The twin covers non-financial corporates; filers relying on custom taxonomies cannot be parsed with generic tags. Unconditional fans cannot anticipate regime breaks: Carnival's revenue fell about 99\%, beyond the $-70\%$ preset. Balance-sheet forecasts are weaker than revenue forecasts because financing decisions are discretionary and modelled as calibrated noise. Conformal rescaling corrects average coverage but not conditional coverage in crisis years. Using today's index members introduces survivorship bias: companies that failed before 2026 are absent from the sample, which likely flatters the cross-sectional result.
 
 \section{Conclusion}
 A transparent stock-and-flow twin calibrated from public filings, evaluated as a probabilistic forecaster without look-ahead, is useful less as a predictor of the next quarter than as an instrument for ranking structural fragility and exploring conditional scenarios. All code and data snapshots are open.
 
 \paragraph{AI use statement.} Software development, analysis and drafting were carried out with assistance from an AI coding assistant (Claude); the author reviewed the design, results and text.
 
-\begin{thebibliography}{9}\small
+\begin{thebibliography}{9}\footnotesize\setlength{\itemsep}{0pt}
 \bibitem{forrester1961} J.~W. Forrester. \emph{Industrial Dynamics}. MIT Press, 1961.
 \bibitem{sterman2000} J.~D. Sterman. \emph{Business Dynamics: Systems Thinking and Modeling for a Complex World}. McGraw-Hill, 2000.
 \bibitem{gneiting2007} T.~Gneiting and A.~E. Raftery. Strictly proper scoring rules, prediction, and estimation. \emph{JASA}, 102(477):359--378, 2007.

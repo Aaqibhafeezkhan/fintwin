@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "Walt Disney Co",
   "ticker": "DIS",
-  "sector": "Media",
+  "sector": "Movies & Entertainment",
   "last_reported_quarter": "2026-06-27",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$98.9B",
    "cash_and_short_term_investments": "$5.2B",
-   "total_debt": "$37.4B",
+   "total_debt": "$46.0B",
    "synthetic_rating_today": "A-",
    "debt_maturing_next_4_quarters": "$3.9B",
    "committed_credit_facility": "$12.2B",
@@ -31,64 +31,64 @@
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 81,
-    "health_score_unluckiest_10pct": 80,
+    "health_score_0_100": 80,
+    "health_score_unluckiest_10pct": 79,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 81,
-    "health_score_unluckiest_10pct": 80,
+    "health_score_0_100": 80,
+    "health_score_unluckiest_10pct": 79,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 80,
-    "health_score_unluckiest_10pct": 79,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 78,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 80,
-    "health_score_unluckiest_10pct": 79,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 78,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 47,
-    "health_score_unluckiest_10pct": 39,
+    "health_score_0_100": 46,
+    "health_score_unluckiest_10pct": 38,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 1
+    "prob_sub_investment_grade_at_horizon_pct": 2
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 80,
-    "health_score_unluckiest_10pct": 80,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 78,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 80,
-    "health_score_unluckiest_10pct": 80,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 79,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 80,
-    "health_score_unluckiest_10pct": 79,
+    "health_score_0_100": 79,
+    "health_score_unluckiest_10pct": 78,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -109,29 +109,29 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -1.6,
+   "Revenue -30%": -1.9,
    "Inventory +45 days": -0.7,
    "Debt markets shut 4q": -0.5,
-   "Costs +5pp": -0.4,
+   "Costs +5pp": -0.5,
    "Spreads +400bp": -0.1,
    "Rates +300bp": -0.1
   },
   "global_sensitivity_total_order_pct": {
    "Revenue shock": 100,
-   "Variable costs": 9,
-   "Inventory build-up": 8,
+   "Variable costs": 8,
+   "Inventory build-up": 6,
    "Debt-market freeze": 0,
    "Credit spreads": 0,
    "Interest rates": 0
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 81/100 under baseline, 47 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "Walt Disney Co enters the simulation with $5.2B of cash and short-term investments against $37.4B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 81, with the unluckiest tenth of paths at 80 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 88%.",
+ "headline": "Healthy credit profile: health 80/100 under baseline, 46 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Walt Disney Co enters the simulation with $5.2B of cash and short-term investments against $46.0B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 80, with the unluckiest tenth of paths at 79 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 81%.",
  "key_risks": [
   {
    "risk": "Severe demand collapse",
-   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 47."
+   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 46."
   }
  ],
  "resilience": [
@@ -143,31 +143,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 47 (−34 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 46 (−34 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 80 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 80 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 80 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 80 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 80 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 81 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 80 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

@@ -57,7 +57,7 @@ export type Meta = {
 };
 
 export type IndexEntry = {
-  name: string; sector: string; showcase: boolean; last_quarter: string;
+  name: string; sector: string; gics?: string; showcase: boolean; last_quarter: string;
   matrix: Record<string, { health: number; p_breach: number }>;
 };
 export type Index = { companies: Record<string, IndexEntry>; meta: Meta };

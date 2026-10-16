@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "Carnival Corp Ltd.",
   "ticker": "CCL",
-  "sector": "Cruise",
+  "sector": "Hotels, Resorts & Cruise Lines",
   "last_reported_quarter": "2026-08-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$27.6B",
    "cash_and_short_term_investments": "$1.2B",
-   "total_debt": "$21.9B",
+   "total_debt": "$23.9B",
    "synthetic_rating_today": "A-",
    "debt_maturing_next_4_quarters": "$2.5B",
    "committed_credit_facility": "$2.2B",
@@ -25,41 +25,41 @@
    "variable_cost_share_of_revenue_pct": 36,
    "trend_growth_pct_per_year": 7.8,
    "demand_volatility_pct_per_quarter": 7.5,
-   "average_cost_of_debt_pct": 5.1,
+   "average_cost_of_debt_pct": 4.7,
    "revenue_sensitivity_to_gdp": 5.0
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 44,
-    "health_score_unluckiest_10pct": 18,
-    "prob_liquidity_breach_pct": 12.0,
-    "prob_interest_coverage_below_1_5x_pct": 29,
-    "prob_sub_investment_grade_at_horizon_pct": 28
+    "health_score_0_100": 42,
+    "health_score_unluckiest_10pct": 17,
+    "prob_liquidity_breach_pct": 11.9,
+    "prob_interest_coverage_below_1_5x_pct": 30,
+    "prob_sub_investment_grade_at_horizon_pct": 29
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 43,
-    "health_score_unluckiest_10pct": 17,
-    "prob_liquidity_breach_pct": 12.6,
-    "prob_interest_coverage_below_1_5x_pct": 30,
-    "prob_sub_investment_grade_at_horizon_pct": 30
+    "health_score_0_100": 41,
+    "health_score_unluckiest_10pct": 16,
+    "prob_liquidity_breach_pct": 13.0,
+    "prob_interest_coverage_below_1_5x_pct": 31,
+    "prob_sub_investment_grade_at_horizon_pct": 31
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 35,
+    "health_score_0_100": 34,
     "health_score_unluckiest_10pct": 9,
-    "prob_liquidity_breach_pct": 18.5,
-    "prob_interest_coverage_below_1_5x_pct": 50,
-    "prob_sub_investment_grade_at_horizon_pct": 31
+    "prob_liquidity_breach_pct": 18.8,
+    "prob_interest_coverage_below_1_5x_pct": 51,
+    "prob_sub_investment_grade_at_horizon_pct": 32
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 37,
+    "health_score_0_100": 35,
     "health_score_unluckiest_10pct": 10,
-    "prob_liquidity_breach_pct": 17.5,
-    "prob_interest_coverage_below_1_5x_pct": 45,
-    "prob_sub_investment_grade_at_horizon_pct": 31
+    "prob_liquidity_breach_pct": 18.0,
+    "prob_interest_coverage_below_1_5x_pct": 46,
+    "prob_sub_investment_grade_at_horizon_pct": 32
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
@@ -67,36 +67,36 @@
     "health_score_unluckiest_10pct": 2,
     "prob_liquidity_breach_pct": 100.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 67
+    "prob_sub_investment_grade_at_horizon_pct": 68
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 39,
+    "health_score_0_100": 38,
     "health_score_unluckiest_10pct": 12,
-    "prob_liquidity_breach_pct": 16.1,
-    "prob_interest_coverage_below_1_5x_pct": 39,
-    "prob_sub_investment_grade_at_horizon_pct": 33
+    "prob_liquidity_breach_pct": 16.3,
+    "prob_interest_coverage_below_1_5x_pct": 40,
+    "prob_sub_investment_grade_at_horizon_pct": 34
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 43,
-    "health_score_unluckiest_10pct": 17,
-    "prob_liquidity_breach_pct": 13.8,
-    "prob_interest_coverage_below_1_5x_pct": 29,
-    "prob_sub_investment_grade_at_horizon_pct": 28
+    "health_score_0_100": 42,
+    "health_score_unluckiest_10pct": 15,
+    "prob_liquidity_breach_pct": 14.0,
+    "prob_interest_coverage_below_1_5x_pct": 30,
+    "prob_sub_investment_grade_at_horizon_pct": 29
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 39,
-    "health_score_unluckiest_10pct": 13,
-    "prob_liquidity_breach_pct": 14.5,
-    "prob_interest_coverage_below_1_5x_pct": 36,
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 12,
+    "prob_liquidity_breach_pct": 14.9,
+    "prob_interest_coverage_below_1_5x_pct": 37,
     "prob_sub_investment_grade_at_horizon_pct": 31
    }
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "67% revenue drop",
+    "shock_for_50pct_breach": "68% revenue drop",
     "shock_for_10pct_breach": "0% revenue drop"
    },
    "Interest-rate rise": {
@@ -109,12 +109,12 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -14.4,
-   "Costs +5pp": -2.6,
-   "Rates +300bp": -1.1,
-   "Inventory +45 days": -0.9,
-   "Spreads +400bp": -0.6,
-   "Debt markets shut 4q": 0.1
+   "Revenue -30%": -14.3,
+   "Costs +5pp": -2.5,
+   "Rates +300bp": -1.2,
+   "Inventory +45 days": -0.8,
+   "Spreads +400bp": -0.8,
+   "Debt markets shut 4q": 0.3
   },
   "global_sensitivity_total_order_pct": {
    "Revenue shock": 100,
@@ -126,12 +126,12 @@
   }
  },
  "verdict": "Strained",
- "headline": "Strained credit profile: health 44/100 under baseline, 5 under demand freeze; the company breaks (50% breach odds) at a 67% revenue drop.",
- "summary": "Carnival Corp Ltd. enters the simulation with $1.2B of cash and short-term investments against $21.9B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 44, with the unluckiest tenth of paths at 18 or below and a 12.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 15%.",
+ "headline": "Strained credit profile: health 42/100 under baseline, 5 under demand freeze; the company breaks (50% breach odds) at a 68% revenue drop.",
+ "summary": "Carnival Corp Ltd. enters the simulation with $1.2B of cash and short-term investments against $23.9B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 42, with the unluckiest tenth of paths at 17 or below and a 11.9% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 15%.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 14.4 points and raises breach odds by 9.2 percentage points; fixed costs are about 50% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 14.3 points and raises breach odds by 9.8 percentage points; fixed costs are about 50% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Refinancing wall",
@@ -139,11 +139,11 @@
   },
   {
    "risk": "Thin interest coverage",
-   "evidence": "In 29% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+   "evidence": "In 30% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
   },
   {
    "risk": "Liquidity under normal conditions",
-   "evidence": "Even without a stress scenario, 12.0% of paths run out of cash after drawing the revolver and tapping available debt markets."
+   "evidence": "Even without a stress scenario, 11.9% of paths run out of cash after drawing the revolver and tapping available debt markets."
   },
   {
    "risk": "Customer-deposit refunds",
@@ -159,31 +159,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 5 (−39 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 67%."
+   "note": "Health 5 (−37 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 68%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 35 (−9 vs baseline), breach probability 18.5%, sub-investment-grade at horizon 31%."
+   "note": "Health 34 (−8 vs baseline), breach probability 18.8%, sub-investment-grade at horizon 32%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 37 (−7 vs baseline), breach probability 17.5%, sub-investment-grade at horizon 31%."
+   "note": "Health 35 (−7 vs baseline), breach probability 18.0%, sub-investment-grade at horizon 32%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 39 (−5 vs baseline), breach probability 16.1%, sub-investment-grade at horizon 33%."
+   "note": "Health 38 (−4 vs baseline), breach probability 16.3%, sub-investment-grade at horizon 34%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 39 (−5 vs baseline), breach probability 14.5%, sub-investment-grade at horizon 31%."
+   "note": "Health 38 (−4 vs baseline), breach probability 14.9%, sub-investment-grade at horizon 31%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 43 (−1 vs baseline), breach probability 12.6%, sub-investment-grade at horizon 30%."
+   "note": "Health 41 (−1 vs baseline), breach probability 13.0%, sub-investment-grade at horizon 31%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 43 (−1 vs baseline), breach probability 13.8%, sub-investment-grade at horizon 28%."
+   "note": "Health 42 (+0 vs baseline), breach probability 14.0%, sub-investment-grade at horizon 29%."
   }
  ],
  "watch_list": [

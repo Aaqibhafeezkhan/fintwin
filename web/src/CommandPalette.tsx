@@ -55,7 +55,7 @@ export function CommandPalette({ index, open, onClose, onPick, liveEnabled }: {
   return (
     <div className="palette-backdrop" onMouseDown={onClose}>
       <div className="palette fade-in" role="dialog" aria-label="Find a company" onMouseDown={(e) => e.stopPropagation()} onKeyDown={onKey}>
-        <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search 94 companies by ticker, name or sector…"
+        <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${all.length} companies by ticker, name or sector…`}
           aria-label="Search companies" role="combobox" aria-expanded aria-controls="palette-list" />
         <div className="palette-list" id="palette-list" role="listbox" ref={listRef}>
           {results.map((g) => (

@@ -14,7 +14,7 @@
   "reported": {
    "revenue_last_4_quarters": "$41.3B",
    "cash_and_short_term_investments": "$13.1B",
-   "total_debt": "$2.4B",
+   "total_debt": "$3.2B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$438M",
    "committed_credit_facility": "$3.0B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 64,
    "trend_growth_pct_per_year": 18.2,
    "demand_volatility_pct_per_quarter": 5.0,
-   "average_cost_of_debt_pct": 6.3,
+   "average_cost_of_debt_pct": 4.3,
    "revenue_sensitivity_to_gdp": 1.5
   },
   "scenarios": {
@@ -119,7 +119,7 @@
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 100/100 under baseline, 92 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "ADVANCED MICRO DEVICES INC enters the simulation with $13.1B of cash and short-term investments against $2.4B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 100, with the unluckiest tenth of paths at 100 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is inventory +45 days, which moves the health score by -0.8 points.",
+ "summary": "ADVANCED MICRO DEVICES INC enters the simulation with $13.1B of cash and short-term investments against $3.2B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 100, with the unluckiest tenth of paths at 100 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is inventory +45 days, which moves the health score by -0.8 points.",
  "key_risks": [
   {
    "risk": "Severe demand collapse",

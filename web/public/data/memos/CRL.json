@@ -1,0 +1,170 @@
+{
+ "ticker": "CRL",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-27",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "CHARLES RIVER LABORATORIES INTERNATIONAL, INC.",
+  "ticker": "CRL",
+  "sector": "Life Sciences Tools & Services",
+  "last_reported_quarter": "2026-06-27",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$4.0B",
+   "cash_and_short_term_investments": "$192M",
+   "total_debt": "$2.6B",
+   "synthetic_rating_today": "A-",
+   "debt_maturing_next_4_quarters": "$1M",
+   "committed_credit_facility": "$320M",
+   "customer_deposits_days_of_revenue": 19
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$331M",
+   "variable_cost_share_of_revenue_pct": 48,
+   "trend_growth_pct_per_year": 1.3,
+   "demand_volatility_pct_per_quarter": 2.9,
+   "average_cost_of_debt_pct": 4.4,
+   "revenue_sensitivity_to_gdp": 1.0
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 54,
+    "health_score_unluckiest_10pct": 48,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 5,
+    "prob_sub_investment_grade_at_horizon_pct": 9
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 53,
+    "health_score_unluckiest_10pct": 48,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 6,
+    "prob_sub_investment_grade_at_horizon_pct": 15
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 49,
+    "health_score_unluckiest_10pct": 40,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 75,
+    "prob_sub_investment_grade_at_horizon_pct": 4
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 50,
+    "health_score_unluckiest_10pct": 42,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 58,
+    "prob_sub_investment_grade_at_horizon_pct": 4
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 5,
+    "health_score_unluckiest_10pct": 3,
+    "prob_liquidity_breach_pct": 68.7,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 95
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 52,
+    "health_score_unluckiest_10pct": 46,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 23,
+    "prob_sub_investment_grade_at_horizon_pct": 10
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 53,
+    "health_score_unluckiest_10pct": 48,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 5,
+    "prob_sub_investment_grade_at_horizon_pct": 8
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 54,
+    "health_score_unluckiest_10pct": 49,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 19,
+    "prob_sub_investment_grade_at_horizon_pct": 6
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "77% revenue drop",
+    "shock_for_10pct_breach": "68% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "28pp cost increase",
+    "shock_for_10pct_breach": "26pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -13.6,
+   "Rates +300bp": -0.9,
+   "Spreads +400bp": -0.4,
+   "Debt markets shut 4q": -0.1,
+   "Costs +5pp": 0.3,
+   "Inventory +45 days": 2.7
+  }
+ },
+ "verdict": "Watch",
+ "headline": "Watch credit profile: health 54/100 under baseline, 5 under demand freeze; the company breaks (50% breach odds) at a 77% revenue drop.",
+ "summary": "CHARLES RIVER LABORATORIES INTERNATIONAL, INC. enters the simulation with $192M of cash and short-term investments against $2.6B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 54, with the unluckiest tenth of paths at 48 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -13.6 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 13.6 points and raises breach odds by 0.0 percentage points; fixed costs are about 41% of the cost base, so losses scale faster than revenue."
+  }
+ ],
+ "resilience": [
+  "Cash of $192M covers the next four quarters of maturities ($1M).",
+  "A committed credit facility of about $320M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A-), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 5 (−49 vs baseline), breach probability 68.7%, sub-investment-grade at horizon 95%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 49 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 50 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 52 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 10%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 53 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 15%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 53 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 8%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 54 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 6%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $192M vs $1M).",
+  "Variable-cost ratio versus the calibrated 48% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

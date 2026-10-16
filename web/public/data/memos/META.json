@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "Meta Platforms, Inc.",
   "ticker": "META",
-  "sector": "Technology",
+  "sector": "Interactive Media & Services",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,

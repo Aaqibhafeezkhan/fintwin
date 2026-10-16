@@ -1,0 +1,180 @@
+{
+ "ticker": "CMS",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "CMS ENERGY CORP",
+  "ticker": "CMS",
+  "sector": "Multi-Utilities",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$8.6B",
+   "cash_and_short_term_investments": "$241M",
+   "total_debt": "$19.0B",
+   "synthetic_rating_today": "BB",
+   "debt_maturing_next_4_quarters": "$919M",
+   "committed_credit_facility": "$687M",
+   "customer_deposits_days_of_revenue": 0
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$315M",
+   "variable_cost_share_of_revenue_pct": 50,
+   "trend_growth_pct_per_year": 3.8,
+   "demand_volatility_pct_per_quarter": 4.1,
+   "average_cost_of_debt_pct": 4.4,
+   "revenue_sensitivity_to_gdp": 1.2
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 39,
+    "health_score_unluckiest_10pct": 32,
+    "prob_liquidity_breach_pct": 1.9,
+    "prob_interest_coverage_below_1_5x_pct": 45,
+    "prob_sub_investment_grade_at_horizon_pct": 73
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 38,
+    "health_score_unluckiest_10pct": 31,
+    "prob_liquidity_breach_pct": 2.6,
+    "prob_interest_coverage_below_1_5x_pct": 55,
+    "prob_sub_investment_grade_at_horizon_pct": 83
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 32,
+    "health_score_unluckiest_10pct": 22,
+    "prob_liquidity_breach_pct": 10.7,
+    "prob_interest_coverage_below_1_5x_pct": 95,
+    "prob_sub_investment_grade_at_horizon_pct": 79
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 33,
+    "health_score_unluckiest_10pct": 23,
+    "prob_liquidity_breach_pct": 8.9,
+    "prob_interest_coverage_below_1_5x_pct": 94,
+    "prob_sub_investment_grade_at_horizon_pct": 76
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 6,
+    "health_score_unluckiest_10pct": 4,
+    "prob_liquidity_breach_pct": 100.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 100
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 34,
+    "health_score_unluckiest_10pct": 25,
+    "prob_liquidity_breach_pct": 7.4,
+    "prob_interest_coverage_below_1_5x_pct": 89,
+    "prob_sub_investment_grade_at_horizon_pct": 88
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 37,
+    "health_score_unluckiest_10pct": 26,
+    "prob_liquidity_breach_pct": 13.5,
+    "prob_interest_coverage_below_1_5x_pct": 51,
+    "prob_sub_investment_grade_at_horizon_pct": 70
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 36,
+    "health_score_unluckiest_10pct": 27,
+    "prob_liquidity_breach_pct": 4.2,
+    "prob_interest_coverage_below_1_5x_pct": 80,
+    "prob_sub_investment_grade_at_horizon_pct": 77
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "30% revenue drop",
+    "shock_for_10pct_breach": "15% revenue drop"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "956bp rate rise"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "11pp cost increase",
+    "shock_for_10pct_breach": "5pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -12.3,
+   "Costs +5pp": -2.2,
+   "Debt markets shut 4q": -1.5,
+   "Rates +300bp": -1.1,
+   "Spreads +400bp": -0.8,
+   "Inventory +45 days": -0.7
+  }
+ },
+ "verdict": "Strained",
+ "headline": "Strained credit profile: health 39/100 under baseline, 6 under demand freeze; the company breaks (50% breach odds) at a 30% revenue drop.",
+ "summary": "CMS ENERGY CORP enters the simulation with $241M of cash and short-term investments against $19.0B of debt and a synthetic BB rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 39, with the unluckiest tenth of paths at 32 or below and a 1.9% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -12.3 points.",
+ "key_risks": [
+  {
+   "risk": "Demand sensitivity",
+   "evidence": "A 30% revenue fall lowers the health score by 12.3 points and raises breach odds by 28.4 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
+  },
+  {
+   "risk": "Refinancing wall",
+   "evidence": "$919M of debt matures in the next four quarters against $241M of cash; repayment depends on continued market access."
+  },
+  {
+   "risk": "Thin interest coverage",
+   "evidence": "In 45% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+  },
+  {
+   "risk": "Downgrade to speculative grade",
+   "evidence": "73% of baseline paths end the horizon below BBB."
+  }
+ ],
+ "resilience": [
+  "A committed credit facility of about $687M backstops liquidity (size assumed: not tagged in filings).",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 6 (−33 vs baseline), breach probability 100.0%, sub-investment-grade at horizon 100%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 32 (−7 vs baseline), breach probability 10.7%, sub-investment-grade at horizon 79%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 33 (−6 vs baseline), breach probability 8.9%, sub-investment-grade at horizon 76%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 34 (−5 vs baseline), breach probability 7.4%, sub-investment-grade at horizon 88%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 36 (−3 vs baseline), breach probability 4.2%, sub-investment-grade at horizon 77%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 37 (−2 vs baseline), breach probability 13.5%, sub-investment-grade at horizon 70%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 38 (−1 vs baseline), breach probability 2.6%, sub-investment-grade at horizon 83%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $241M vs $919M).",
+  "Variable-cost ratio versus the calibrated 50% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

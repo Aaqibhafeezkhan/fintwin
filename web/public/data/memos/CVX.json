@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "CHEVRON CORP",
   "ticker": "CVX",
-  "sector": "Energy",
+  "sector": "Integrated Oil & Gas",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$208.7B",
    "cash_and_short_term_investments": "$9.6B",
-   "total_debt": "$39.8B",
+   "total_debt": "$40.2B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$4.4B",
    "committed_credit_facility": "$11.4B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 46,
    "trend_growth_pct_per_year": 4.6,
    "demand_volatility_pct_per_quarter": 13.7,
-   "average_cost_of_debt_pct": 3.8,
+   "average_cost_of_debt_pct": 3.4,
    "revenue_sensitivity_to_gdp": 4.4
   },
   "scenarios": {
@@ -49,7 +49,7 @@
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
     "health_score_0_100": 74,
     "health_score_unluckiest_10pct": 66,
-    "prob_liquidity_breach_pct": 0.4,
+    "prob_liquidity_breach_pct": 0.3,
     "prob_interest_coverage_below_1_5x_pct": 12,
     "prob_sub_investment_grade_at_horizon_pct": 9
    },
@@ -65,7 +65,7 @@
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
     "health_score_0_100": 54,
     "health_score_unluckiest_10pct": 33,
-    "prob_liquidity_breach_pct": 4.6,
+    "prob_liquidity_breach_pct": 4.5,
     "prob_interest_coverage_below_1_5x_pct": 97,
     "prob_sub_investment_grade_at_horizon_pct": 16
    },
@@ -89,7 +89,7 @@
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
     "health_score_0_100": 74,
     "health_score_unluckiest_10pct": 68,
-    "prob_liquidity_breach_pct": 0.3,
+    "prob_liquidity_breach_pct": 0.2,
     "prob_interest_coverage_below_1_5x_pct": 11,
     "prob_sub_investment_grade_at_horizon_pct": 9
    }
@@ -97,7 +97,7 @@
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
-    "shock_for_10pct_breach": "89% revenue drop"
+    "shock_for_10pct_breach": "90% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
@@ -113,8 +113,8 @@
    "Inventory +45 days": -0.6,
    "Debt markets shut 4q": -0.4,
    "Costs +5pp": -0.3,
-   "Rates +300bp": -0.0,
-   "Spreads +400bp": -0.0
+   "Spreads +400bp": -0.0,
+   "Rates +300bp": -0.0
   },
   "global_sensitivity_total_order_pct": {
    "Revenue shock": 100,
@@ -127,7 +127,7 @@
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 75/100 under baseline, 54 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "CHEVRON CORP enters the simulation with $9.6B of cash and short-term investments against $39.8B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 75, with the unluckiest tenth of paths at 70 or below and a 0.2% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 71%.",
+ "summary": "CHEVRON CORP enters the simulation with $9.6B of cash and short-term investments against $40.2B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 75, with the unluckiest tenth of paths at 70 or below and a 0.2% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 100% of the variance of the health score across the stress space, and interactions between shocks add 71%.",
  "key_risks": [
   {
    "risk": "Severe demand collapse",
@@ -143,15 +143,15 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 54 (−21 vs baseline), breach probability 4.6%, sub-investment-grade at horizon 16%."
+   "note": "Health 54 (−21 vs baseline), breach probability 4.5%, sub-investment-grade at horizon 16%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 74 (−1 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 9%."
+   "note": "Health 74 (−1 vs baseline), breach probability 0.2%, sub-investment-grade at horizon 9%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 74 (−1 vs baseline), breach probability 0.4%, sub-investment-grade at horizon 9%."
+   "note": "Health 74 (−1 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 9%."
   },
   {
    "scenario": "Recession",

@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "DELTA AIR LINES, INC.",
   "ticker": "DAL",
-  "sector": "Airlines",
+  "sector": "Passenger Airlines",
   "last_reported_quarter": "2026-09-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$71.8B",
    "cash_and_short_term_investments": "$3.8B",
-   "total_debt": "$9.1B",
+   "total_debt": "$12.1B",
    "synthetic_rating_today": "n/a",
    "debt_maturing_next_4_quarters": "$1.8B",
    "committed_credit_facility": "$5.7B",
@@ -25,30 +25,30 @@
    "variable_cost_share_of_revenue_pct": 64,
    "trend_growth_pct_per_year": 7.2,
    "demand_volatility_pct_per_quarter": 6.2,
-   "average_cost_of_debt_pct": 5.8,
+   "average_cost_of_debt_pct": 4.6,
    "revenue_sensitivity_to_gdp": 5.0
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 65,
-    "health_score_unluckiest_10pct": 59,
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 58,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 2,
     "prob_sub_investment_grade_at_horizon_pct": 2
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 65,
-    "health_score_unluckiest_10pct": 59,
+    "health_score_0_100": 64,
+    "health_score_unluckiest_10pct": 58,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 2,
     "prob_sub_investment_grade_at_horizon_pct": 2
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 61,
-    "health_score_unluckiest_10pct": 57,
+    "health_score_0_100": 60,
+    "health_score_unluckiest_10pct": 55,
     "prob_liquidity_breach_pct": 0.1,
     "prob_interest_coverage_below_1_5x_pct": 3,
     "prob_sub_investment_grade_at_horizon_pct": 2
@@ -56,42 +56,42 @@
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
     "health_score_0_100": 60,
-    "health_score_unluckiest_10pct": 57,
+    "health_score_unluckiest_10pct": 55,
     "prob_liquidity_breach_pct": 0.1,
     "prob_interest_coverage_below_1_5x_pct": 3,
     "prob_sub_investment_grade_at_horizon_pct": 2
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 25,
-    "health_score_unluckiest_10pct": 14,
-    "prob_liquidity_breach_pct": 6.5,
+    "health_score_0_100": 23,
+    "health_score_unluckiest_10pct": 13,
+    "prob_liquidity_breach_pct": 7.2,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 11
+    "prob_sub_investment_grade_at_horizon_pct": 13
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 61,
-    "health_score_unluckiest_10pct": 57,
+    "health_score_0_100": 60,
+    "health_score_unluckiest_10pct": 56,
     "prob_liquidity_breach_pct": 0.1,
     "prob_interest_coverage_below_1_5x_pct": 3,
-    "prob_sub_investment_grade_at_horizon_pct": 2
+    "prob_sub_investment_grade_at_horizon_pct": 3
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 65,
-    "health_score_unluckiest_10pct": 59,
+    "health_score_0_100": 63,
+    "health_score_unluckiest_10pct": 58,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 2,
     "prob_sub_investment_grade_at_horizon_pct": 2
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 61,
-    "health_score_unluckiest_10pct": 55,
+    "health_score_0_100": 60,
+    "health_score_unluckiest_10pct": 54,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 3,
-    "prob_sub_investment_grade_at_horizon_pct": 2
+    "prob_sub_investment_grade_at_horizon_pct": 3
    }
   },
   "reverse_stress": {
@@ -109,16 +109,16 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -6.2,
-   "Costs +5pp": -3.5,
-   "Inventory +45 days": -1.6,
-   "Debt markets shut 4q": -0.4,
-   "Spreads +400bp": -0.0,
-   "Rates +300bp": 0.2
+   "Revenue -30%": -6.1,
+   "Costs +5pp": -3.2,
+   "Inventory +45 days": -1.1,
+   "Debt markets shut 4q": -0.5,
+   "Spreads +400bp": -0.1,
+   "Rates +300bp": 0.1
   },
   "global_sensitivity_total_order_pct": {
-   "Revenue shock": 83,
-   "Inventory build-up": 20,
+   "Revenue shock": 85,
+   "Inventory build-up": 18,
    "Variable costs": 10,
    "Debt-market freeze": 5,
    "Interest rates": 0,
@@ -126,12 +126,12 @@
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 65/100 under baseline, 25 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "DELTA AIR LINES, INC. enters the simulation with $3.8B of cash and short-term investments against $9.1B of debt. Across 5,000 simulated 12-quarter futures the median health score is 65, with the unluckiest tenth of paths at 59 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 83% of the variance of the health score across the stress space, and interactions between shocks add 23%.",
+ "headline": "Watch credit profile: health 64/100 under baseline, 23 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "DELTA AIR LINES, INC. enters the simulation with $3.8B of cash and short-term investments against $12.1B of debt. Across 5,000 simulated 12-quarter futures the median health score is 64, with the unluckiest tenth of paths at 58 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 85% of the variance of the health score across the stress space, and interactions between shocks add 22%.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 6.2 points and raises breach odds by 0.0 percentage points; fixed costs are about 24% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 6.1 points and raises breach odds by 0.0 percentage points; fixed costs are about 24% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -143,31 +143,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 25 (−40 vs baseline), breach probability 6.5%, sub-investment-grade at horizon 11%."
+   "note": "Health 23 (−41 vs baseline), breach probability 7.2%, sub-investment-grade at horizon 13%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 60 (−5 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 2%."
+   "note": "Health 60 (−4 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 61 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 60 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 61 (−4 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 2%."
+   "note": "Health 60 (−4 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 61 (−4 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 2%."
+   "note": "Health 60 (−4 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 3%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 65 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 63 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 65 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+   "note": "Health 64 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
   }
  ],
  "watch_list": [

@@ -23,7 +23,8 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
   const [q, setQ] = useState("");
   const [sector, setSector] = useState("all");
   const [view, setView] = useState<"table" | "dist">("dist");
-  const sectors = useMemo(() => [...new Set(Object.values(index.companies).map((e) => e.sector))].filter(Boolean).sort(), [index]);
+  const groupOf = (e: { sector: string; gics?: string }) => e.gics || e.sector;
+  const sectors = useMemo(() => [...new Set(Object.values(index.companies).map(groupOf))].filter(Boolean).sort(), [index]);
 
   const value = (t: string, k: string) => {
     const m = index.companies[t].matrix;
@@ -34,7 +35,7 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     return Object.entries(index.companies)
-      .filter(([t, e]) => (sector === "all" || e.sector === sector) && (!s || t.toLowerCase().includes(s) || e.name.toLowerCase().includes(s)))
+      .filter(([t, e]) => (sector === "all" || groupOf(e) === sector) && (!s || t.toLowerCase().includes(s) || e.name.toLowerCase().includes(s)))
       .sort((a, b) => {
         const d = sortKey === "name" ? a[0].localeCompare(b[0]) : value(a[0], sortKey) - value(b[0], sortKey);
         return desc ? -d : d;
@@ -62,6 +63,7 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
       <Section>
         <div className="eyebrow">Matrix</div>
         <h1 className="display h-l" style={{ margin: "8px 0 10px" }}>{Object.keys(index.companies).length} companies, eight crises</h1>
+        <p className="eyebrow" style={{ marginBottom: 8 }}>S&amp;P 500 outside financials and real estate · rebuilt weekly</p>
         <p className="lede">Every cell is a full Monte Carlo run of 5,000 paths over 12 quarters on that company's own calibrated twin.
           Sort by any scenario to see who is most exposed to it.</p>
       </Section>
@@ -90,7 +92,7 @@ export function CompareView({ index, onOpen }: { index: Index; onOpen: (t: strin
       {view === "dist" && (
         <div className="panel" style={{ padding: "20px 20px 12px" }}>
           <StripPlot rows={presets.map(([k, v]) => ({ key: k, label: v.label }))}
-            items={rows.map(([t, e]) => ({ id: t, name: e.name, group: e.sector,
+            items={rows.map(([t, e]) => ({ id: t, name: e.name, group: groupOf(e),
               values: Object.fromEntries(presets.map(([k]) => [k, metric === "health" ? e.matrix[k].health : e.matrix[k].p_breach * 100])) }))}
             focus={rows.length === 1 ? rows[0][0] : undefined} peers={sector !== "all" ? sector : undefined} onPick={onOpen} />
           <p className="muted" style={{ marginTop: 10 }}>{metric === "health" ? "Health score, 0–100" : "Probability of running out of cash, %"} · each dot is one company

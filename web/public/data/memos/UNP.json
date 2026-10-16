@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "UNION PACIFIC CORP",
   "ticker": "UNP",
-  "sector": "Railroads",
+  "sector": "Rail Transportation",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$25.4B",
    "cash_and_short_term_investments": "$1.6B",
-   "total_debt": "$29.0B",
+   "total_debt": "$30.3B",
    "synthetic_rating_today": "AA",
    "debt_maturing_next_4_quarters": "$1.4B",
    "committed_credit_facility": "$2.0B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 36,
    "trend_growth_pct_per_year": 3.3,
    "demand_volatility_pct_per_quarter": 5.5,
-   "average_cost_of_debt_pct": 4.3,
+   "average_cost_of_debt_pct": 4.1,
    "revenue_sensitivity_to_gdp": 1.8
   },
   "scenarios": {
@@ -39,7 +39,7 @@
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 76,
+    "health_score_0_100": 75,
     "health_score_unluckiest_10pct": 71,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -72,7 +72,7 @@
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
     "health_score_0_100": 73,
-    "health_score_unluckiest_10pct": 70,
+    "health_score_unluckiest_10pct": 69,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -87,7 +87,7 @@
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 74,
+    "health_score_0_100": 73,
     "health_score_unluckiest_10pct": 70,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -109,17 +109,17 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -4.6,
+   "Revenue -30%": -4.7,
    "Debt markets shut 4q": -1.6,
    "Costs +5pp": -1.3,
-   "Inventory +45 days": -1.1,
-   "Rates +300bp": -0.6,
-   "Spreads +400bp": -0.5
+   "Inventory +45 days": -1.2,
+   "Rates +300bp": -0.7,
+   "Spreads +400bp": -0.6
   }
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 76/100 under baseline, 55 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "UNION PACIFIC CORP enters the simulation with $1.6B of cash and short-term investments against $29.0B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 76, with the unluckiest tenth of paths at 72 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.6 points.",
+ "summary": "UNION PACIFIC CORP enters the simulation with $1.6B of cash and short-term investments against $30.3B of debt and a synthetic AA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 76, with the unluckiest tenth of paths at 72 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.7 points.",
  "key_risks": [
   {
    "risk": "Severe demand collapse",
@@ -151,7 +151,7 @@
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 74 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 73 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
@@ -159,7 +159,7 @@
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 76 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 75 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

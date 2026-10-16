@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "KOHLS Corp",
   "ticker": "KSS",
-  "sector": "Department stores",
+  "sector": "Broadline Retail",
   "last_reported_quarter": "2026-08-01",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -31,90 +31,90 @@
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 60,
-    "health_score_unluckiest_10pct": 43,
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 42,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 56,
-    "prob_sub_investment_grade_at_horizon_pct": 34
+    "prob_interest_coverage_below_1_5x_pct": 55,
+    "prob_sub_investment_grade_at_horizon_pct": 32
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 60,
-    "health_score_unluckiest_10pct": 43,
+    "health_score_0_100": 59,
+    "health_score_unluckiest_10pct": 42,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 57,
-    "prob_sub_investment_grade_at_horizon_pct": 35
+    "prob_interest_coverage_below_1_5x_pct": 55,
+    "prob_sub_investment_grade_at_horizon_pct": 32
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
     "health_score_0_100": 38,
-    "health_score_unluckiest_10pct": 25,
+    "health_score_unluckiest_10pct": 24,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 42
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 39
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
     "health_score_0_100": 37,
     "health_score_unluckiest_10pct": 23,
     "prob_liquidity_breach_pct": 0.0,
-    "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 46
+    "prob_interest_coverage_below_1_5x_pct": 99,
+    "prob_sub_investment_grade_at_horizon_pct": 43
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
     "health_score_0_100": 6,
     "health_score_unluckiest_10pct": 4,
-    "prob_liquidity_breach_pct": 21.3,
+    "prob_liquidity_breach_pct": 32.2,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 99
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 39,
+    "health_score_0_100": 38,
     "health_score_unluckiest_10pct": 24,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 99,
-    "prob_sub_investment_grade_at_horizon_pct": 51
+    "prob_sub_investment_grade_at_horizon_pct": 47
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
     "health_score_0_100": 59,
     "health_score_unluckiest_10pct": 41,
     "prob_liquidity_breach_pct": 0.1,
-    "prob_interest_coverage_below_1_5x_pct": 56,
-    "prob_sub_investment_grade_at_horizon_pct": 34
+    "prob_interest_coverage_below_1_5x_pct": 55,
+    "prob_sub_investment_grade_at_horizon_pct": 32
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
     "health_score_0_100": 38,
-    "health_score_unluckiest_10pct": 24,
+    "health_score_unluckiest_10pct": 23,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 99,
-    "prob_sub_investment_grade_at_horizon_pct": 65
+    "prob_sub_investment_grade_at_horizon_pct": 62
    }
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "88% revenue drop",
-    "shock_for_10pct_breach": "80% revenue drop"
+    "shock_for_50pct_breach": "85% revenue drop",
+    "shock_for_10pct_breach": "78% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
     "shock_for_10pct_breach": "not reached"
    },
    "Variable-cost increase": {
-    "shock_for_50pct_breach": "14pp cost increase",
+    "shock_for_50pct_breach": "13pp cost increase",
     "shock_for_10pct_breach": "12pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -30.3,
-   "Costs +5pp": -19.9,
-   "Inventory +45 days": -6.9,
-   "Debt markets shut 4q": -0.7,
-   "Spreads +400bp": -0.7,
-   "Rates +300bp": -0.4
+   "Revenue -30%": -29.8,
+   "Costs +5pp": -19.4,
+   "Inventory +45 days": -6.4,
+   "Debt markets shut 4q": -0.2,
+   "Spreads +400bp": -0.1,
+   "Rates +300bp": 0.1
   },
   "global_sensitivity_total_order_pct": {
    "Revenue shock": 72,
@@ -126,20 +126,20 @@
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 60/100 under baseline, 6 under demand freeze; the company breaks (50% breach odds) at a 88% revenue drop.",
- "summary": "KOHLS Corp enters the simulation with $821M of cash and short-term investments against $1.3B of debt. Across 5,000 simulated 12-quarter futures the median health score is 60, with the unluckiest tenth of paths at 43 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 72% of the variance of the health score across the stress space, and interactions between shocks add 6%.",
+ "headline": "Watch credit profile: health 59/100 under baseline, 6 under demand freeze; the company breaks (50% breach odds) at a 85% revenue drop.",
+ "summary": "KOHLS Corp enters the simulation with $821M of cash and short-term investments against $1.3B of debt. Across 5,000 simulated 12-quarter futures the median health score is 59, with the unluckiest tenth of paths at 42 or below and a 0.0% chance of exhausting liquidity under business as usual. Globally, revenue shock explains about 72% of the variance of the health score across the stress space, and interactions between shocks add 6%.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 30.3 points and raises breach odds by 0.0 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 29.8 points and raises breach odds by 0.0 percentage points; fixed costs are about 23% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Thin interest coverage",
-   "evidence": "In 56% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+   "evidence": "In 55% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
   },
   {
    "risk": "Downgrade to speculative grade",
-   "evidence": "34% of baseline paths end the horizon below BBB."
+   "evidence": "32% of baseline paths end the horizon below BBB."
   }
  ],
  "resilience": [
@@ -151,31 +151,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 6 (−54 vs baseline), breach probability 21.3%, sub-investment-grade at horizon 99%."
+   "note": "Health 6 (−53 vs baseline), breach probability 32.2%, sub-investment-grade at horizon 99%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 37 (−23 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 46%."
+   "note": "Health 37 (−22 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 43%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 38 (−22 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 42%."
+   "note": "Health 38 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 39%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 38 (−22 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 65%."
+   "note": "Health 38 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 62%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 39 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 51%."
+   "note": "Health 38 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 47%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 59 (−1 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 34%."
+   "note": "Health 59 (+0 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 32%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 60 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 35%."
+   "note": "Health 59 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 32%."
   }
  ],
  "watch_list": [

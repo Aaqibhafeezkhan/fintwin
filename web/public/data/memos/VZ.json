@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "VERIZON COMMUNICATIONS INC",
   "ticker": "VZ",
-  "sector": "Telecom",
+  "sector": "Integrated Telecommunication Services",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$138.9B",
    "cash_and_short_term_investments": "$1.8B",
-   "total_debt": "$143.4B",
+   "total_debt": "$165.2B",
    "synthetic_rating_today": "A-",
    "debt_maturing_next_4_quarters": "$13.4B",
    "committed_credit_facility": "$23.9B",
@@ -25,70 +25,70 @@
    "variable_cost_share_of_revenue_pct": 49,
    "trend_growth_pct_per_year": 3.1,
    "demand_volatility_pct_per_quarter": 1.6,
-   "average_cost_of_debt_pct": 5.2,
+   "average_cost_of_debt_pct": 4.6,
    "revenue_sensitivity_to_gdp": 1.0
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 58,
-    "health_score_unluckiest_10pct": 55,
+    "health_score_0_100": 57,
+    "health_score_unluckiest_10pct": 53,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 57,
-    "health_score_unluckiest_10pct": 54,
+    "health_score_0_100": 55,
+    "health_score_unluckiest_10pct": 52,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 52,
-    "health_score_unluckiest_10pct": 49,
+    "health_score_0_100": 50,
+    "health_score_unluckiest_10pct": 47,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 52,
-    "health_score_unluckiest_10pct": 49,
+    "health_score_0_100": 51,
+    "health_score_unluckiest_10pct": 48,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 11,
-    "health_score_unluckiest_10pct": 10,
-    "prob_liquidity_breach_pct": 87.9,
+    "health_score_0_100": 10,
+    "health_score_unluckiest_10pct": 9,
+    "prob_liquidity_breach_pct": 94.2,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 33
+    "prob_sub_investment_grade_at_horizon_pct": 46
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 53,
-    "health_score_unluckiest_10pct": 50,
+    "health_score_0_100": 51,
+    "health_score_unluckiest_10pct": 48,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 57,
-    "health_score_unluckiest_10pct": 54,
+    "health_score_0_100": 56,
+    "health_score_unluckiest_10pct": 52,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 55,
-    "health_score_unluckiest_10pct": 52,
+    "health_score_0_100": 53,
+    "health_score_unluckiest_10pct": 50,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -104,26 +104,26 @@
     "shock_for_10pct_breach": "not reached"
    },
    "Variable-cost increase": {
-    "shock_for_50pct_breach": "38pp cost increase",
+    "shock_for_50pct_breach": "36pp cost increase",
     "shock_for_10pct_breach": "35pp cost increase"
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -9.5,
+   "Revenue -30%": -9.4,
    "Costs +5pp": -2.9,
    "Rates +300bp": -1.7,
-   "Spreads +400bp": -1.4,
-   "Debt markets shut 4q": -0.7,
-   "Inventory +45 days": -0.1
+   "Spreads +400bp": -1.3,
+   "Debt markets shut 4q": -0.6,
+   "Inventory +45 days": 0.1
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 58/100 under baseline, 11 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "VERIZON COMMUNICATIONS INC enters the simulation with $1.8B of cash and short-term investments against $143.4B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 58, with the unluckiest tenth of paths at 55 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -9.5 points.",
+ "headline": "Watch credit profile: health 57/100 under baseline, 10 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "VERIZON COMMUNICATIONS INC enters the simulation with $1.8B of cash and short-term investments against $165.2B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 57, with the unluckiest tenth of paths at 53 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -9.4 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 9.5 points and raises breach odds by 0.0 percentage points; fixed costs are about 25% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 9.4 points and raises breach odds by 0.0 percentage points; fixed costs are about 25% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Refinancing wall",
@@ -139,31 +139,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 11 (−47 vs baseline), breach probability 87.9%, sub-investment-grade at horizon 33%."
+   "note": "Health 10 (−47 vs baseline), breach probability 94.2%, sub-investment-grade at horizon 46%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 52 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 50 (−7 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 52 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 51 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 53 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 51 (−6 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 55 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 53 (−4 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 57 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 55 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 57 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 56 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [

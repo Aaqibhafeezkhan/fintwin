@@ -4,15 +4,15 @@ All numbers come from `web/public/data/backtest.json`, which `uv run python -m f
 
 ## 0. Large-sample validation (headline)
 
-**Design.** I tested 94 large non-financial companies at 13 yearly point-in-time cutoffs (15 Feb 2013–2025), with a 4-quarter horizon and 2,000 paths per forecast, giving 7,814 forecasts. The data are `web/public/data/calibration.json`, produced by `scripts/full_pipeline.sh`.
+**Design.** I tested 375 non-financial S&P 500 companies at 13 yearly point-in-time cutoffs (15 Feb 2013–2025), with a 4-quarter horizon and 2,000 paths per forecast, giving 30,414 forecasts. The data are `web/public/data/calibration.json`, rebuilt every week by the `data` GitHub Actions workflow (16 parallel shards). Locally, run `scripts/full_pipeline.sh`. An earlier 94-company run gave very similar figures (revenue skill +32%, coverage 68% → 90%).
 
 | | Revenue | Cash & ST investments |
 |---|---|---|
-| CRPS skill vs naive (pooled) | **+32%** | −22% |
-| Forecasts beating naive | 69% | 45% |
-| 90% coverage, raw → online conformal | 68% → **90%** | 41% → **92%** |
-| 50% coverage, raw → online conformal | 34% → 53% | 22% → 56% |
-| Recession-regime ablation (CRPS change) | −0.4% | −0.1% |
+| CRPS skill vs naive (pooled) | **+28%** | −26% |
+| Forecasts beating naive | 69% | 44% |
+| 90% coverage, raw → online conformal | 70% → **91%** | 36% → **91%** |
+| 50% coverage, raw → online conformal | 35% → 51% | 20% → 51% |
+| Recession-regime ablation (CRPS change) | −0.5% | −0.1% |
 
 * **Revenue** forecasts are genuinely skilful.
 * **Raw intervals are too narrow.** The PIT histogram is U-shaped, and online conformal rescaling, which for each year uses only earlier years' errors, fixes average coverage.
@@ -20,7 +20,9 @@ All numbers come from `web/public/data/backtest.json`, which `uv run python -m f
 * **The large sample exposed a real bug.** A cost-proportional cash floor made low-margin retailers "borrow up" to cash they never hold. Replacing it with the company's revealed minimum cash cut Walmart's cash CRPS roughly ninefold.
 * **The recession regime** adds realism to stress paths but little forecast skill at a 1-year horizon. That is expected: with an entry hazard of 4.5% per quarter, few forecast windows contain a recession.
 
-**COVID cross-section, scaled up.** With 88 companies frozen on 20 Feb 2020, Spearman ρ = 0.51 (p = 4·10⁻⁷, bootstrap 95% CI 0.33–0.65). Severe cash burn (worse than 10% of annual revenue) hit 26% of the twin's two most fragile quintiles and 0% of its two most robust.
+**COVID cross-section, scaled up.** With 331 companies frozen on 20 Feb 2020, Spearman ρ = 0.39 (p = 1·10⁻¹³, bootstrap 95% CI 0.29–0.48). Severe cash burn (worse than 10% of annual revenue) hit 22% of the twin's most fragile quintile, falling steadily to 3% of its most robust (by quintile: 22%, 9%, 8%, 3%, 3%). Boeing ranks 2nd most fragile of 331. The three cruise lines fall in the most fragile 27%, but no longer at the very bottom: thin-margin distributors (Kroger, Cardinal Health, McKesson) and leveraged utilities rank below them although they never burned cash. Under a uniform demand-freeze shock they *are* fragile. They just never faced that shock. The two severe burners in the robust quintile were Axon and Incyte.
+
+**Survivorship bias.** The universe is today's S&P 500 (plus a few 2020-relevant former members), so companies that failed before 2026 are absent. This likely flatters the cross-section and has not been corrected for.
 
 The sections below are the original 6-company deep dives.
 

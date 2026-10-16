@@ -1,0 +1,170 @@
+{
+ "ticker": "SMCI",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-06-30",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "Super Micro Computer, Inc.",
+  "ticker": "SMCI",
+  "sector": "Technology Hardware, Storage & Peripherals",
+  "last_reported_quarter": "2026-06-30",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$39.1B",
+   "cash_and_short_term_investments": "$7.5B",
+   "total_debt": "$4.1B",
+   "synthetic_rating_today": "AAA",
+   "debt_maturing_next_4_quarters": "$2.0B",
+   "committed_credit_facility": "$3.1B",
+   "customer_deposits_days_of_revenue": 11
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$1.1B",
+   "variable_cost_share_of_revenue_pct": 70,
+   "trend_growth_pct_per_year": 22.2,
+   "demand_volatility_pct_per_quarter": 15.4,
+   "average_cost_of_debt_pct": 12.0,
+   "revenue_sensitivity_to_gdp": 2.1
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 99,
+    "prob_liquidity_breach_pct": 1.5,
+    "prob_interest_coverage_below_1_5x_pct": 5,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 99,
+    "prob_liquidity_breach_pct": 1.5,
+    "prob_interest_coverage_below_1_5x_pct": 6,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 98,
+    "prob_liquidity_breach_pct": 1.7,
+    "prob_interest_coverage_below_1_5x_pct": 6,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 98,
+    "prob_liquidity_breach_pct": 1.7,
+    "prob_interest_coverage_below_1_5x_pct": 7,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 98,
+    "health_score_unluckiest_10pct": 86,
+    "prob_liquidity_breach_pct": 2.4,
+    "prob_interest_coverage_below_1_5x_pct": 43,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 97,
+    "prob_liquidity_breach_pct": 1.9,
+    "prob_interest_coverage_below_1_5x_pct": 8,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 97,
+    "prob_liquidity_breach_pct": 2.4,
+    "prob_interest_coverage_below_1_5x_pct": 5,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 100,
+    "health_score_unluckiest_10pct": 95,
+    "prob_liquidity_breach_pct": 2.0,
+    "prob_interest_coverage_below_1_5x_pct": 7,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "36pp cost increase",
+    "shock_for_10pct_breach": "16pp cost increase"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Debt markets shut 4q": -0.1,
+   "Revenue -30%": 0.0,
+   "Rates +300bp": 0.0,
+   "Spreads +400bp": 0.0,
+   "Costs +5pp": 0.0,
+   "Inventory +45 days": 0.0
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 100/100 under baseline, 98 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Super Micro Computer, Inc. enters the simulation with $7.5B of cash and short-term investments against $4.1B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 100, with the unluckiest tenth of paths at 99 or below and a 1.5% chance of exhausting liquidity under business as usual. The most damaging single shock is debt markets shut 4q, which moves the health score by -0.1 points.",
+ "key_risks": [
+  {
+   "risk": "Severe demand collapse",
+   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 98."
+  }
+ ],
+ "resilience": [
+  "Cash of $7.5B covers the next four quarters of maturities ($2.0B).",
+  "A committed credit facility of about $3.1B backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (AAA), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 98 (−2 vs baseline), breach probability 2.4%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 100 (+0 vs baseline), breach probability 2.4%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 100 (+0 vs baseline), breach probability 1.5%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 100 (+0 vs baseline), breach probability 1.7%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 100 (+0 vs baseline), breach probability 1.7%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 100 (+0 vs baseline), breach probability 1.9%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 100 (+0 vs baseline), breach probability 2.0%, sub-investment-grade at horizon 3%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $7.5B vs $2.0B).",
+  "Variable-cost ratio versus the calibrated 70% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

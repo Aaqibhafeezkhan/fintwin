@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "MGM Resorts International",
   "ticker": "MGM",
-  "sector": "Casinos",
+  "sector": "Casinos & Gaming",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
@@ -111,7 +111,7 @@
   "sensitivity_tornado_health_change": {
    "Revenue -30%": -7.4,
    "Debt markets shut 4q": -5.1,
-   "Costs +5pp": -3.3,
+   "Costs +5pp": -3.4,
    "Rates +300bp": -1.4,
    "Spreads +400bp": -1.3,
    "Inventory +45 days": -0.7

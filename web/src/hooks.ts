@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Summary } from "./engine/summary";
 import type { Knobs, Levers, Params } from "./engine/types";
 import type { SimRequest } from "./engine/worker";
 
 export function useSize<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
+  // a callback ref, so the observer attaches whenever the element mounts (also after a loading state)
+  const ro = useRef<ResizeObserver | null>(null);
   const [width, setWidth] = useState(0);
-  useEffect(() => {
-    if (!ref.current) return;
-    const ro = new ResizeObserver(([e]) => setWidth(Math.floor(e.contentRect.width)));
-    ro.observe(ref.current);
-    return () => ro.disconnect();
+  const ref = useCallback((el: T | null) => {
+    ro.current?.disconnect();
+    ro.current = null;
+    if (!el) return;
+    setWidth(Math.floor(el.getBoundingClientRect().width));
+    ro.current = new ResizeObserver(([e]) => setWidth(Math.floor(e.contentRect.width)));
+    ro.current.observe(el);
   }, []);
+  useEffect(() => () => ro.current?.disconnect(), []);
   return [ref, width] as const;
 }
 

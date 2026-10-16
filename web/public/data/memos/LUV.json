@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "SOUTHWEST AIRLINES CO",
   "ticker": "LUV",
-  "sector": "Airlines",
+  "sector": "Passenger Airlines",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$30.1B",
    "cash_and_short_term_investments": "$3.8B",
-   "total_debt": "$3.8B",
+   "total_debt": "$5.9B",
    "synthetic_rating_today": "A",
    "debt_maturing_next_4_quarters": "$1.2B",
    "committed_credit_facility": "$2.4B",
@@ -25,79 +25,79 @@
    "variable_cost_share_of_revenue_pct": 63,
    "trend_growth_pct_per_year": 4.5,
    "demand_volatility_pct_per_quarter": 4.3,
-   "average_cost_of_debt_pct": 4.8,
+   "average_cost_of_debt_pct": 3.9,
    "revenue_sensitivity_to_gdp": 5.0
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 54,
-    "health_score_unluckiest_10pct": 40,
+    "health_score_0_100": 51,
+    "health_score_unluckiest_10pct": 35,
     "prob_liquidity_breach_pct": 0.1,
-    "prob_interest_coverage_below_1_5x_pct": 25,
-    "prob_sub_investment_grade_at_horizon_pct": 24
+    "prob_interest_coverage_below_1_5x_pct": 28,
+    "prob_sub_investment_grade_at_horizon_pct": 26
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 53,
-    "health_score_unluckiest_10pct": 39,
+    "health_score_0_100": 49,
+    "health_score_unluckiest_10pct": 35,
     "prob_liquidity_breach_pct": 0.1,
-    "prob_interest_coverage_below_1_5x_pct": 28,
-    "prob_sub_investment_grade_at_horizon_pct": 27
+    "prob_interest_coverage_below_1_5x_pct": 30,
+    "prob_sub_investment_grade_at_horizon_pct": 31
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 47,
-    "health_score_unluckiest_10pct": 29,
+    "health_score_0_100": 43,
+    "health_score_unluckiest_10pct": 24,
     "prob_liquidity_breach_pct": 0.3,
-    "prob_interest_coverage_below_1_5x_pct": 74,
-    "prob_sub_investment_grade_at_horizon_pct": 18
+    "prob_interest_coverage_below_1_5x_pct": 78,
+    "prob_sub_investment_grade_at_horizon_pct": 21
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 48,
-    "health_score_unluckiest_10pct": 30,
+    "health_score_0_100": 44,
+    "health_score_unluckiest_10pct": 24,
     "prob_liquidity_breach_pct": 0.3,
-    "prob_interest_coverage_below_1_5x_pct": 69,
-    "prob_sub_investment_grade_at_horizon_pct": 20
+    "prob_interest_coverage_below_1_5x_pct": 74,
+    "prob_sub_investment_grade_at_horizon_pct": 22
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 7,
+    "health_score_0_100": 6,
     "health_score_unluckiest_10pct": 3,
     "prob_liquidity_breach_pct": 99.9,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 90
+    "prob_sub_investment_grade_at_horizon_pct": 92
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 49,
-    "health_score_unluckiest_10pct": 32,
-    "prob_liquidity_breach_pct": 0.3,
-    "prob_interest_coverage_below_1_5x_pct": 55,
-    "prob_sub_investment_grade_at_horizon_pct": 23
+    "health_score_0_100": 46,
+    "health_score_unluckiest_10pct": 27,
+    "prob_liquidity_breach_pct": 0.4,
+    "prob_interest_coverage_below_1_5x_pct": 60,
+    "prob_sub_investment_grade_at_horizon_pct": 26
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 55,
-    "health_score_unluckiest_10pct": 41,
-    "prob_liquidity_breach_pct": 0.3,
-    "prob_interest_coverage_below_1_5x_pct": 23,
-    "prob_sub_investment_grade_at_horizon_pct": 20
+    "health_score_0_100": 52,
+    "health_score_unluckiest_10pct": 37,
+    "prob_liquidity_breach_pct": 0.4,
+    "prob_interest_coverage_below_1_5x_pct": 25,
+    "prob_sub_investment_grade_at_horizon_pct": 23
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 48,
-    "health_score_unluckiest_10pct": 30,
+    "health_score_0_100": 45,
+    "health_score_unluckiest_10pct": 25,
     "prob_liquidity_breach_pct": 0.3,
-    "prob_interest_coverage_below_1_5x_pct": 51,
-    "prob_sub_investment_grade_at_horizon_pct": 23
+    "prob_interest_coverage_below_1_5x_pct": 56,
+    "prob_sub_investment_grade_at_horizon_pct": 26
    }
   },
   "reverse_stress": {
    "Revenue drop (held 3 quarters)": {
-    "shock_for_50pct_breach": "87% revenue drop",
-    "shock_for_10pct_breach": "76% revenue drop"
+    "shock_for_50pct_breach": "86% revenue drop",
+    "shock_for_10pct_breach": "75% revenue drop"
    },
    "Interest-rate rise": {
     "shock_for_50pct_breach": "not reached (company can fund itself)",
@@ -109,29 +109,33 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -13.4,
-   "Costs +5pp": -3.8,
-   "Rates +300bp": -1.6,
-   "Spreads +400bp": -0.7,
-   "Inventory +45 days": -0.3,
-   "Debt markets shut 4q": 1.5
+   "Revenue -30%": -14.6,
+   "Costs +5pp": -3.9,
+   "Rates +300bp": -1.7,
+   "Spreads +400bp": -0.9,
+   "Inventory +45 days": -0.4,
+   "Debt markets shut 4q": 2.1
   }
  },
  "verdict": "Watch",
- "headline": "Watch credit profile: health 54/100 under baseline, 7 under demand freeze; the company breaks (50% breach odds) at a 87% revenue drop.",
- "summary": "SOUTHWEST AIRLINES CO enters the simulation with $3.8B of cash and short-term investments against $3.8B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 54, with the unluckiest tenth of paths at 40 or below and a 0.1% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -13.4 points.",
+ "headline": "Watch credit profile: health 51/100 under baseline, 6 under demand freeze; the company breaks (50% breach odds) at a 86% revenue drop.",
+ "summary": "SOUTHWEST AIRLINES CO enters the simulation with $3.8B of cash and short-term investments against $5.9B of debt and a synthetic A rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 51, with the unluckiest tenth of paths at 35 or below and a 0.1% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -14.6 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 13.4 points and raises breach odds by 0.1 percentage points; fixed costs are about 30% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 14.6 points and raises breach odds by 0.1 percentage points; fixed costs are about 30% of the cost base, so losses scale faster than revenue."
   },
   {
    "risk": "Thin interest coverage",
-   "evidence": "In 25% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
+   "evidence": "In 28% of baseline paths trailing coverage falls below 1.5×, the point where market access narrows and spreads jump."
   },
   {
    "risk": "Customer-deposit refunds",
    "evidence": "About 81 days of revenue are held as customer deposits; a demand stop turns them into a cash outflow on top of operating losses."
+  },
+  {
+   "risk": "Downgrade to speculative grade",
+   "evidence": "26% of baseline paths end the horizon below BBB."
   }
  ],
  "resilience": [
@@ -143,31 +147,31 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 7 (−47 vs baseline), breach probability 99.9%, sub-investment-grade at horizon 90%."
+   "note": "Health 6 (−45 vs baseline), breach probability 99.9%, sub-investment-grade at horizon 92%."
   },
   {
    "scenario": "Sales -20%",
-   "note": "Health 47 (−7 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 18%."
+   "note": "Health 43 (−8 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 21%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 48 (−6 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 20%."
+   "note": "Health 44 (−7 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 22%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 48 (−6 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 23%."
+   "note": "Health 45 (−6 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 26%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 49 (−5 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 23%."
+   "note": "Health 46 (−5 vs baseline), breach probability 0.4%, sub-investment-grade at horizon 26%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 53 (−1 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 27%."
+   "note": "Health 49 (−2 vs baseline), breach probability 0.1%, sub-investment-grade at horizon 31%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 55 (+1 vs baseline), breach probability 0.3%, sub-investment-grade at horizon 20%."
+   "note": "Health 52 (+1 vs baseline), breach probability 0.4%, sub-investment-grade at horizon 23%."
   }
  ],
  "watch_list": [

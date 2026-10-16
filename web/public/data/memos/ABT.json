@@ -7,14 +7,14 @@
  "fact_sheet": {
   "company": "ABBOTT LABORATORIES",
   "ticker": "ABT",
-  "sector": "Medical devices",
+  "sector": "Health Care Equipment",
   "last_reported_quarter": "2026-03-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
    "revenue_last_4_quarters": "$45.1B",
    "cash_and_short_term_investments": "$7.3B",
-   "total_debt": "$29.6B",
+   "total_debt": "$34.0B",
    "synthetic_rating_today": "AAA",
    "debt_maturing_next_4_quarters": "$2.4B",
    "committed_credit_facility": "$3.6B",
@@ -25,7 +25,7 @@
    "variable_cost_share_of_revenue_pct": 54,
    "trend_growth_pct_per_year": 4.1,
    "demand_volatility_pct_per_quarter": 3.0,
-   "average_cost_of_debt_pct": 3.8,
+   "average_cost_of_debt_pct": 3.3,
    "revenue_sensitivity_to_gdp": 1.0
   },
   "scenarios": {
@@ -39,7 +39,7 @@
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 80,
+    "health_score_0_100": 79,
     "health_score_unluckiest_10pct": 76,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
@@ -67,7 +67,7 @@
     "health_score_unluckiest_10pct": 36,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
-    "prob_sub_investment_grade_at_horizon_pct": 4
+    "prob_sub_investment_grade_at_horizon_pct": 5
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
@@ -80,7 +80,7 @@
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
     "health_score_0_100": 78,
-    "health_score_unluckiest_10pct": 75,
+    "health_score_unluckiest_10pct": 74,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -91,7 +91,7 @@
     "health_score_unluckiest_10pct": 70,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
-    "prob_sub_investment_grade_at_horizon_pct": 0
+    "prob_sub_investment_grade_at_horizon_pct": 1
    }
   },
   "reverse_stress": {
@@ -109,21 +109,21 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Revenue -30%": -8.6,
-   "Inventory +45 days": -3.5,
-   "Costs +5pp": -3.0,
-   "Debt markets shut 4q": -1.5,
-   "Spreads +400bp": -0.9,
-   "Rates +300bp": -0.8
+   "Revenue -30%": -8.5,
+   "Inventory +45 days": -3.3,
+   "Costs +5pp": -2.8,
+   "Debt markets shut 4q": -1.7,
+   "Rates +300bp": -1.1,
+   "Spreads +400bp": -1.1
   }
  },
  "verdict": "Healthy",
  "headline": "Healthy credit profile: health 80/100 under baseline, 42 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "ABBOTT LABORATORIES enters the simulation with $7.3B of cash and short-term investments against $29.6B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 80, with the unluckiest tenth of paths at 77 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -8.6 points.",
+ "summary": "ABBOTT LABORATORIES enters the simulation with $7.3B of cash and short-term investments against $34.0B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 80, with the unluckiest tenth of paths at 77 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -8.5 points.",
  "key_risks": [
   {
    "risk": "Demand sensitivity",
-   "evidence": "A 30% revenue fall lowers the health score by 8.6 points and raises breach odds by 0.0 percentage points; fixed costs are about 31% of the cost base, so losses scale faster than revenue."
+   "evidence": "A 30% revenue fall lowers the health score by 8.5 points and raises breach odds by 0.0 percentage points; fixed costs are about 31% of the cost base, so losses scale faster than revenue."
   }
  ],
  "resilience": [
@@ -135,15 +135,15 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 42 (−38 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 4%."
-  },
-  {
-   "scenario": "Supply-chain shock",
-   "note": "Health 75 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 42 (−38 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 5%."
   },
   {
    "scenario": "Sales -20%",
    "note": "Health 75 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 75 (−5 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   },
   {
    "scenario": "Recession",
@@ -159,7 +159,7 @@
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 80 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
+   "note": "Health 79 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 1%."
   }
  ],
  "watch_list": [

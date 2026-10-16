@@ -1,94 +1,94 @@
 {
  "ticker": "ACN",
  "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
- "as_of": "2026-05-31",
+ "as_of": "2026-08-31",
  "attempts": 1,
  "unverified_numbers": [],
  "fact_sheet": {
   "company": "Accenture plc",
   "ticker": "ACN",
-  "sector": "IT services",
-  "last_reported_quarter": "2026-05-31",
+  "sector": "IT Consulting & Other Services",
+  "last_reported_quarter": "2026-08-31",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
   "reported": {
-   "revenue_last_4_quarters": "$73.1B",
-   "cash_and_short_term_investments": "$10.2B",
-   "total_debt": "$5.1B",
+   "revenue_last_4_quarters": "$74.2B",
+   "cash_and_short_term_investments": "$12.8B",
+   "total_debt": "$10.1B",
    "synthetic_rating_today": "AAA",
-   "debt_maturing_next_4_quarters": "$99M",
+   "debt_maturing_next_4_quarters": "$100M",
    "committed_credit_facility": "$10.6B",
    "customer_deposits_days_of_revenue": 31
   },
   "calibrated_structure": {
    "fixed_costs_per_quarter": "$3.8B",
    "variable_cost_share_of_revenue_pct": 62,
-   "trend_growth_pct_per_year": 4.2,
-   "demand_volatility_pct_per_quarter": 2.6,
-   "average_cost_of_debt_pct": 5.2,
+   "trend_growth_pct_per_year": 6.3,
+   "demand_volatility_pct_per_quarter": 1.6,
+   "average_cost_of_debt_pct": 4.9,
    "revenue_sensitivity_to_gdp": 1.4
   },
   "scenarios": {
    "Baseline": {
     "description": "Calibrated business-as-usual dynamics.",
-    "health_score_0_100": 97,
-    "health_score_unluckiest_10pct": 96,
+    "health_score_0_100": 98,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Rates +200bp": {
     "description": "Persistent 2pp rise in short rates.",
-    "health_score_0_100": 97,
-    "health_score_unluckiest_10pct": 96,
+    "health_score_0_100": 98,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Sales -20%": {
     "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
-    "health_score_0_100": 96,
-    "health_score_unluckiest_10pct": 95,
+    "health_score_0_100": 97,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Recession": {
     "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
-    "health_score_0_100": 96,
-    "health_score_unluckiest_10pct": 95,
+    "health_score_0_100": 97,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Demand freeze": {
     "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
-    "health_score_0_100": 74,
-    "health_score_unluckiest_10pct": 68,
+    "health_score_0_100": 77,
+    "health_score_unluckiest_10pct": 74,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 100,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Stagflation (2022)": {
     "description": "Rates +300bp, input costs +3pp, mild demand dip.",
-    "health_score_0_100": 96,
-    "health_score_unluckiest_10pct": 96,
+    "health_score_0_100": 97,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Credit crunch": {
     "description": "Debt markets closed for a year, spreads +500bp.",
-    "health_score_0_100": 96,
-    "health_score_unluckiest_10pct": 96,
+    "health_score_0_100": 97,
+    "health_score_unluckiest_10pct": 97,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
    },
    "Supply-chain shock": {
     "description": "Inventory +30 days, costs +3pp, sales -5%.",
-    "health_score_0_100": 95,
-    "health_score_unluckiest_10pct": 94,
+    "health_score_0_100": 96,
+    "health_score_unluckiest_10pct": 96,
     "prob_liquidity_breach_pct": 0.0,
     "prob_interest_coverage_below_1_5x_pct": 0,
     "prob_sub_investment_grade_at_horizon_pct": 0
@@ -109,17 +109,17 @@
    }
   },
   "sensitivity_tornado_health_change": {
-   "Inventory +45 days": -2.3,
-   "Revenue -30%": -1.3,
-   "Costs +5pp": -0.5,
-   "Debt markets shut 4q": -0.2,
+   "Inventory +45 days": -1.7,
+   "Revenue -30%": -0.9,
+   "Costs +5pp": -0.4,
+   "Debt markets shut 4q": -0.3,
    "Spreads +400bp": -0.0,
-   "Rates +300bp": 0.1
+   "Rates +300bp": 0.0
   }
  },
  "verdict": "Healthy",
- "headline": "Healthy credit profile: health 97/100 under baseline, 74 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
- "summary": "Accenture plc enters the simulation with $10.2B of cash and short-term investments against $5.1B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 97, with the unluckiest tenth of paths at 96 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is inventory +45 days, which moves the health score by -2.3 points.",
+ "headline": "Healthy credit profile: health 98/100 under baseline, 77 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "Accenture plc enters the simulation with $12.8B of cash and short-term investments against $10.1B of debt and a synthetic AAA rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 98, with the unluckiest tenth of paths at 97 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is inventory +45 days, which moves the health score by -1.7 points.",
  "key_risks": [
   {
    "risk": "Customer-deposit refunds",
@@ -127,7 +127,7 @@
   }
  ],
  "resilience": [
-  "Cash of $10.2B covers the next four quarters of maturities ($99M).",
+  "Cash of $12.8B covers the next four quarters of maturities ($100M).",
   "A committed credit facility of about $10.6B backstops liquidity.",
   "Interest coverage implies an investment-grade synthetic rating (AAA), keeping refinancing cheap.",
   "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
@@ -135,35 +135,35 @@
  "scenario_notes": [
   {
    "scenario": "Demand freeze",
-   "note": "Health 74 (−23 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 77 (−21 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Supply-chain shock",
-   "note": "Health 95 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
-  },
-  {
-   "scenario": "Sales -20%",
-   "note": "Health 96 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 96 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Recession",
-   "note": "Health 96 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 97 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 97 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Stagflation (2022)",
-   "note": "Health 96 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 97 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Credit crunch",
-   "note": "Health 96 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 97 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   },
   {
    "scenario": "Rates +200bp",
-   "note": "Health 97 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
+   "note": "Health 98 (+0 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 0%."
   }
  ],
  "watch_list": [
-  "Quarterly cash relative to the next 12 months of maturities (now $10.2B vs $99M).",
+  "Quarterly cash relative to the next 12 months of maturities (now $12.8B vs $100M).",
   "Variable-cost ratio versus the calibrated 62% of revenue: a sustained rise signals margin squeeze.",
   "Customer-deposit balance: falling deposits are the earliest sign of weakening forward demand.",
   "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."

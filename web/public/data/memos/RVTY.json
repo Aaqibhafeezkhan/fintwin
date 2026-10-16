@@ -1,0 +1,170 @@
+{
+ "ticker": "RVTY",
+ "generated_by": "FinTwin rule-based analyst (deterministic, no language model)",
+ "as_of": "2026-07-05",
+ "attempts": 1,
+ "unverified_numbers": [],
+ "fact_sheet": {
+  "company": "REVVITY, INC.",
+  "ticker": "RVTY",
+  "sector": "Health Care Equipment",
+  "last_reported_quarter": "2026-07-05",
+  "horizon_quarters": 12,
+  "simulated_paths": 5000,
+  "reported": {
+   "revenue_last_4_quarters": "$2.9B",
+   "cash_and_short_term_investments": "$1.0B",
+   "total_debt": "$3.2B",
+   "synthetic_rating_today": "A-",
+   "debt_maturing_next_4_quarters": "$295M",
+   "committed_credit_facility": "$233M",
+   "customer_deposits_days_of_revenue": 16
+  },
+  "calibrated_structure": {
+   "fixed_costs_per_quarter": "$176M",
+   "variable_cost_share_of_revenue_pct": 48,
+   "trend_growth_pct_per_year": 2.3,
+   "demand_volatility_pct_per_quarter": 6.5,
+   "average_cost_of_debt_pct": 2.9,
+   "revenue_sensitivity_to_gdp": 1.7
+  },
+  "scenarios": {
+   "Baseline": {
+    "description": "Calibrated business-as-usual dynamics.",
+    "health_score_0_100": 75,
+    "health_score_unluckiest_10pct": 69,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Rates +200bp": {
+    "description": "Persistent 2pp rise in short rates.",
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 68,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 5
+   },
+   "Sales -20%": {
+    "description": "Revenue falls 20%, holds 2 quarters, recovers over 6.",
+    "health_score_0_100": 72,
+    "health_score_unluckiest_10pct": 66,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 4,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Recession": {
+    "description": "Demand -12%, spreads +250bp, cost pressure, policy rate cuts.",
+    "health_score_0_100": 72,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_sub_investment_grade_at_horizon_pct": 2
+   },
+   "Demand freeze": {
+    "description": "2020-style shutdown: revenue -70%, markets shut 2 quarters.",
+    "health_score_0_100": 43,
+    "health_score_unluckiest_10pct": 36,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 100,
+    "prob_sub_investment_grade_at_horizon_pct": 29
+   },
+   "Stagflation (2022)": {
+    "description": "Rates +300bp, input costs +3pp, mild demand dip.",
+    "health_score_0_100": 72,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 3,
+    "prob_sub_investment_grade_at_horizon_pct": 5
+   },
+   "Credit crunch": {
+    "description": "Debt markets closed for a year, spreads +500bp.",
+    "health_score_0_100": 73,
+    "health_score_unluckiest_10pct": 67,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   },
+   "Supply-chain shock": {
+    "description": "Inventory +30 days, costs +3pp, sales -5%.",
+    "health_score_0_100": 74,
+    "health_score_unluckiest_10pct": 68,
+    "prob_liquidity_breach_pct": 0.0,
+    "prob_interest_coverage_below_1_5x_pct": 2,
+    "prob_sub_investment_grade_at_horizon_pct": 3
+   }
+  },
+  "reverse_stress": {
+   "Revenue drop (held 3 quarters)": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Interest-rate rise": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   },
+   "Variable-cost increase": {
+    "shock_for_50pct_breach": "not reached (company can fund itself)",
+    "shock_for_10pct_breach": "not reached"
+   }
+  },
+  "sensitivity_tornado_health_change": {
+   "Revenue -30%": -4.7,
+   "Rates +300bp": -1.5,
+   "Debt markets shut 4q": -1.5,
+   "Costs +5pp": -1.2,
+   "Spreads +400bp": -1.0,
+   "Inventory +45 days": 0.1
+  }
+ },
+ "verdict": "Healthy",
+ "headline": "Healthy credit profile: health 75/100 under baseline, 43 under demand freeze; the company can fund itself even through a 95% revenue drop held for three quarters.",
+ "summary": "REVVITY, INC. enters the simulation with $1.0B of cash and short-term investments against $3.2B of debt and a synthetic A- rating from interest coverage. Across 5,000 simulated 12-quarter futures the median health score is 75, with the unluckiest tenth of paths at 69 or below and a 0.0% chance of exhausting liquidity under business as usual. The most damaging single shock is revenue -30%, which moves the health score by -4.7 points.",
+ "key_risks": [
+  {
+   "risk": "Severe demand collapse",
+   "evidence": "Only an extreme scenario (demand freeze) moves the health score materially, to 43."
+  }
+ ],
+ "resilience": [
+  "Cash of $1.0B covers the next four quarters of maturities ($295M).",
+  "A committed credit facility of about $233M backstops liquidity (size assumed: not tagged in filings).",
+  "Interest coverage implies an investment-grade synthetic rating (A-), keeping refinancing cheap.",
+  "No interest-rate rise up to 1,500bp produces even odds of a liquidity breach."
+ ],
+ "scenario_notes": [
+  {
+   "scenario": "Demand freeze",
+   "note": "Health 43 (−32 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 29%."
+  },
+  {
+   "scenario": "Sales -20%",
+   "note": "Health 72 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Stagflation (2022)",
+   "note": "Health 72 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 5%."
+  },
+  {
+   "scenario": "Recession",
+   "note": "Health 72 (−3 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 2%."
+  },
+  {
+   "scenario": "Credit crunch",
+   "note": "Health 73 (−2 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Supply-chain shock",
+   "note": "Health 74 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 3%."
+  },
+  {
+   "scenario": "Rates +200bp",
+   "note": "Health 74 (−1 vs baseline), breach probability 0.0%, sub-investment-grade at horizon 5%."
+  }
+ ],
+ "watch_list": [
+  "Quarterly cash relative to the next 12 months of maturities (now $1.0B vs $295M).",
+  "Variable-cost ratio versus the calibrated 48% of revenue: a sustained rise signals margin squeeze.",
+  "Trailing interest coverage approaching 1.5×, where the twin's market-access loop starts to bind."
+ ]
+}

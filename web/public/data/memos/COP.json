@@ -7,7 +7,7 @@
  "fact_sheet": {
   "company": "CONOCOPHILLIPS",
   "ticker": "COP",
-  "sector": "Energy",
+  "sector": "Oil & Gas Exploration & Production",
   "last_reported_quarter": "2026-06-30",
   "horizon_quarters": 12,
   "simulated_paths": 5000,
