@@ -35,12 +35,12 @@ The twin is also honest about where it fails: [docs/BACKTEST.md](docs/BACKTEST.m
 | **Calibrated Monte Carlo** | Robust (MAD) volatilities, Student-t tails, demand–margin correlation, a Vasicek short rate, and a Markov recession regime with NBER base rates and company-specific GDP sensitivity. |
 | **Stress tools** | 8 crisis presets, free sliders and 6 CFO levers. Reverse stress testing answers "how big a shock breaks it?". Tornado charts and Sobol global sensitivity (with bootstrap CIs) show what matters. |
 | **Analyst notes** | A rule-based analyst turns each company's simulation into a credit-memo-style note: verdict, evidenced risks, buffers, scenario commentary, watch list. It is deterministic, so every figure is correct by construction. An optional LLM module writes freer prose from the same fact sheet and machine-checks its figures, if you supply your own key. |
-| **Dashboard** | React + Web Worker, no server: 94 companies × 8 scenarios, light/dark, mobile. An optional local API adds any ticker live. |
+| **Dashboard** | Editorial research-terminal design, light and dark. A ⌘K / Ctrl K company switcher over 94 companies, a live stress lab, a filterable 94 × 8 scenario matrix and an evidence page. Everything runs client-side in a Web Worker, so no server is needed. An optional local API adds any ticker live. |
 
 | | |
 |---|---|
-| ![Twin](docs/screenshots/twin-light-1400.png) | ![Matrix](docs/screenshots/compare-dark-1400.png) |
-| ![Machine](docs/screenshots/machine-light-1400.png) | ![Backtest](docs/screenshots/backtest-light-1400.png) |
+| ![Overview](docs/screenshots/overview-light-1400.png) | ![Company twin](docs/screenshots/twin-light-1400.png) |
+| ![Stress matrix, dark theme](docs/screenshots/compare-dark-1400.png) | ![Evidence](docs/screenshots/backtest-light-1400.png) |
 
 ## Run it
 

@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
+import { CommandPalette } from "./CommandPalette";
 import { loadCompany, loadIndex, type Company, type Index } from "./data";
+import { prettyName, shortcutLabel } from "./format";
 import { useHashState } from "./hooks";
+import { IconChevron, IconMoon, IconSun, Skeleton, Wordmark } from "./ui";
 import { BacktestView } from "./views/BacktestView";
 import { CompareView } from "./views/CompareView";
 import { MachineView } from "./views/MachineView";
 import { MethodView } from "./views/MethodView";
+import { OverviewView } from "./views/OverviewView";
 import { StressLab } from "./views/StressLab";
 import { TwinView } from "./views/TwinView";
 
-const TABS = [
-  ["twin", "Company twin"], ["stress", "Stress lab"], ["machine", "The machine"],
-  ["compare", "Stress matrix"], ["backtest", "Backtest"], ["method", "Method"],
+const NAV = [
+  ["overview", "Overview"], ["twin", "Company"], ["stress", "Stress lab"], ["machine", "Mechanics"],
+  ["compare", "Matrix"], ["backtest", "Evidence"], ["method", "Method"],
 ] as const;
-const COMPANY_TABS = new Set(["twin", "stress", "machine"]);
+const COMPANY_VIEWS = new Set(["twin", "stress", "machine"]);
+const LIVE_API = import.meta.env.DEV;
 
 function useTheme() {
   const [theme, setTheme] = useState<string | null>(() => {
@@ -28,83 +33,92 @@ function useTheme() {
 }
 
 export default function App() {
-  const [route, setRoute] = useHashState("twin/CCL");
-  const [view, tickerRaw, presetRaw] = route.split("/");
-  const ticker = (tickerRaw || "CCL").toUpperCase();
+  const [route, setRoute] = useHashState("overview");
+  const [viewRaw, tickerRaw, presetRaw] = route.split("/");
+  const view = NAV.some(([k]) => k === viewRaw) ? viewRaw : "overview";
+  const [lastTicker, setLastTicker] = useState("CCL");
+  const ticker = (tickerRaw || lastTicker).toUpperCase();
   const [index, setIndex] = useState<Index | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [palette, setPalette] = useState(false);
   const [dark, toggleTheme] = useTheme();
 
   useEffect(() => { loadIndex().then(setIndex).catch((e) => setError(String(e))); }, []);
   useEffect(() => {
+    if (!COMPANY_VIEWS.has(view)) return;
     setError(null);
-    loadCompany(ticker).then((c) => setCompany(c)).catch((e) => setError(String(e.message ?? e)));
-  }, [ticker]);
+    setLastTicker(ticker);
+    loadCompany(ticker).then(setCompany).catch((e) => setError(String(e.message ?? e)));
+  }, [ticker, view]);
+  useEffect(() => { window.scrollTo({ top: 0 }); }, [view]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = (e.target as HTMLElement)?.matches?.("input, textarea, select");
+      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) { e.preventDefault(); setPalette(true); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  useEffect(() => {
+    const name = company && COMPANY_VIEWS.has(view) ? `${company.ticker} · ` : "";
+    document.title = `${name}FinTwin`;
+  }, [company, view]);
 
-  const go = (v: string, t = ticker, p?: string) => setRoute([v, t, p].filter(Boolean).join("/"));
-  const groups = index ? Object.entries(index.companies).sort((a, b) => a[0].localeCompare(b[0])) : [];
+  const go = (v: string, t?: string, p?: string) => setRoute([v, COMPANY_VIEWS.has(v) ? (t ?? ticker) : undefined, p].filter(Boolean).join("/"));
+  const openCompany = (t: string) => go(COMPANY_VIEWS.has(view) ? view : "twin", t);
+  const entry = index?.companies[ticker];
 
   return (
     <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <div className="brand-mark" aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 32 32"><path d="M5 22l7-7 5 5 10-11" stroke="white" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      <div className="masthead-bar">
+        <header className="bar">
+          <button className="wordmark" onClick={() => go("overview")} aria-label="FinTwin home"><Wordmark /></button>
+          <nav className="nav" aria-label="Sections">
+            {NAV.map(([k, label]) => (
+              <button key={k} aria-current={view === k ? "page" : undefined} onClick={() => go(k)}>{label}</button>
+            ))}
+          </nav>
+          <div className="bar-actions">
+            <button className="switcher" onClick={() => setPalette(true)} aria-label="Change company (Ctrl+K)">
+              <span className="tk">{ticker}</span>
+              <span className="nm">{entry ? prettyName(entry.name) : "Find a company"}</span>
+              <span className="kbd">{shortcutLabel}</span>
+              <IconChevron />
+            </button>
+            <button className="icon-btn" onClick={toggleTheme} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}>
+              {dark ? <IconSun /> : <IconMoon />}
+            </button>
           </div>
-          <div>
-            <h1>FinTwin</h1>
-            <small>Corporate financial health digital twin</small>
-          </div>
-        </div>
-        <label className="company-picker">
-          <span className="muted">Company</span>
-          <select value={ticker} onChange={(e) => go(COMPANY_TABS.has(view) ? view : "twin", e.target.value)} aria-label="Company">
-            <optgroup label="Showcase">
-              {groups.filter(([, e]) => e.showcase).map(([t, e]) => <option key={t} value={t}>{t} · {e.name}</option>)}
-            </optgroup>
-            <optgroup label="Universe">
-              {groups.filter(([, e]) => !e.showcase).map(([t, e]) => <option key={t} value={t}>{t} · {e.name}</option>)}
-            </optgroup>
-            {index && !index.companies[ticker] && <option value={ticker}>{ticker} (live)</option>}
-          </select>
-        </label>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          const t = new FormData(e.currentTarget).get("t")?.toString().trim().toUpperCase();
-          if (t) go(COMPANY_TABS.has(view) ? view : "twin", t);
-        }}>
-          <input type="search" name="t" placeholder="Any ticker…" aria-label="Load any ticker" size={11}
-            title="Tickers outside the snapshot are built live by the local API (python -m fintwin.api)" />
-        </form>
-        <button className="icon-btn" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">{dark ? "☀" : "☾"}</button>
-      </header>
+        </header>
+      </div>
 
-      <nav className="tabs" role="tablist">
-        {TABS.map(([k, label]) => (
-          <button key={k} role="tab" className="tab" aria-selected={view === k} onClick={() => go(k)}>{label}</button>
-        ))}
-      </nav>
+      {index && <CommandPalette index={index} open={palette} onClose={() => setPalette(false)} onPick={openCompany} liveEnabled={LIVE_API} />}
 
-      {error && <div className="card loading">{error}</div>}
-      {!index ? <div className="loading">Loading…</div> : (
-        <main>
-          {COMPANY_TABS.has(view) && (!company || company.ticker !== ticker) && !error && <div className="loading">Loading {ticker}…</div>}
-          {view === "twin" && company?.ticker === ticker && <TwinView c={company} meta={index.meta} onStress={(p) => go("stress", ticker, p)} />}
-          {view === "stress" && company?.ticker === ticker && (
-            <StressLab key={ticker + (presetRaw ?? "")} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"}
-              setPreset={(p) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}`)} />
-          )}
-          {view === "machine" && company?.ticker === ticker && <MachineView c={company} meta={index.meta} />}
-          {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
-          {view === "backtest" && <BacktestView onOpen={(t) => go("twin", t)} />}
-          {view === "method" && <MethodView />}
-        </main>
-      )}
+      <main className="page">
+        {error && <p className="callout" style={{ marginBottom: 24 }}>{error}</p>}
+        {!index ? <Skeleton h={420} /> : (
+          <>
+            {view === "overview" && <OverviewView index={index} onOpen={(t) => go("twin", t)} onGo={(v) => go(v)} />}
+            {COMPANY_VIEWS.has(view) && (!company || company.ticker !== ticker) && !error && <Skeleton h={520} />}
+            {view === "twin" && company?.ticker === ticker && (
+              <TwinView c={company} meta={index.meta} onStress={(p) => go("stress", ticker, p)} onMachine={() => go("machine", ticker)} />
+            )}
+            {view === "stress" && company?.ticker === ticker && (
+              <StressLab key={ticker} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"}
+                setPreset={(p) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}`)} />
+            )}
+            {view === "machine" && company?.ticker === ticker && <MachineView c={company} meta={index.meta} />}
+            {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
+            {view === "backtest" && <BacktestView onOpen={(t) => go("twin", t)} />}
+            {view === "method" && <MethodView />}
+          </>
+        )}
+      </main>
 
       <footer className="footer">
-        <span>Data: SEC EDGAR XBRL filings & FRED. Snapshot {index?.meta.generated}. Not investment advice.</span>
-        <span>Python reference engine · TypeScript in-browser engine · parity-tested</span>
+        <span>Data: SEC EDGAR XBRL filings and FRED, snapshot {index?.meta.generated}. Research project, not investment advice.</span>
+        <span><a href="https://github.com/SpiliosDimakopoulos/fintwin" target="_blank" rel="noreferrer">Source</a> · <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf" target="_blank" rel="noreferrer">Paper</a></span>
       </footer>
     </div>
   );

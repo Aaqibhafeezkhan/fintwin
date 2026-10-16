@@ -1,0 +1,16 @@
+import puppeteer from "puppeteer-core";
+const b = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true });
+const p = await b.newPage();
+const errs = []; p.on("pageerror", (e) => errs.push(e.message));
+await p.setViewport({ width: 1280, height: 800 });
+await p.goto("http://localhost:4173/#overview", { waitUntil: "networkidle0" });
+await p.keyboard.down("Control"); await p.keyboard.press("k"); await p.keyboard.up("Control");
+await new Promise((r) => setTimeout(r, 300));
+await p.keyboard.type("boe");
+await new Promise((r) => setTimeout(r, 300));
+await p.screenshot({ path: "shots/palette.png" });
+await p.keyboard.press("Enter");
+await new Promise((r) => setTimeout(r, 1500));
+console.log(p.url(), await p.evaluate(() => document.querySelector("h1")?.textContent));
+console.log(errs.length ? errs : "no errors");
+await b.close();

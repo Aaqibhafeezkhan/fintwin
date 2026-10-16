@@ -22,7 +22,7 @@ export function Tornado({ rows, format }: { rows: { label: string; value: number
               : `M${x0},${y0}H${x1 - rad}Q${x1},${y0} ${x1},${y0 + rad}V${y0 + bh - rad}Q${x1},${y0 + bh} ${x1 - rad},${y0 + bh}H${x0}Z`;
             return (
               <g key={r.label} onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}>
-                <rect x={0} y={y0 - 8} width={width} height={rowH} fill={hover === i ? "var(--surface-2)" : "transparent"} />
+                <rect x={0} y={y0 - 8} width={width} height={rowH} fill={hover === i ? "var(--wash)" : "transparent"} />
                 <text x={0} y={y0 + bh / 2} dy="0.32em" fontSize={12} fill="var(--ink-2)">{r.label}</text>
                 <path d={d} fill={neg ? "var(--s2)" : "var(--s1)"} />
                 <text x={neg ? x0 - 6 : x1 + 6} y={y0 + bh / 2} dy="0.32em" textAnchor={neg ? "end" : "start"} fontSize={12} fill="var(--ink)" className="num">
@@ -58,7 +58,7 @@ export function Columns({ labels, values, highlight, format }: { labels: string[
             const d = h <= 0 ? "" : `M${cx - bw / 2},${H - M.b}V${top + r}Q${cx - bw / 2},${top} ${cx - bw / 2 + r},${top}H${cx + bw / 2 - r}Q${cx + bw / 2},${top} ${cx + bw / 2},${top + r}V${H - M.b}Z`;
             return (
               <g key={i} onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}>
-                <rect x={slot * i} y={0} width={slot} height={H} fill={hover === i ? "var(--surface-2)" : "transparent"} />
+                <rect x={slot * i} y={0} width={slot} height={H} fill={hover === i ? "var(--wash)" : "transparent"} />
                 <path d={d} fill={highlight ? highlight(i) : "var(--s1)"} />
                 <text className="tick" x={cx} y={H - 6} textAnchor="middle">{labels[i]}</text>
                 {(hover === i || v === max) && v > 0 && (
@@ -99,7 +99,7 @@ export function ProbLine({ labels, values, secondary, color = "var(--critical)" 
           {hover != null && (
             <g>
               <line x1={x(hover)} x2={x(hover)} y1={M.t} y2={H - M.b} stroke="var(--ink-2)" opacity={0.5} />
-              <circle cx={x(hover)} cy={y(values[hover])} r={4} fill={color} stroke="var(--surface)" strokeWidth={2} />
+              <circle cx={x(hover)} cy={y(values[hover])} r={4} fill={color} stroke="var(--page)" strokeWidth={2} />
               <text x={Math.min(x(hover) + 8, width - 150)} y={M.t + 12} fontSize={12} fill="var(--ink)" className="num">
                 {labels[hover]}: breach {(values[hover] * 100).toFixed(1)}%{secondary ? ` · recession ${(secondary[hover] * 100).toFixed(0)}%` : ""}
               </text>

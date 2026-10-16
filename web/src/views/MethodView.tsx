@@ -1,54 +1,62 @@
-import { Card } from "../ui";
+import { Section } from "../ui";
+
+const STEPS: [string, string, string][] = [
+  ["Point-in-time filings", "SEC EDGAR XBRL", "Every number a company has tagged in its 10-K and 10-Q filings, with ordered fallbacks for tags that change over time. Year-to-date cash flows are de-cumulated into quarters (Q4 = full year minus nine months). Impairments are added back to operating income, as a credit analyst would. Each fact keeps the date it was filed, so a backtest only sees what an analyst could have seen."],
+  ["A stock-and-flow twin", "system dynamics", "Nine stocks: cash, receivables, inventory, payables, customer deposits, PP&E, debt, revolver and equity. Flows connect them through first-order delays, and four feedback loops tie coverage, credit ratings, market access and management responses together. The balance sheet balances on every path, every quarter, and property-based tests enforce it."],
+  ["Calibrated uncertainty", "Monte Carlo", "Demand, margin, interest-rate and financing shocks are fitted to each company's own history: robust volatilities, Student-t tails, demand–margin correlation, a Vasicek short rate and a Markov recession regime with NBER base rates. 5,000 paths run in a Web Worker in a fraction of a second."],
+];
 
 export function MethodView() {
   return (
-    <div className="grid" style={{ gap: 16 }}>
-      <div className="grid g3">
-        <Card title="1 · Real data, any ticker">
-          <p className="sub">SEC EDGAR XBRL <span className="kbd">companyfacts</span> → a clean quarterly panel. Tag drift is handled with
-            ordered fallbacks; year-to-date cash-flow facts are de-cumulated (Q4 = FY − 9M); every number keeps the accession
-            number of the filing it came from. Rates come from FRED.</p>
-        </Card>
-        <Card title="2 · A stock-and-flow twin">
-          <p className="sub">Nine stocks (cash, receivables, inventory, payables, customer deposits, PP&amp;E, debt, revolver, equity)
-            connected by flows, with two reinforcing and two balancing feedback loops and first-order delays.
-            The balance sheet balances on every path, every quarter — enforced by property-based tests.</p>
-        </Card>
-        <Card title="3 · Calibrated Monte Carlo">
-          <p className="sub">Demand, margin, rate and financing shocks are fitted on each company's own history: robust (MAD)
-            volatilities, Student-t tails, demand–margin correlation, Vasicek short rate. 5,000 paths run in a Web Worker
-            in tens of milliseconds.</p>
-        </Card>
-      </div>
+    <div className="fade-in">
+      <Section>
+        <div className="eyebrow">Method</div>
+        <h1 className="display h-l" style={{ margin: "8px 0 10px" }}>How the twin is built</h1>
+        <p className="lede">Three layers, each testable on its own. The full derivation, calibration estimators and evaluation are in the
+          {" "}<a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf" target="_blank" rel="noreferrer">technical paper</a>.</p>
+      </Section>
 
-      <Card title="Core equations (per quarter t, per path)">
-        <div className="eq">{`g_t      = μ + φ(g_{t-1} − μ) + σ_g ε^d_t                       demand growth, AR(1), Student-t ε
-Rev_t    = B_{t-1} e^{g_t} · S_season · (1 + shock_t)
-Costs_t  = F (1+π)^t · cut_t + (v + m_t + Δv_t) · Rev_t          operating leverage
-m_t      = ρ_m m_{t-1} + σ_m ε^m_t                               margin shock, corr(ε^d, ε^m) = ρ
-r_t      = r_{t-1} + κ(θ − r_{t-1}) + σ_r ε^r_t                  Vasicek short rate
-spread_t = Rating(ICR^{TTM}_{t-1})                               Damodaran coverage → spread (loop R1)
-AR_t     = AR_{t-1} + (DSO/91 · Rev_t − AR_{t-1}) / τ_AR         first-order delays
+      {STEPS.map(([title, tag, body], i) => (
+        <Section key={title}>
+          <div className="cols-main" style={{ gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.6fr)" }}>
+            <div>
+              <div className="eyebrow">{String(i + 1).padStart(2, "0")} · {tag}</div>
+              <h2 className="display h-m" style={{ marginTop: 8 }}>{title}</h2>
+            </div>
+            <p className="prose">{body}</p>
+          </div>
+        </Section>
+      ))}
+
+      <Section eyebrow="Core equations" title="One quarter, one path">
+        <div className="eq">{`g_t      = μ + φ(g_{t-1} − μ) + σ_g (1 + 0.5 s_t) ε_t + δ s_t     demand growth, Student-t shocks, recession regime s_t
+Rev_t    = B_{t-1} · e^{g_t} · Season_q · (1 + shock_t)
+Costs_t  = F (1+π)^t · cut_t + (v + m_t) · Rev_t                   operating leverage, mean-reverting margin shock m_t
+r_t      = r_{t-1} + κ(θ − r_{t-1}) + σ_r η_t                      Vasicek short rate
+spread_t = Rating(EBIT_ttm / Interest_ttm)                          coverage → rating → spread        (loop R1)
+AR_t     = AR_{t-1}  + (DSO/91 · Rev_t   − AR_{t-1})  / τ_AR        first-order delays
 Inv_t    = Inv_{t-1} + (DIO/91 · Costs_t − Inv_{t-1}) / τ_Inv
-CFO_t    = NI_t + D&A_t + SBC_t − ΔNWC_t + other_t
-Cash_t   = Cash_{t-1} + CFO_t − Capex_t − Div_t − BB_t − Mat_t + Refi_t + Issue_t + Draw_t
-Access_t = 1 | 0.6 | 0.3 (ICR ≥ 1.5 | ≥ 0.8 | below) × MarketOpen_t       loop R2
-Breach   = Cash_t < 0 after revolver, debt markets and (optional) equity`}</div>
-      </Card>
+Cash_t   = Cash_{t-1} + CFO_t − Capex_t − Payouts_t − Maturities_t + Refinancing_t + NewDebt_t + Revolver_t
+Access_t = 1 · 0.6 · 0.3  as coverage ≥ 1.5× · ≥ 0.8× · below,  0 when markets are shut      (loop R2)
+Breach   = Cash_t < 0 after the revolver, available debt markets and (optional) equity`}</div>
+      </Section>
 
-      <div className="grid g2">
-        <Card title="Health score (0–100)">
-          <p className="sub">30% liquidity runway (cash + undrawn revolver vs. fixed costs, interest and unrefinanceable
-            maturities; 8 quarters = full marks) · 30% synthetic rating from interest coverage · 20% net debt / EBITDA
-            (0× = 100, 6× = 0) · 20% Altman Z'' (book-value version). A path that has breached is capped at 25.
-            The headline score is the median across paths of the path-average.</p>
-        </Card>
-        <Card title="Engineering">
-          <p className="sub">Python reference engine (numpy, vectorized) for calibration, backtests and exports; a TypeScript
-            port runs in the browser. Golden parity tests feed both engines identical shocks and require agreement to 1e-6.
-            Reverse stress tests use bisection with common random numbers so breach probability is monotone in shock size.</p>
-        </Card>
-      </div>
+      <Section eyebrow="Scoring" title="The health score">
+        <div className="cols-2">
+          <p className="prose">A 0–100 composite with four parts: 30% liquidity runway (cash plus undrawn facility against
+            fixed costs, interest and maturities that cannot be refinanced), 30% synthetic rating, 20% net debt to EBITDA, and
+            20% Altman Z″. A path that has run out of cash is capped at 25. The headline is the median across 5,000 paths of each path's average.</p>
+          <p className="prose">Reverse stress tests find the smallest shock that gives even odds of running out of cash, by
+            bisection with common random numbers. Sobol indices split the variance of the health score across six simultaneous
+            shocks into first-order effects and interactions.</p>
+        </div>
+      </Section>
+
+      <Section eyebrow="Engineering" title="Two engines, one answer">
+        <p className="prose">A NumPy reference engine handles calibration, backtests and exports. A line-for-line TypeScript port runs the same
+          model in your browser. Golden runs exported from Python, with identical pre-drawn shocks, must match to one part in a million
+          on eleven output series, and continuous integration runs that check on every commit.</p>
+      </Section>
     </div>
   );
 }

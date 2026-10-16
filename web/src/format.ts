@@ -45,3 +45,20 @@ export function healthStatus(h: number): Status {
   if (h >= 30) return { key: "serious", label: "Strained", icon: "◆" };
   return { key: "critical", label: "Distressed", icon: "■" };
 }
+
+const SUFFIX: Record<string, string> = { INC: "Inc.", "INC.": "Inc.", CORP: "Corp.", "CORP.": "Corp.", CO: "Co.", "CO.": "Co.", LTD: "Ltd.", "LTD.": "Ltd.", PLC: "plc", LLC: "LLC" };
+const SMALL = new Set(["OF", "AND", "THE", "&"]);
+/** SEC registrant names arrive in capitals ("BOEING CO"); show them the way a newspaper would ("Boeing Co."). */
+export function prettyName(name: string): string {
+  if (/[a-z]/.test(name)) return name;
+  return name.split(/\s+/).map((w, i) => {
+    const u = w.toUpperCase().replace(/,$/, "");
+    if (SUFFIX[u]) return SUFFIX[u] + (w.endsWith(",") ? "," : "");
+    if (i > 0 && SMALL.has(u)) return u === "&" ? "&" : u.toLowerCase();
+    if (/[&\d]/.test(w) || w.length <= 2) return w;
+    return w.charAt(0) + w.slice(1).toLowerCase();
+  }).join(" ");
+}
+
+/** Keyboard hint for the company switcher: ⌘K on Apple devices, Ctrl K elsewhere. */
+export const shortcutLabel = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘K" : "Ctrl K";

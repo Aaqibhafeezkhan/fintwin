@@ -1,60 +1,138 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { healthStatus } from "./format";
 
-export function StatusPill({ health }: { health: number }) {
-  const s = healthStatus(health);
+/* ---------- motion ---------- */
+
+/** Tween a number toward its new value (250 ms ease-out); respects reduced-motion. */
+export function useTween(value: number, ms = 260) {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
+  useEffect(() => {
+    if (!Number.isFinite(value)) { setShown(value); return; }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(value); from.current = value; return; }
+    const start = performance.now(), a = Number.isFinite(from.current) ? from.current : value;
+    let raf = 0;
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / ms), e = 1 - (1 - k) ** 3;
+      const v = a + (value - a) * e;
+      setShown(v);
+      if (k < 1) raf = requestAnimationFrame(step); else from.current = value;
+    };
+    raf = requestAnimationFrame(step);
+    return () => { cancelAnimationFrame(raf); from.current = value; };
+  }, [value, ms]);
+  return shown;
+}
+
+/* ---------- icons (1.5px strokes, 16px grid) ---------- */
+const I = ({ d, size = 16 }: { d: ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden>{d}</svg>
+);
+export const IconSun = () => <I d={<><circle cx="8" cy="8" r="3" /><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1" /></>} />;
+export const IconMoon = () => <I d={<path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7Z" />} />;
+export const IconSearch = () => <I d={<><circle cx="7" cy="7" r="4.5" /><path d="m10.5 10.5 3 3" /></>} size={14} />;
+export const IconArrow = () => <I d={<path d="M3 8h10M9 4l4 4-4 4" />} size={14} />;
+export const IconChevron = () => <I d={<path d="m4.5 6.5 3.5 3.5 3.5-3.5" />} size={14} />;
+export const IconExternal = () => <I d={<path d="M9.5 2.5h4v4M13.5 2.5 7.5 8.5M12 9.5v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3" />} size={12} />;
+
+export function Wordmark() {
   return (
-    <span className="pill" title={`Health score ${health.toFixed(0)} / 100`}>
-      <span aria-hidden style={{ color: `var(--${s.key})`, fontSize: 10 }}>{s.icon}</span>
-      {s.label}
+    <span className="wordmark" aria-label="FinTwin">
+      <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden>
+        <rect width="32" height="32" rx="6" fill="var(--ink)" />
+        <path d="M7 20.5c3-0.2 4.6-7 8-7s4.6 4.2 10 3.5" stroke="var(--page)" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      </svg>
+      <span className="wordmark-text">FinTwin</span>
     </span>
   );
 }
 
-export function Stat({ label, value, foot, hint }: { label: ReactNode; value: ReactNode; foot?: ReactNode; hint?: string }) {
+/* ---------- building blocks ---------- */
+
+export function InfoTip({ children }: { children: ReactNode }) {
   return (
-    <div className="card stat" title={hint}>
-      <div className="label">{label}</div>
-      <div className="value num">{value}</div>
-      {foot && <div className="foot">{foot}</div>}
-    </div>
+    <button type="button" className="info" aria-label="More information">
+      i<span className="pop" role="tooltip">{children}</span>
+    </button>
   );
 }
 
-export function Card({ title, sub, right, children }: { title: ReactNode; sub?: ReactNode; right?: ReactNode; children: ReactNode }) {
+export function Status({ health, label }: { health: number; label?: string }) {
+  const s = healthStatus(health);
+  return <span className="status"><i style={{ background: `var(--${s.key})` }} />{label ?? s.label}</span>;
+}
+
+export function Section({ eyebrow, title, note, right, children, id }: {
+  eyebrow?: ReactNode; title?: ReactNode; note?: ReactNode; right?: ReactNode; children: ReactNode; id?: string;
+}) {
   return (
-    <section className="card">
-      <div className="card-head">
-        <div>
-          <h3>{title}</h3>
-          {sub && <p>{sub}</p>}
+    <section className="section" id={id}>
+      {(eyebrow || title || right) && (
+        <div className="section-head">
+          <div className="left">
+            {eyebrow && <div className="eyebrow">{eyebrow}</div>}
+            {title && <h2 className="display h-m">{title}</h2>}
+            {note && <p className="section-note">{note}</p>}
+          </div>
+          {right}
         </div>
-        {right}
-      </div>
+      )}
       {children}
     </section>
   );
 }
 
-/** Delta text in text tokens (never the series color); sign carried by arrow + word. */
-export function Delta({ value, fmt, goodIfPositive = true }: { value: number; fmt: (x: number) => string; goodIfPositive?: boolean }) {
-  if (!Number.isFinite(value) || Math.abs(value) < 1e-9) return <span className="muted">no change vs baseline</span>;
-  const good = value > 0 === goodIfPositive;
+type MetricProps = {
+  label: ReactNode; value: number | null; format: (x: number) => string; unit?: string; foot?: ReactNode; info?: ReactNode;
+};
+export function Metric({ label, value, format, unit, foot, info }: MetricProps) {
+  const v = useTween(value ?? NaN);
   return (
-    <span style={{ color: good ? "var(--good-text)" : "var(--bad-text)" }}>
-      {value > 0 ? "▲" : "▼"} {fmt(Math.abs(value))} vs baseline
-    </span>
+    <div className="metric">
+      <div className="m-label">{label}{info && <InfoTip>{info}</InfoTip>}</div>
+      <div className="m-value">{value == null || !Number.isFinite(v) ? "–" : format(v)}{unit && <span className="m-unit">{unit}</span>}</div>
+      {foot && <div className="m-foot">{foot}</div>}
+    </div>
   );
 }
 
-export function HealthBar({ value }: { value: number }) {
-  const s = healthStatus(value);
+/** A metric whose value is text (rating, "survives"). */
+export function MetricText({ label, value, foot, info }: { label: ReactNode; value: ReactNode; foot?: ReactNode; info?: ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--grid)", minWidth: 40 }}>
-        <div style={{ width: `${Math.max(2, value)}%`, height: 6, borderRadius: 3, background: `var(--${s.key})` }} />
-      </div>
-      <span className="num" style={{ width: 24, textAlign: "right" }}>{value.toFixed(0)}</span>
+    <div className="metric">
+      <div className="m-label">{label}{info && <InfoTip>{info}</InfoTip>}</div>
+      <div className="m-value">{value}</div>
+      {foot && <div className="m-foot">{foot}</div>}
     </div>
   );
+}
+
+/** Sign carried by word and arrow, colour only reinforces it. */
+export function Delta({ value, fmt, goodIfPositive = true, suffix = "vs baseline" }: { value: number; fmt: (x: number) => string; goodIfPositive?: boolean; suffix?: string }) {
+  if (!Number.isFinite(value) || Math.abs(value) < 1e-9) return <span>unchanged {suffix}</span>;
+  const good = value > 0 === goodIfPositive;
+  return <span className={good ? "delta-up" : "delta-down"}>{value > 0 ? "↑" : "↓"} {fmt(Math.abs(value))} {suffix}</span>;
+}
+
+/** 0-100 health scale with the four status zones, the median marker and the unlucky-decile range. */
+export function HealthScale({ value, p10 }: { value: number; p10?: number }) {
+  const zones = ["critical", "serious", "warning", "good"];
+  return (
+    <div className="hscale" role="img" aria-label={`Health score ${value.toFixed(0)} of 100`}>
+      <div className="zone-labels"><span>Distressed</span><span>Strained</span><span>Watch</span><span style={{ textAlign: "right" }}>Healthy</span></div>
+      <div className="track">{zones.map((z) => <i key={z} style={{ background: `var(--${z})` }} />)}</div>
+      {p10 != null && <div className="range" style={{ left: `${p10}%`, width: `${Math.max(value - p10, 0.5)}%` }} title="Unluckiest 10% of paths to median" />}
+      <div className="marker" style={{ left: `${Math.min(Math.max(value, 0), 100)}%` }} />
+      <div className="ticks">{[0, 30, 50, 70, 100].map((t) => <span key={t} style={{ left: `${t}%` }}>{t}</span>)}</div>
+    </div>
+  );
+}
+
+export function Meter({ value, max = 100, color }: { value: number; max?: number; color?: string }) {
+  const s = healthStatus(value);
+  return <div className="meter"><i style={{ width: `${Math.max(2, (value / max) * 100)}%`, background: color ?? `var(--${s.key})` }} /></div>;
+}
+
+export function Skeleton({ h = 200 }: { h?: number }) {
+  return <div className="skeleton" style={{ height: h }} />;
 }

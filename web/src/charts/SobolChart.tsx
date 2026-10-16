@@ -25,7 +25,7 @@ export function SobolChart({ rows }: { rows: SobolRow[] }) {
             const wt = Math.max(x(Math.min(r.ST, 1)) - x(0), 1), w1 = Math.max(x(Math.min(r.S1, 1)) - x(0), 0);
             return (
               <g key={r.knob} onPointerEnter={() => setHover(i)} onPointerLeave={() => setHover(null)}>
-                <rect x={0} y={y0 - 8} width={width} height={rowH} fill={hover === i ? "var(--surface-2)" : "transparent"} />
+                <rect x={0} y={y0 - 8} width={width} height={rowH} fill={hover === i ? "var(--wash)" : "transparent"} />
                 <text x={0} y={y0 + bh / 2} dy="0.32em" fontSize={12} fill="var(--ink-2)">{r.label}</text>
                 <rect x={x(0)} y={y0} width={wt} height={bh} rx={Math.min(4, wt / 2)} fill="var(--s1)" opacity={0.3} />
                 {w1 > 0 && <rect x={x(0)} y={y0} width={w1} height={bh} rx={Math.min(4, w1 / 2)} fill="var(--s1)" />}

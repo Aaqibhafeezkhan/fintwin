@@ -3,7 +3,7 @@ import type { Company, Meta } from "../data";
 import { RATINGS, ratingRank } from "../engine/ratings";
 import { futureQuarters, money } from "../format";
 import { useSimulation } from "../hooks";
-import { Card } from "../ui";
+import { Section } from "../ui";
 
 type Box = { x: number; y: number; w: number; h: number };
 const STOCKS: Record<string, Box & { label: string }> = {
@@ -37,20 +37,20 @@ function Cloud({ x, y, label }: { x: number; y: number; label: string }) {
   return (
     <g>
       <path d={`M${x - 18},${y + 6} a9,9 0 0,1 4,-15 a11,11 0 0,1 20,-3 a9,9 0 0,1 14,10 a7,7 0 0,1 -4,8 z`}
-        fill="var(--surface)" stroke="var(--axis)" strokeWidth={1.5} />
+        fill="var(--raised)" stroke="var(--rule-2)" strokeWidth={1.5} />
       <text x={x + 24} y={y + 3} fontSize={11} fill="var(--muted)">{label}</text>
     </g>
   );
 }
 
 function Path({ d }: { d: string }) {
-  return <path d={d} fill="none" stroke="var(--axis)" strokeWidth={2} markerEnd="url(#arrow)" />;
+  return <path d={d} fill="none" stroke="var(--rule-2)" strokeWidth={2} markerEnd="url(#arrow)" />;
 }
 
 function LoopTag({ x, y, id, kind }: { x: number; y: number; id: string; kind: "R" | "B" }) {
   return (
     <g>
-      <circle cx={x} cy={y} r={15} fill="var(--surface)" stroke={kind === "R" ? "var(--s2)" : "var(--s3)"} strokeWidth={2} />
+      <circle cx={x} cy={y} r={15} fill="var(--raised)" stroke={kind === "R" ? "var(--s2)" : "var(--s3)"} strokeWidth={1.5} />
       <text x={x} y={y} dy="0.35em" textAnchor="middle" fontSize={12} fontWeight={700} fill="var(--ink)">{id}</text>
     </g>
   );
@@ -74,20 +74,25 @@ export function MachineView({ c, meta }: { c: Company; meta: Meta }) {
   };
 
   return (
-    <div className="grid" style={{ gap: 16 }}>
-      <Card title="The machine inside the company"
-        sub="Stocks accumulate, flows drain or fill them, and feedback loops (R = reinforcing, B = balancing) decide whether a shock fades or spirals"
-        right={
-          <div className="chips">
-            {Object.entries(meta.presets).map(([k, v]) => (
-              <button key={k} className="chip" aria-pressed={preset === k} onClick={() => setPreset(k)}>{v.label}</button>
-            ))}
-          </div>
-        }>
-        <label className="slider" style={{ maxWidth: 420 }}>
-          <span className="slider-top"><span>Simulated quarter (median path values)</span><span>{fut[q]}</span></span>
+    <div className="fade-in">
+      <Section>
+        <div className="eyebrow">{c.ticker} · mechanics</div>
+        <h1 className="display h-l" style={{ margin: "8px 0 10px" }}>The machine inside the company</h1>
+        <p className="lede">Stocks accumulate and flows fill or drain them. Four feedback loops decide whether a shock fades
+          or spirals: two that amplify it, and two that represent management fighting back.</p>
+      </Section>
+      <div style={{ display: "flex", gap: 24, alignItems: "end", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 12 }}>
+        <div className="chips">
+          {Object.entries(meta.presets).map(([k, v]) => (
+            <button key={k} className="chip" aria-pressed={preset === k} onClick={() => setPreset(k)}>{v.label}</button>
+          ))}
+        </div>
+        <label className="slider" style={{ width: 320, padding: 0 }}>
+          <span className="slider-top"><span>Quarter shown (median path)</span><b>{fut[q]}</b></span>
           <input type="range" min={0} max={fut.length - 1} value={q} onChange={(e) => setQ(+e.target.value)} />
         </label>
+      </div>
+      <div className="panel" style={{ padding: "8px 8px 0" }}>
         <div style={{ width: "100%", overflowX: "auto" }}>
           <svg viewBox="0 0 960 540" style={{ width: "100%", minWidth: 640, height: "auto" }} role="img"
             aria-label="Stock and flow diagram of the company's financial dynamics">
@@ -119,20 +124,20 @@ export function MachineView({ c, meta }: { c: Company; meta: Meta }) {
             <path d="M585,232 C660,140 740,70 789,78" fill="none" stroke="var(--muted)" strokeWidth={1.5} strokeDasharray="4 4" markerEnd="url(#arrow)" />
             {Object.entries(STOCKS).map(([k, b]) => (
               <g key={k}>
-                <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={10} fill="var(--surface-2)" stroke="var(--axis)" strokeWidth={1.5} />
+                <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={10} fill="var(--raised)" stroke="var(--rule-2)" strokeWidth={1.5} />
                 <text x={b.x + b.w / 2} y={b.y + 26} textAnchor="middle" fontSize={13} fill="var(--ink-2)">{b.label}</text>
-                <text x={b.x + b.w / 2} y={b.y + 52} textAnchor="middle" fontSize={20} fontWeight={600} fill="var(--ink)" className="num">{valueText(k as keyof typeof STOCKS)}</text>
+                <text x={b.x + b.w / 2} y={b.y + 52} textAnchor="middle" fontSize={22} fontWeight={500} fill="var(--ink)" fontFamily="var(--font-display)">{valueText(k as keyof typeof STOCKS)}</text>
               </g>
             ))}
             <g>
-              <circle cx={AUX.rating.x} cy={AUX.rating.y} r={AUX.rating.r} fill="var(--surface)" stroke="var(--axis)" strokeWidth={1.5} />
+              <circle cx={AUX.rating.x} cy={AUX.rating.y} r={AUX.rating.r} fill="var(--raised)" stroke="var(--rule-2)" strokeWidth={1.5} />
               <text x={AUX.rating.x} y={AUX.rating.y - 6} textAnchor="middle" fontSize={11} fill="var(--ink-2)">{AUX.rating.label}</text>
-              <text x={AUX.rating.x} y={AUX.rating.y + 16} textAnchor="middle" fontSize={20} fontWeight={600} fill="var(--ink)">{s ? RATINGS[ratingIdx] : ""}</text>
+              <text x={AUX.rating.x} y={AUX.rating.y + 16} textAnchor="middle" fontSize={22} fontWeight={500} fill="var(--ink)" fontFamily="var(--font-display)">{s ? RATINGS[ratingIdx] : ""}</text>
             </g>
             <g>
-              <circle cx={AUX.health.x} cy={AUX.health.y} r={AUX.health.r} fill="var(--surface)" stroke="var(--accent)" strokeWidth={2} />
+              <circle cx={AUX.health.x} cy={AUX.health.y} r={AUX.health.r} fill="var(--raised)" stroke="var(--ink)" strokeWidth={1.5} />
               <text x={AUX.health.x} y={AUX.health.y - 8} textAnchor="middle" fontSize={11} fill="var(--ink-2)">{AUX.health.label}</text>
-              <text x={AUX.health.x} y={AUX.health.y + 18} textAnchor="middle" fontSize={24} fontWeight={650} fill="var(--ink)" className="num">{s ? med("health").toFixed(0) : ""}</text>
+              <text x={AUX.health.x} y={AUX.health.y + 18} textAnchor="middle" fontSize={28} fontWeight={500} fill="var(--ink)" fontFamily="var(--font-display)">{s ? med("health").toFixed(0) : ""}</text>
             </g>
             <text x={852} y={190} fontSize={11} fill="var(--muted)">rating → spread</text>
             <text x={490} y={472} textAnchor="middle" fontSize={11} fill="var(--muted)">capex in · depreciation out</text>
@@ -143,22 +148,23 @@ export function MachineView({ c, meta }: { c: Company; meta: Meta }) {
             <LoopTag x={60} y={185} id="B2" kind="B" />
           </svg>
         </div>
-      </Card>
-
-      <div className="grid g2">
-        <Card title="Reinforcing loops — how shocks spiral">
-          <p><b>R1 · Leverage–spread spiral.</b> Weaker earnings cut interest coverage, the synthetic rating falls,
-            new and refinanced debt carries a wider spread, interest costs rise, cash drains, more borrowing is needed.</p>
-          <p style={{ marginTop: 10 }}><b>R2 · Market-access cliff.</b> Below 1.5× coverage only part of the funding need can be placed;
-            below 0.8× only 30%. Maturities must then be paid from cash, which pushes coverage down further.</p>
-        </Card>
-        <Card title="Balancing loops — how management fights back">
-          <p><b>B1 · Cash conservation.</b> When cash nears its floor or coverage falls below 2.5×, buybacks and dividends stop
-            and capex drops to maintenance level.</p>
-          <p style={{ marginTop: 10 }}><b>B2 · Restructuring with a delay.</b> After two quarters of margins below target,
-            fixed costs are cut 4% per quarter (to a floor of −15%) and recover when margins normalize.</p>
-        </Card>
       </div>
+
+      <Section eyebrow="Feedback loops" title="Why shocks fade or spiral">
+        <div className="cols-2" style={{ rowGap: 28 }}>
+          {[
+            ["R1", "Leverage–spread spiral", "Weaker earnings cut interest coverage, so the synthetic rating falls. New and refinanced debt carries a wider spread, interest rises, cash drains and more borrowing is needed.", "var(--s2)"],
+            ["R2", "Market-access cliff", "Below 1.5× coverage only 60% of a funding need can be placed, and below 0.8× only 30%. Maturities are then paid from cash, which pushes coverage lower still.", "var(--s2)"],
+            ["B1", "Cash conservation", "When cash nears its floor or coverage drops under 2.5×, dividends and buybacks stop and capital spending falls to maintenance.", "var(--s3)"],
+            ["B2", "Delayed restructuring", "After two quarters of squeezed margins, fixed costs fall 4% a quarter, to a floor of 15% below normal, and recover when margins do.", "var(--s3)"],
+          ].map(([id, t, d, col]) => (
+            <div key={id} style={{ display: "grid", gridTemplateColumns: "40px 1fr", gap: 6 }}>
+              <span className="mono" style={{ fontSize: 13, fontWeight: 500, color: col }}>{id}</span>
+              <div><h3 className="display h-s" style={{ marginBottom: 6 }}>{t}</h3><p className="sub" style={{ fontSize: 13.5 }}>{d}</p></div>
+            </div>
+          ))}
+        </div>
+      </Section>
     </div>
   );
 }

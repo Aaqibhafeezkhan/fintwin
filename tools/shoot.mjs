@@ -6,6 +6,7 @@ import { mkdirSync } from "node:fs";
 const [base = "http://localhost:5173/", out = "../docs/screenshots", theme = "light", width = "1400"] = process.argv.slice(2);
 mkdirSync(out, { recursive: true });
 const ROUTES = [
+  ["overview", "overview"],
   ["twin", "twin/CCL"], ["stress", "stress/CCL/pandemic"], ["machine", "machine/BA"],
   ["compare", "compare/CCL"], ["backtest", "backtest/CCL"], ["method", "method/CCL"], ["twin-aapl", "twin/AAPL"],
 ];

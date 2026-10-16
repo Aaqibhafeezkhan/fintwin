@@ -23,9 +23,10 @@ type Props = {
   yMin?: number;
   yMax?: number;
   samplePaths?: number[][];
+  legend?: boolean;
 };
 
-const M = { top: 12, right: 14, bottom: 26, left: 52 };
+const M = { top: 12, right: 12, bottom: 24, left: 46 };
 
 export function FanChart(p: Props) {
   const [ref, width] = useSize<HTMLDivElement>();
@@ -121,7 +122,7 @@ export function FanChart(p: Props) {
           ))}
           {nh > 0 && nf > 0 && (
             <g>
-              <line x1={x(nh - 1)} x2={x(nh - 1)} y1={M.top} y2={H - M.bottom} stroke="var(--axis)" strokeWidth={1} />
+              <line x1={x(nh - 1)} x2={x(nh - 1)} y1={M.top} y2={H - M.bottom} stroke="var(--rule-2)" strokeWidth={1} />
               <text className="tick" x={x(nh - 1) + 6} y={M.top + 10}>forecast →</text>
             </g>
           )}
@@ -149,7 +150,7 @@ export function FanChart(p: Props) {
               <path d={line<number | null>().defined((d) => d != null).x((_, t) => fx(t)).y((d) => y(d as number))(p.realized) ?? ""}
                 fill="none" stroke="var(--ink)" strokeWidth={2} />
               {p.realized.map((v, t) => v != null && (
-                <circle key={t} cx={fx(t)} cy={y(v)} r={4} fill="var(--ink)" stroke="var(--surface)" strokeWidth={2} />
+                <circle key={t} cx={fx(t)} cy={y(v)} r={4} fill="var(--ink)" stroke="var(--page)" strokeWidth={2} />
               ))}
             </g>
           )}
@@ -161,13 +162,26 @@ export function FanChart(p: Props) {
         </svg>
       )}
       {tip}
-      <div className="legend">
+      {p.legend !== false && <div className="legend" style={{ marginTop: 8 }}>
         {nh > 0 && <span><span className="sw-line" style={{ background: "var(--ink)" }} />Reported</span>}
         {p.layers.map((l) => (
           <span key={l.label}><span className="sw" style={{ background: l.color, opacity: 0.35 }} />{l.label}: median, 50% &amp; 90% bands</span>
         ))}
         {p.realized && <span><span className="dot" style={{ background: "var(--ink)" }} />{p.realizedLabel ?? "Realized"}</span>}
-      </div>
+      </div>}
+    </div>
+  );
+}
+
+/** One legend for a row of fan charts that share the same encodings. */
+export function FanLegend({ layers, reported = true, realized }: { layers: { label: string; color: string }[]; reported?: boolean; realized?: string }) {
+  return (
+    <div className="legend">
+      {reported && <span><span className="sw-line" style={{ background: "var(--ink)" }} />Reported</span>}
+      {layers.map((l) => (
+        <span key={l.label}><span className="sw-line" style={{ background: l.color }} /><span className="sw" style={{ background: l.color, opacity: 0.22, marginLeft: -4 }} />{l.label} median with 50% and 90% bands</span>
+      ))}
+      {realized && <span><span className="dot" style={{ background: "var(--ink)" }} />{realized}</span>}
     </div>
   );
 }

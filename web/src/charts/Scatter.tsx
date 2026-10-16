@@ -16,6 +16,25 @@ export function Scatter({ points, xLabel, yLabel, xFmt, yFmt, labelIds = [], onC
   const x = scaleLinear().domain([Math.min(0, ...xs), Math.max(...xs)]).nice().range([M.l, width - M.r]);
   const y = scaleLinear().domain([Math.min(...ys), Math.max(0, ...ys)]).nice().range([H - M.b, M.t]);
   const hp = points.find((p) => p.id === hover);
+
+  // Greedy label placement: try four offsets around each labelled dot and keep the first that clears
+  // every label already placed, so clustered names (the cruise lines) stay readable.
+  const placed: Record<string, { lx: number; ly: number; anchor: "start" | "end" }> = {};
+  const boxes: { x0: number; x1: number; y0: number; y1: number }[] = [];
+  const labelled = points.filter((p) => labelIds.includes(p.id)).sort((a, b) => y(a.y) - y(b.y));
+  for (const p of labelled) boxes.push({ x0: x(p.x) - 6, x1: x(p.x) + 6, y0: y(p.y) - 6, y1: y(p.y) + 6 });
+  for (const p of labelled) {
+    const px = x(p.x), py = y(p.y), w = p.label.length * 6.6 + 2;
+    const tries: [number, number, "start" | "end"][] = [[px + 8, py - 7, "start"], [px + 8, py + 13, "start"], [px - 8, py - 7, "end"], [px - 8, py + 13, "end"], [px + 8, py - 19, "start"], [px - 8, py + 25, "end"]];
+    let pick = tries[0];
+    for (const t of tries) {
+      const x0 = t[2] === "start" ? t[0] : t[0] - w, x1 = x0 + w, y0 = t[1] - 10, y1 = t[1] + 2;
+      if (!boxes.some((bx) => x0 < bx.x1 && x1 > bx.x0 && y0 < bx.y1 && y1 > bx.y0) && x1 < width - 2 && x0 > M.l) { pick = t; break; }
+    }
+    const x0 = pick[2] === "start" ? pick[0] : pick[0] - w;
+    boxes.push({ x0, x1: x0 + w, y0: pick[1] - 10, y1: pick[1] + 2 });
+    placed[p.id] = { lx: pick[0], ly: pick[1], anchor: pick[2] };
+  }
   return (
     <div className="chart" ref={ref}>
       {width > 0 && (
@@ -34,9 +53,11 @@ export function Scatter({ points, xLabel, yLabel, xFmt, yFmt, labelIds = [], onC
             <g key={p.id} style={{ cursor: onClick ? "pointer" : undefined }}
               onPointerEnter={() => setHover(p.id)} onPointerLeave={() => setHover(null)} onClick={() => onClick?.(p.id)}>
               <circle cx={x(p.x)} cy={y(p.y)} r={12} fill="transparent" />
-              <circle cx={x(p.x)} cy={y(p.y)} r={hover === p.id ? 6 : 5} fill="var(--s1)" stroke="var(--surface)" strokeWidth={2} />
-              {(labelIds.includes(p.id) || hover === p.id) && (
-                <text x={x(p.x) + 8} y={y(p.y) - 7} fontSize={11} fill="var(--ink-2)">{p.label}</text>
+              <circle cx={x(p.x)} cy={y(p.y)} r={hover === p.id ? 6 : 5} fill={labelIds.includes(p.id) || hover === p.id ? "var(--s1)" : "color-mix(in srgb, var(--s1) 55%, var(--page))"} stroke="var(--page)" strokeWidth={1.5} />
+              {placed[p.id] ? (
+                <text x={placed[p.id].lx} y={placed[p.id].ly} textAnchor={placed[p.id].anchor} fontSize={11} fill="var(--ink-2)" fontFamily="var(--font-mono)">{p.label}</text>
+              ) : hover === p.id && (
+                <text x={x(p.x) + 8} y={y(p.y) - 7} fontSize={11} fill="var(--ink)" fontFamily="var(--font-mono)">{p.label}</text>
               )}
             </g>
           ))}
