@@ -12,6 +12,7 @@ import pandas as pd
 from scipy import stats
 
 from ..data.facts import CompanyData
+from ..data.fred import recession_regime
 
 DAYS_Q = 91.25
 LONG_RUN_GROWTH_Q = 0.012  # ~5% nominal p.a., the anchor that trend growth is shrunk toward
@@ -115,6 +116,26 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
             pass
     src["t_df"] = "MLE Student-t fit on standardized growth residuals"
 
+    # ---- macro recession regime (IFRS 9-style probability-weighted downturns) ----
+    reg = recession_regime(str(q.index[-1].date()))
+    yoy_rev = np.log(rev / rev.shift(4)).dropna()
+    gdp = reg["gdp_yoy"]
+    pairs = []
+    for d, v in yoy_rev.tail(40).items():
+        near = gdp.index[np.abs((gdp.index - d).days) <= 46]
+        if len(near) and np.isfinite(v):
+            pairs.append((float(gdp.loc[near[0]]), float(v)))
+    beta_ols = np.nan
+    if len(pairs) >= 12:
+        xg, yr = np.array(pairs).T
+        if np.var(xg) > 0:
+            beta_ols = float(np.cov(xg, yr)[0, 1] / np.var(xg, ddof=1))
+    beta_gdp = _clip(0.5 * beta_ols + 0.5 * 1.5 if np.isfinite(beta_ols) else 1.5, 0.5, 5.0, 1.5)
+    src["beta_gdp"] = (f"revenue sensitivity to nominal GDP ({len(pairs)} quarters), shrunk 50% toward 1.5"
+                       if np.isfinite(beta_ols) else "assumption: cyclicality 1.5 (insufficient history)")
+    src["recession"] = (f"NBER recessions since 1947 ({reg['n_recessions']}): entry {reg['hazard']:.1%}/q, "
+                        f"mean length {1 / reg['exit']:.1f}q")
+
     # ---- cost structure: operating leverage ----
     ebitda = q["operating_income"] + q["da"].fillna(0)
     costs = (rev - ebitda)
@@ -194,8 +215,13 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
 
     cash0 = float(last["cash"] + last["short_investments"])
     quarterly_costs = F + v * rev.tail(4).mean()
-    cash_floor = 0.2 * quarterly_costs
-    src["cash_floor"] = "assumption: minimum operating cash = 20% of a quarter's cash costs"
+    # Minimum operating cash revealed by the company's own behaviour: half its 10th-percentile cash balance over
+    # three years, bounded by 1% of quarterly revenue and 20% of quarterly costs. (A cost-based floor alone forces
+    # high-turnover, low-cash retailers such as Walmart to "borrow up" to cash levels they never hold.)
+    hist_cash = (q["cash"] + q["short_investments"]).tail(12).dropna()
+    revealed = 0.5 * float(hist_cash.quantile(0.1)) if len(hist_cash) >= 4 else 0.2 * quarterly_costs
+    cash_floor = float(np.clip(revealed, 0.01 * rev.tail(4).mean(), 0.2 * quarterly_costs))
+    src["cash_floor"] = "half the company's 10th-percentile cash balance over 12 quarters (revealed minimum)"
     cash_target = max(0.6 * cash0, 1.5 * cash_floor)
     cash_cap = 1.5 * max(cash0, cash_target)
     src["cash_cap"] = "assumption: cash above 150% of today's level is swept into debt paydown"
@@ -250,6 +276,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         "seasonal": seasonal.tolist(), "season0": season_next, "base_rev0": base_rev0,
         "mu": mu, "phi": phi, "sigma_g": sigma_g, "g0": _clip(g.iloc[-1] if len(g) else mu, mu - 0.1, mu + 0.1, mu),
         "t_df": df, "rho_gm": rho_gm,
+        "rec_hazard": reg["hazard"], "rec_exit": reg["exit"], "rec_drift": -beta_gdp * reg["gdp_shortfall_q"],
+        "rec_vol_mult": 1.5, "rec_state0": 1.0 if reg["in_recession_now"] else 0.0, "beta_gdp": beta_gdp,
         "F": F, "v": v, "rho_m": rho_m, "sigma_m": sigma_m, "infl": 0.006,
         "target_margin": target_margin, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
         "dso": dso, "dio": dio, "dpo": dpo, "ddays": ddays, "tau_ar": 1.0, "tau_inv": 2.0, "dep_rate": dep_rate, "capex_ratio": capex_ratio,

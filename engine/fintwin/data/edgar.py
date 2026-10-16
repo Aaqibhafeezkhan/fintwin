@@ -5,6 +5,7 @@ data.sec.gov does not send CORS headers, so this always runs server-side / offli
 """
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import time
@@ -30,9 +31,10 @@ def _user_agent() -> str:
 
 def _get_json(url: str, cache_name: str, max_age_hours: float) -> dict:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    path = CACHE_DIR / cache_name
+    path = CACHE_DIR / (cache_name + ".gz")  # gzip: company facts compress ~8x
     if path.exists() and (time.time() - path.stat().st_mtime) < max_age_hours * 3600:
-        return json.loads(path.read_text(encoding="utf-8"))
+        with gzip.open(path, "rt", encoding="utf-8") as fh:
+            return json.load(fh)
 
     global _last_request
     wait = _MIN_INTERVAL - (time.time() - _last_request)
@@ -42,7 +44,8 @@ def _get_json(url: str, cache_name: str, max_age_hours: float) -> dict:
     _last_request = time.time()
     resp.raise_for_status()
     data = resp.json()
-    path.write_text(json.dumps(data), encoding="utf-8")
+    with gzip.open(path, "wt", encoding="utf-8") as fh:
+        json.dump(data, fh)
     return data
 
 

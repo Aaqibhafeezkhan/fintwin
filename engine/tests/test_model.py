@@ -40,7 +40,7 @@ def test_same_seed_same_result(params):
 
 def test_zero_volatility_is_deterministic_across_paths(params):
     p = {**params, "sigma_g": 0.0, "sigma_m": 0.0, "sigma_r": 0.0, "sigma_fin": 0.0}
-    out = run(p, n_paths=50)
+    out = run(p, levers={"recessions": False}, n_paths=50)
     assert np.ptp(out["cash"], axis=0).max() < 1e-9
 
 
@@ -95,3 +95,24 @@ def test_scenario_shapes():
     assert s["sales_shock"].min() == -0.3
     assert s["sales_shock"][-1] == 0.0
     assert list(s["refi_access"][:4]) == [0, 0, 0, 1]
+
+
+def test_recession_regime_frequency_and_effect(params):
+    eps = draw_shocks(params, 4000, params["horizon"], seed=17)
+    on = run(params, eps=eps)
+    off = run(params, {}, {"recessions": False}, eps=eps)
+    # stationary share of time in recession = h / (h + exit), starting from expansion it is below that
+    share = on["recession"].mean()
+    stationary = params["rec_hazard"] / (params["rec_hazard"] + params["rec_exit"])
+    assert 0.03 < share < stationary + 0.03
+    assert off["recession"].max() == 0
+    assert on["revenue"][:, -1].mean() < off["revenue"][:, -1].mean()
+
+
+def test_sobol_indices_are_sane(params):
+    from fintwin.sensitivity.sobol import sobol
+    rows = sobol(params, n_base=48, n_paths=100, n_boot=20)["rows"]
+    st = {r["knob"]: r["ST"] for r in rows}
+    assert all(0 <= r["S1"] <= 1.2 and 0 <= r["ST"] <= 1.5 for r in rows)
+    # a 0-50% revenue shock must matter more than a 0-60 day inventory build-up for this company
+    assert st["sales_depth"] > st["dio_days"]

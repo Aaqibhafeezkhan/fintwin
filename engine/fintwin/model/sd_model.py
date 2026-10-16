@@ -8,8 +8,8 @@ Loops:   R1 leverage -> coverage -> rating spread -> interest -> cash -> revolve
          B1 cash below floor -> capex, dividend and buyback cuts
          B2 margin squeeze -> delayed fixed-cost cuts
 
-The core is deterministic given pre-drawn standardized shocks `eps` [N, T, 4]
-(revenue, margin, rate, discretionary financing),
+The core is deterministic given pre-drawn shocks `eps` [N, T, 5]
+(revenue, margin, rate, discretionary financing, regime uniform),
 so a second implementation (TypeScript, in the browser) can be checked against it number for number.
 Everything is vectorized across the N Monte Carlo paths.
 """
@@ -22,7 +22,7 @@ from .ratings import ICR_LOWER, SPREADS
 DAYS_Q = 91.25
 OUTPUTS = ["revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver",
            "liquidity", "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity",
-           "issued", "fixed_cost_mult", "debt_issued"]
+           "issued", "fixed_cost_mult", "debt_issued", "recession"]
 
 
 def _rank(icr):
@@ -35,7 +35,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     p:      calibrated parameters (see stochastic.calibrate.calibrate)
     scn:    per-quarter scenario arrays of length T: sales_shock, rate_shift, spread_shift,
             cost_shift, dio_shift, refi_access
-    eps:    standardized shocks [N, T, 4]
+    eps:    shocks [N, T, 5] (4 standardized + 1 uniform for the recession regime)
     levers: CFO responses: cut_capex, cut_payouts, issue_debt, draw_revolver, issue_equity, cut_costs
     """
     N, T, _ = eps.shape
@@ -66,16 +66,25 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     ebitda_hist = np.tile(np.asarray(p["ebitda_ttm0"], f), (N, 1))
     int_hist = np.tile(np.asarray(p["interest_ttm0"], f), (N, 1))
     breached = np.zeros(N, bool)
+    regime = np.full(N, p.get("rec_state0", 0.0), f)  # 1 = economy in recession
+    use_regime = levers.get("recessions", True)
 
     out = {k: np.zeros((N, T), f) for k in OUTPUTS}
     ladder = np.asarray(p["maturities_q"], f)
     seasonal = np.asarray(p["seasonal"], f)
 
     for t in range(T):
-        e_g, e_m, e_r, e_d = eps[:, t, 0], eps[:, t, 1], eps[:, t, 2], eps[:, t, 3]
+        e_g, e_m, e_r, e_d, u = eps[:, t, 0], eps[:, t, 1], eps[:, t, 2], eps[:, t, 3], eps[:, t, 4]
+
+        # --- macro regime: Markov switching between expansion and recession (NBER base rates) ---
+        if use_regime:
+            regime = np.where(regime > 0, np.where(u < p["rec_exit"], 0.0, 1.0), np.where(u < p["rec_hazard"], 1.0, 0.0))
+        else:
+            regime = np.zeros(N, f)
 
         # --- revenue: AR(1) growth in deseasonalized level, then season and scenario shock ---
-        g = p["mu"] + p["phi"] * (g_prev - p["mu"]) + p["sigma_g"] * e_g
+        vol = p["sigma_g"] * (1.0 + (p["rec_vol_mult"] - 1.0) * regime)
+        g = p["mu"] + p["phi"] * (g_prev - p["mu"]) + vol * e_g + p["rec_drift"] * regime
         base = base * np.exp(g)
         g_prev = g
         rev = base * seasonal[(p["season0"] + t) % 4] * (1.0 + scn["sales_shock"][t])
@@ -218,7 +227,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
                        ("revolver", revolver), ("liquidity", liquidity), ("interest", interest), ("icr", icr),
                        ("nd_ebitda", nd_ebitda), ("rating", rank), ("zscore", z), ("health", health),
                        ("breach", breached), ("equity", equity), ("issued", issued), ("fixed_cost_mult", cut_mult),
-                       ("debt_issued", issued_debt)):
+                       ("debt_issued", issued_debt), ("recession", regime)):
             out[k][:, t] = val
 
         # identity residual: assets - liabilities - equity must stay at its initial value (zero by construction)

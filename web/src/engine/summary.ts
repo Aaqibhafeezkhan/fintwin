@@ -21,6 +21,7 @@ function column(m: Float64Array, N: number, T: number, t: number): Float64Array 
 export type Summary = {
   bands: Record<(typeof BAND_VARS)[number], number[][]>; // [band][t]
   pBreachByQ: number[];
+  pRecessionByQ: number[];
   pBreach: number;
   pIcrBelow15: number;
   pSubIG: number;
@@ -48,6 +49,11 @@ export function summarize(o: Outputs, nSample = 40): Summary {
   const pBreachByQ = Array.from({ length: T }, (_, t) => {
     let s = 0;
     for (let n = 0; n < N; n++) s += o.breach[n * T + t];
+    return s / N;
+  });
+  const pRecessionByQ = Array.from({ length: T }, (_, t) => {
+    let s = 0;
+    for (let n = 0; n < N; n++) s += o.recession[n * T + t];
     return s / N;
   });
   const ratingDist = new Array(RATINGS.length).fill(0);
@@ -82,7 +88,7 @@ export function summarize(o: Outputs, nSample = 40): Summary {
   healthMean.forEach((h) => (healthHist[Math.min(Math.floor(h / 5), 19)] += 1 / N));
   const pick = Array.from({ length: Math.min(nSample, N) }, (_, j) => Math.floor((j * N) / Math.min(nSample, N)));
   return {
-    bands, pBreachByQ, pBreach: pBreachByQ[T - 1], pIcrBelow15: icrLow / N, pSubIG: subIG / N, ratingDist,
+    bands, pBreachByQ, pRecessionByQ, pBreach: pBreachByQ[T - 1], pIcrBelow15: icrLow / N, pSubIG: subIG / N, ratingDist,
     healthScore: percentile(hs, 50), healthP10: percentile(hs, 10), healthHist,
     medianQuartersToBreach: breachQ.length ? med(breachQ) : null,
     minLiquidityBands: BANDS.map((b) => percentile(ml, b)),

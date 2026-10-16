@@ -38,7 +38,7 @@ PRESETS = {
                      "knobs": {"dio_days": 30, "cost_pp": 3.0, "cost_duration": 4, "sales_depth": 0.05}},
 }
 
-DEFAULT_LEVERS = {"cut_capex": True, "cut_payouts": True, "issue_debt": True, "draw_revolver": True, "issue_equity": False,
+DEFAULT_LEVERS = {"recessions": True, "cut_capex": True, "cut_payouts": True, "issue_debt": True, "draw_revolver": True, "issue_equity": False,
                   "cut_costs": True}
 
 

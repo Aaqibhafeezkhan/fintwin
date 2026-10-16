@@ -1,0 +1,133 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf]{caption}
+\setlist{nosep,leftmargin=1.4em}
+\input{numbers.tex}
+
+\title{\textbf{FinTwin: A Point-in-Time System-Dynamics Digital Twin\\for Corporate Liquidity Stress Testing from SEC Filings}}
+\author{Spilios Dimakopoulos}
+\date{October 2026 \quad\textbullet\quad Preprint \quad\textbullet\quad Code: \texttt{github.com/SpiliosDimakopoulos/fintwin}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+We present FinTwin, an open-source digital twin of non-financial public companies that converts SEC XBRL filings into a calibrated stock-and-flow model of the firm's financial machinery and stress-tests it with Monte Carlo simulation. Unlike price-forecasting models, the twin simulates how cash, working capital, debt maturities, refinancing and credit quality jointly respond to shocks, through explicit feedback loops between interest coverage, synthetic ratings and market access. The data layer resolves three practical obstacles of XBRL — tag drift, year-to-date reporting and restatements — and produces point-in-time vintages that make backtests free of look-ahead bias. On \NForecasts{} out-of-sample, four-quarter forecasts for \NCompanies{} companies over \NOrigins{} yearly cutoffs, the twin's revenue forecasts improve the continuous ranked probability score on a seasonal random walk by \RevSkill{}; raw interval coverage is below nominal (\RevRawNinety{} for nominal 90\%), and online conformal rescaling, learned only from earlier cutoffs, restores it to \RevConfNinety{}. Calibrated only on filings available on 20 February 2020, the twin's stress health score ranks \XsN{} companies' realized 2020--21 cash burn with Spearman $\rho=\XsRho$ (95\% bootstrap CI \XsCiLo{}--\XsCiHi{}). A TypeScript port runs 5{,}000 paths in the browser and is parity-tested against the Python reference to $10^{-6}$.
+\end{abstract}
+
+\section{Introduction}
+Corporate stress testing asks a conditional question: \emph{if} revenue falls 30\% or debt markets close, does the company run out of cash, and how fast? Answering it requires a model of the firm's internal dynamics — operating leverage, working capital, the maturity wall, the cost and availability of refinancing — rather than a statistical forecast of a single output. System dynamics \cite{forrester1961,sterman2000} provides exactly this language: stocks that accumulate, flows that fill and drain them, and feedback loops whose dominance determines whether a shock fades or spirals.
+
+Three gaps motivate this work. First, public corporate stress tests are either regulator-run for banks or proprietary. Second, open financial models built on SEC data rarely address the data's point-in-time nature, so their backtests silently use restated figures. Third, simulation models are seldom evaluated as probabilistic forecasts with proper scoring rules \cite{gneiting2007}. FinTwin contributes (i) a reproducible XBRL pipeline with point-in-time vintages, (ii) a stock-and-flow twin with explicit reinforcing and balancing loops, calibrated per company, (iii) a large-sample probabilistic evaluation with online conformal calibration \cite{vovk2005,gibbs2021}, and (iv) a cross-sectional test of whether the twin, frozen before COVID-19, identified the companies that would bleed cash.
+
+\section{Data: point-in-time XBRL}
+The SEC \texttt{companyfacts} endpoint returns every tagged value a company has filed. We construct a quarterly panel of 20 fields (income, cash flow, balance sheet, debt components, customer deposits and the debt maturity schedule) with three corrections.
+\begin{enumerate}
+\item \textbf{Tag drift.} Each field has an ordered list of fallback tags merged period by period (e.g.\ \texttt{SalesRevenueNet} $\rightarrow$ \texttt{RevenueFromContractWithCustomer\ldots} after ASC~606). Debt is assembled from current, non-current, commercial-paper and short-term components; operating income is rebuilt as pre-tax income plus interest where untagged.
+\item \textbf{Year-to-date de-cumulation.} 10-Q cash-flow facts are cumulative and Q4 exists only within the 10-K. Facts sharing a start date are differenced (H1$-$Q1, 9M$-$H1, FY$-$9M); 52/53-week fiscal calendars are aligned within $\pm12$ days.
+\item \textbf{Point-in-time vintages.} \texttt{load\_company(ticker, asof)} keeps only facts \emph{filed} on or before \texttt{asof}, and the latest such filing wins, reproducing an analyst's information set and excluding later restatements.
+\end{enumerate}
+Interest rates and recession dates come from FRED. Every number retains the accession number of its source filing.
+
+\section{The twin}
+\subsection{Stocks, flows and loops}
+The model is quarterly and vectorized over Monte Carlo paths. Its stocks are cash, receivables, inventory, payables, customer deposits, net PP\&E, term debt, revolver and equity; a residual ``other net assets'' stock makes the opening balance sheet balance, and the identity $A - L - E = 0$ is preserved on every path and quarter (verified by property-based tests). Demand follows an AR(1) in deseasonalized log growth,
+\begin{equation}
+g_t = \mu + \phi(g_{t-1}-\mu) + \sigma_g\,(1+0.5\,s_t)\,\varepsilon^d_t + \delta\, s_t, \qquad \mathrm{Rev}_t = B_{t-1}e^{g_t}\, S_{q(t)}\,(1+\xi_t),
+\end{equation}
+where $s_t\in\{0,1\}$ is a Markov recession regime with entry hazard and exit probability estimated from NBER recessions since 1947, $\delta=-\beta\,\Delta_{\mathrm{GDP}}$ scales the historical nominal-GDP shortfall by the company's revenue cyclicality $\beta$, and $\xi_t$ is a scenario shock. Cash operating costs are $F(1+\pi)^t c_t + (v + m_t)\mathrm{Rev}_t$, with a mean-reverting margin shock $m_t$ correlated with demand. Receivables and inventory adjust toward days-based targets with first-order delays; payables and customer deposits move immediately, so a revenue collapse triggers deposit refunds.
+
+Four feedback loops govern the response to stress:
+\begin{itemize}
+\item \textbf{R1 leverage--spread spiral.} Trailing interest coverage maps to a synthetic rating and spread \cite{damodaran2026}; refinanced and new debt carry that spread, raising interest and lowering coverage.
+\item \textbf{R2 market-access cliff.} The share of a funding need that can be placed falls from 100\% (coverage $\ge1.5\times$) to 60\% and 30\%, and to zero in a market freeze; unfunded maturities drain cash.
+\item \textbf{B1 cash conservation.} Under stress, payouts stop and capex falls to maintenance.
+\item \textbf{B2 delayed restructuring.} After two quarters below the target margin, fixed costs fall 4\% per quarter to a floor of $-15\%$.
+\end{itemize}
+A \emph{liquidity breach} occurs when cash is negative after the revolver, accessible debt markets and (optionally) equity. A 0--100 health score combines liquidity runway (30\%), synthetic rating (30\%), net debt/EBITDA (20\%) and Altman's Z$''$ \cite{altman1968} (20\%).
+
+\subsection{Calibration}
+All parameters are estimated from the company's own point-in-time history: seasonal factors by median ratio-to-moving-average; trend growth shrunk 50\% toward 1.2\% per quarter; volatilities from the median absolute deviation of AR(1) residuals, with Student-$t$ tails fitted by maximum likelihood; the fixed/variable cost split by penalized least squares shrunk toward a 35\% fixed share when revenue variation cannot identify it; and the debt-rollover share from the two-year debt trend. A Vasicek short rate is fitted to the 3-month Treasury. The few parameters that are assumptions (cash floor, credit facility size where untagged) are labelled as such in the outputs.
+
+\subsection{Scenarios, reverse stress and sensitivity}
+Eight presets (rates $+200$bp, sales $-20\%$, recession, demand freeze, stagflation, credit crunch, supply-chain shock) are expanded into per-quarter shock paths. Reverse stress testing finds the smallest shock giving a 50\% breach probability by bisection under common random numbers. Variance-based Sobol indices \cite{saltelli2010} over the joint six-dimensional scenario space separate first-order effects from interactions (Fig.~\ref{fig:sobol}).
+
+\section{Evaluation}
+\subsection{Large-sample probabilistic calibration}
+For each of \NCompanies{} large non-financial companies and each yearly cutoff (15 February 2013--2025) we calibrate on point-in-time filings and forecast the next four reported quarters with 2{,}000 paths, yielding \NForecasts{} forecasts. We score with the CRPS against a seasonal random walk with historical spread and examine probability integral transform (PIT) histograms. Online split-conformal calibration \cite{vovk2005,gibbs2021} rescales each year's interval half-widths by the empirical quantile of normalized errors from \emph{earlier} cutoffs only.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccccc}
+\toprule
+ & Forecasts & CRPS skill & Beats naive & 90\% cov.\ raw $\rightarrow$ conformal & 50\% cov.\ raw $\rightarrow$ conformal & Regime gain \\
+\midrule
+Revenue & \RevN & \RevSkill & \RevBeat & \RevRawNinety{} $\rightarrow$ \RevConfNinety & \RevRawFifty{} $\rightarrow$ \RevConfFifty & \RevRegimeGain \\
+Cash & \CashN & \CashSkill & \CashBeat & \CashRawNinety{} $\rightarrow$ \CashConfNinety & \CashRawFifty{} $\rightarrow$ \CashConfFifty & \CashRegimeGain \\
+\bottomrule
+\end{tabular}
+\caption{Out-of-sample evaluation. CRPS skill $=1-\mathrm{CRPS}_{\text{twin}}/\mathrm{CRPS}_{\text{naive}}$ (pooled). ``Regime gain'' is the CRPS reduction from adding the recession regime, holding shocks fixed.}
+\label{tab:cal}
+\end{table}
+
+\begin{figure}[h]
+\centering\includegraphics[width=\linewidth]{figures/calibration.pdf}
+\caption{PIT histograms (dashed: uniform) and raw 90\% interval coverage by cutoff year. The U-shape shows raw bands are too narrow; the cutoffs whose window contains the 2020 shock (orange) are the worst.}
+\label{fig:cal}
+\end{figure}
+
+\subsection{Did the twin know who would bleed?}
+We froze every twin at 20 February 2020 and applied the same generic demand-freeze scenario ($-70\%$ revenue for three quarters, markets shut for two). The realized outcome is the worst cumulative free cash flow between 2020Q1 and 2021Q2 as a share of pre-shock annual revenue. The twin's stress health score correlates with the realized outcome at $\rho=\XsRho$ ($p\XsP$, $n=\XsN$, Fig.~\ref{fig:xs}); the median realized burn of the most fragile quintile was \XsQFragile{} of revenue against \XsQRobust{} for the most robust. Because every company receives the same shock, this measures structural fragility, not exposure: Walmart is fragile to a demand collapse it never suffered.
+
+\begin{figure}[h]
+\centering\includegraphics[width=0.72\linewidth]{figures/cross_section.pdf}
+\caption{Pre-COVID twin stress health score versus realized worst cumulative free cash flow in 2020--21.}
+\label{fig:xs}
+\end{figure}
+
+\subsection{Structural test}
+Feeding the realized revenue path into the twin isolates its mechanics from its inability to foresee shocks. For Apple (2020--21) simulated cumulative free cash flow is \$\StructAAPLCovidModel{}B against \$\StructAAPLCovidActual{}B actual (error \StructAAPLCovidErr). For Carnival the twin reproduces the direction and timing of the collapse (\$\StructCCLCovidModel{}B vs.\ \$\StructCCLCovidActual{}B, quarterly correlation \StructCCLCovidCorr) but underestimates burn, because fixed ship-operating costs and deposit refunds exceeded the calibrated structure (Fig.~\ref{fig:ccl}). Boeing and Netflix fail the test for identifiable reasons — program-specific working capital and a content-spending pause — that generic XBRL tags cannot reveal.
+
+\begin{figure}[h]
+\centering\includegraphics[width=\linewidth]{figures/carnival.pdf}
+\caption{Carnival. Left: revenue forecasts from the twin frozen in February 2020 under the baseline and the demand-freeze scenario, against reported revenue. Right: structural test with realized revenue fed in.}
+\label{fig:ccl}
+\end{figure}
+
+\begin{figure}[h]
+\centering\includegraphics[width=\linewidth]{figures/sobol.pdf}
+\caption{Sobol indices of the health score (solid: first-order; light: total). Large gaps between the two indicate interactions — e.g.\ a debt-market freeze matters mainly in combination with a revenue shock.}
+\label{fig:sobol}
+\end{figure}
+
+\section{Implementation}
+The Python reference engine (NumPy) performs calibration, backtests and exports; a line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server and recomputes 5{,}000 paths per slider move. Golden runs exported from Python with identical pre-drawn shocks require agreement to $10^{-6}$ on eleven output series. A build-time language-model analyst writes credit memos from a fact sheet of simulation outputs; a deterministic checker matches every figure in each memo against the fact sheet and flags unmatched figures.
+
+\section{Limitations}
+The twin covers non-financial corporates; filers relying on custom taxonomies cannot be parsed with generic tags. Unconditional fans cannot anticipate regime breaks: Carnival's revenue fell about 99\%, beyond the $-70\%$ preset. Balance-sheet forecasts are weaker than revenue forecasts because financing decisions are discretionary and modelled as calibrated noise. Conformal rescaling corrects average coverage but not conditional coverage in crisis years.
+
+\section{Conclusion}
+A transparent stock-and-flow twin calibrated from public filings, evaluated as a probabilistic forecaster without look-ahead, is useful less as a predictor of the next quarter than as an instrument for ranking structural fragility and exploring conditional scenarios. All code and data snapshots are open.
+
+\paragraph{AI use statement.} Software development, analysis and drafting were carried out with assistance from an AI coding assistant (Claude); the author reviewed the design, results and text.
+
+\begin{thebibliography}{9}\small
+\bibitem{forrester1961} J.~W. Forrester. \emph{Industrial Dynamics}. MIT Press, 1961.
+\bibitem{sterman2000} J.~D. Sterman. \emph{Business Dynamics: Systems Thinking and Modeling for a Complex World}. McGraw-Hill, 2000.
+\bibitem{gneiting2007} T.~Gneiting and A.~E. Raftery. Strictly proper scoring rules, prediction, and estimation. \emph{JASA}, 102(477):359--378, 2007.
+\bibitem{vovk2005} V.~Vovk, A.~Gammerman and G.~Shafer. \emph{Algorithmic Learning in a Random World}. Springer, 2005.
+\bibitem{gibbs2021} I.~Gibbs and E.~Cand\`es. Adaptive conformal inference under distribution shift. \emph{NeurIPS}, 2021.
+\bibitem{saltelli2010} A.~Saltelli et al. Variance based sensitivity analysis of model output. \emph{Computer Physics Communications}, 181(2):259--270, 2010.
+\bibitem{altman1968} E.~I. Altman. Financial ratios, discriminant analysis and the prediction of corporate bankruptcy. \emph{Journal of Finance}, 23(4):589--609, 1968.
+\bibitem{damodaran2026} A.~Damodaran. Ratings, interest coverage ratios and default spread. NYU Stern, January 2026.
+\end{thebibliography}
+\end{document}

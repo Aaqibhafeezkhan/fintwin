@@ -48,7 +48,7 @@ export function makeRng(seed: number) {
 
 export function drawShocks(p: Params, N: number, T: number, seed = 7): Float64Array {
   const rng = makeRng(seed);
-  const eps = new Float64Array(N * T * 4);
+  const eps = new Float64Array(N * T * 5);
   const rho = p.rho_gm, df = p.t_df, tScale = Math.sqrt((df - 2) / df);
   for (let i = 0; i < N * T; i++) {
     const z0 = rng.normal(), z1 = rng.normal(), z2 = rng.normal(), z3 = rng.normal();
@@ -58,7 +58,7 @@ export function drawShocks(p: Params, N: number, T: number, seed = 7): Float64Ar
       const k = tScale / Math.sqrt(w);
       g *= k; m *= k;
     }
-    eps[i * 4] = g; eps[i * 4 + 1] = m; eps[i * 4 + 2] = z2; eps[i * 4 + 3] = z3;
+    eps[i * 5] = g; eps[i * 5 + 1] = m; eps[i * 5 + 2] = z2; eps[i * 5 + 3] = z3; eps[i * 5 + 4] = rng.uniform();
   }
   return eps;
 }

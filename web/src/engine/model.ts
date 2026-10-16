@@ -10,7 +10,9 @@ const DAYS_Q = 91.25;
 const clip = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 const sum4 = (a: number[]) => a[0] + a[1] + a[2] + a[3];
 
-/** eps is a flat [N * T * 4] array (path-major, then quarter, then shock column). */
+export const SHOCK_COLS = 5;
+
+/** eps is a flat [N * T * 5] array (path-major, then quarter, then shock column). */
 export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number, levers: Levers): Outputs {
   const T = p.horizon;
   const out = Object.fromEntries(OUTPUT_KEYS.map((k) => [k, new Float64Array(N * T)])) as unknown as Outputs;
@@ -25,13 +27,19 @@ export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number,
     let base = p.base_rev0, gPrev = p.g0, mDev = 0, rate = p.r0, coupon = p.coupon, cutMult = 1, lowCount = 0;
     const ebitHist = [...p.ebit_ttm0], ebitdaHist = [...p.ebitda_ttm0], intHist = [...p.interest_ttm0];
     let breached = false;
+    let regime = p.rec_state0 ?? 0;
 
     for (let t = 0; t < T; t++) {
-      const o = (n * T + t) * 4;
-      const eG = eps[o], eM = eps[o + 1], eR = eps[o + 2], eD = eps[o + 3];
+      const o = (n * T + t) * SHOCK_COLS;
+      const eG = eps[o], eM = eps[o + 1], eR = eps[o + 2], eD = eps[o + 3], u = eps[o + 4];
+
+      // macro regime: Markov switching between expansion and recession (NBER base rates)
+      if (levers.recessions) regime = regime > 0 ? (u < p.rec_exit ? 0 : 1) : (u < p.rec_hazard ? 1 : 0);
+      else regime = 0;
 
       // revenue: AR(1) growth in deseasonalized level, then season and scenario shock
-      const g = p.mu + p.phi * (gPrev - p.mu) + p.sigma_g * eG;
+      const vol = p.sigma_g * (1 + (p.rec_vol_mult - 1) * regime);
+      const g = p.mu + p.phi * (gPrev - p.mu) + vol * eG + p.rec_drift * regime;
       base = base * Math.exp(g);
       gPrev = g;
       const rev = base * p.seasonal[(p.season0 + t) % 4] * (1 + scn.sales_shock[t]);
@@ -163,7 +171,7 @@ export function simulate(p: Params, scn: Scenario, eps: Float64Array, N: number,
       out.revolver[i] = revolver; out.liquidity[i] = liquidity; out.interest[i] = interest; out.icr[i] = icr;
       out.nd_ebitda[i] = ndEbitda; out.rating[i] = rank; out.zscore[i] = z; out.health[i] = health;
       out.breach[i] = breached ? 1 : 0; out.equity[i] = equity; out.issued[i] = issued;
-      out.fixed_cost_mult[i] = cutMult; out.debt_issued[i] = issuedDebt;
+      out.fixed_cost_mult[i] = cutMult; out.debt_issued[i] = issuedDebt; out.recession[i] = regime;
     }
   }
   return out;

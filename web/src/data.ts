@@ -25,6 +25,26 @@ export type Company = {
   presets: Record<string, PresetSummary>;
   reverse_stress: Record<string, ReverseItem>;
   tornado: { knob: string; value: number; label: string; d_health: number; d_p_breach: number }[];
+  sobol?: { rows: import("./charts/SobolChart").SobolRow[]; output_sd: number; interaction_share: number; n_runs: number; insensitive: boolean };
+};
+
+export type Memo = {
+  ticker: string; generated_by: string; as_of: string; attempts: number; unverified_numbers: number[];
+  fact_sheet: unknown; verdict: "Strong" | "Adequate" | "Watch" | "Weak" | "Distressed"; headline: string; summary: string;
+  key_risks: { risk: string; evidence: string }[]; resilience: string[]; scenario_notes: { scenario: string; note: string }[];
+  watch_list: string[];
+};
+
+type VarCalibration = {
+  n: number; raw: { coverage90: number; coverage50: number }; conformal: { coverage90: number; coverage50: number };
+  conformal_factors: Record<string, { c90: number; c50: number }>; crps_skill_vs_naive: number; median_case_skill: number;
+  share_cases_beating_naive: number; regime_ablation: { crps_with: number; crps_without: number; improvement_pct: number };
+  pit_hist: number[]; by_year: Record<string, { cov90: number; n: number; skill: number }>; by_horizon: Record<string, number>;
+};
+export type Calibration = {
+  n_companies: number; n_forecasts: number; origins: string[]; horizon: number;
+  vars: Record<"revenue" | "cash_like", VarCalibration>;
+  cross_section: { n: number; spearman: number; p_value: number; ci95: number[]; quintile_median_burn: number[]; rows: CrossRow[] };
 };
 
 export type Meta = {
@@ -80,6 +100,8 @@ function getJson<T>(path: string): Promise<T> {
 
 export const loadIndex = () => getJson<Index>("data/index.json");
 export const loadBacktest = () => getJson<Backtest>("data/backtest.json");
+export const loadCalibration = () => getJson<Calibration>("data/calibration.json").catch(() => null);
+export const loadMemo = (t: string) => getJson<Memo>(`data/memos/${t}.json`).catch(() => null);
 
 /** Snapshot first; fall back to the optional local live API (`python -m fintwin.api`) for unseen tickers. */
 export async function loadCompany(ticker: string): Promise<Company> {

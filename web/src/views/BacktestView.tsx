@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Columns } from "../charts/Bars";
 import { FanChart } from "../charts/FanChart";
 import { Scatter } from "../charts/Scatter";
-import { loadBacktest, type Backtest } from "../data";
+import { loadBacktest, loadCalibration, type Backtest, type Calibration } from "../data";
 import { fixed, money, moneyTick, pct, quarterLabel } from "../format";
 import { Card, Stat } from "../ui";
 
@@ -9,6 +10,8 @@ const VARS: Record<string, string> = { revenue: "Revenue", cash_like: "Cash & ST
 
 export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
   const [bt, setBt] = useState<Backtest | null>(null);
+  const [cal, setCal] = useState<Calibration | null>(null);
+  useEffect(() => { loadCalibration().then(setCal); }, []);
   const [err, setErr] = useState<string | null>(null);
   const [ticker, setTicker] = useState("CCL");
   const [cut, setCut] = useState("pre_covid");
@@ -17,9 +20,9 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
   if (err) return <div className="card loading">{err}</div>;
   if (!bt) return <div className="card loading">Loading backtests…</div>;
 
-  const xs = bt.cross_section;
+  const xs = cal ? { rows: cal.cross_section.rows, failed: {} as Record<string, string> } : bt.cross_section;
   const key = "health_stress__realized_min_cum_fcf_pct_rev";
-  const st = xs.stats[key];
+  const st = cal ? { spearman: cal.cross_section.spearman, p_value: cal.cross_section.p_value, n: cal.cross_section.n } : bt.cross_section.stats[key];
   const pts = xs.rows.filter((r) => r.realized_min_cum_fcf_pct_rev != null && Number.isFinite(r.health_stress)).map((r) => ({
     id: r.ticker, x: r.health_stress, y: r.realized_min_cum_fcf_pct_rev as number, label: r.ticker,
     detail: `${r.name} · debt raised ${fixed(r.realized_debt_raise_pct_rev, 0)}% of revenue`,
@@ -41,7 +44,7 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
 
       <div className="grid g4">
         <Stat label="Pre-COVID vulnerability ranking" value={`ρ = ${fixed(st?.spearman, 2)}`}
-          foot={`Spearman, n=${st?.n}, p=${st && st.p_value < 0.001 ? "<0.001" : fixed(st?.p_value, 3)}`}
+          foot={`Spearman, n=${st?.n}, p=${st && st.p_value < 0.001 ? "<0.001" : fixed(st?.p_value, 3)}${cal ? ` · 95% CI ${fixed(cal.cross_section.ci95[0], 2)}–${fixed(cal.cross_section.ci95[1], 2)}` : ""}`}
           hint="Rank correlation between the twin's pre-COVID health score under the demand-freeze scenario and each company's realized worst cumulative free cash flow in 2020–21" />
         <Stat label="Revenue forecasts beating naive baseline" value={pct(agg.revenue?.share_beating_baseline)}
           foot={`median CRPS skill ${pct(agg.revenue?.median_crps_skill)} · ${agg.revenue?.cases} cases`} />
@@ -61,6 +64,8 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           Walmart is the visible miss: fragile to a demand collapse it never suffered. {Object.keys(xs.failed).length > 0 && `Excluded (data): ${Object.keys(xs.failed).join(", ")}.`}
         </p>
       </Card>
+
+      {cal && <CalibrationSection cal={cal} />}
 
       <Card title="Forecast vs reality" sub="Baseline fan (blue), the cutoff's stress scenario (orange) and what was actually reported (dots)"
         right={
@@ -118,5 +123,42 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         </ul>
       </Card>
     </div>
+  );
+}
+
+function CalibrationSection({ cal }: { cal: Calibration }) {
+  const [v, setV] = useState<"revenue" | "cash_like">("revenue");
+  const c = cal.vars[v];
+  const years = Object.keys(c.by_year).sort();
+  return (
+    <Card title={`Large-sample calibration — ${cal.n_forecasts.toLocaleString()} out-of-sample forecasts`}
+      sub={`${cal.n_companies} companies × yearly point-in-time cutoffs ${cal.origins[0].slice(0, 4)}–${cal.origins[cal.origins.length - 1].slice(0, 4)}, ${cal.horizon}-quarter horizon`}
+      right={
+        <div className="chips">
+          <button className="chip" aria-pressed={v === "revenue"} onClick={() => setV("revenue")}>Revenue</button>
+          <button className="chip" aria-pressed={v === "cash_like"} onClick={() => setV("cash_like")}>Cash</button>
+        </div>
+      }>
+      <div className="grid g4">
+        <div><div className="muted">90% band coverage, raw → conformal</div><div className="num" style={{ fontSize: 22, fontWeight: 600 }}>{pct(c.raw.coverage90)} → {pct(c.conformal.coverage90)}</div><div className="muted">target 90%</div></div>
+        <div><div className="muted">50% band coverage, raw → conformal</div><div className="num" style={{ fontSize: 22, fontWeight: 600 }}>{pct(c.raw.coverage50)} → {pct(c.conformal.coverage50)}</div><div className="muted">target 50%</div></div>
+        <div><div className="muted">CRPS skill vs naive baseline</div><div className="num" style={{ fontSize: 22, fontWeight: 600 }}>{pct(c.crps_skill_vs_naive)}</div><div className="muted">twin beats naive in {pct(c.share_cases_beating_naive)} of forecasts</div></div>
+        <div><div className="muted">Recession regime ablation</div><div className="num" style={{ fontSize: 22, fontWeight: 600 }}>{c.regime_ablation.improvement_pct >= 0 ? "−" : "+"}{Math.abs(c.regime_ablation.improvement_pct).toFixed(1)}% CRPS</div><div className="muted">with vs without random recessions</div></div>
+      </div>
+      <div className="grid g2" style={{ marginTop: 16 }}>
+        <div>
+          <h3>PIT histogram</h3>
+          <p className="muted" style={{ marginBottom: 6 }}>Where each realized value fell in its forecast distribution. Flat = calibrated; a U-shape means bands are too narrow.</p>
+          <Columns labels={c.pit_hist.map((_, i) => `${i * 10}`)} values={c.pit_hist} format={(x) => pct(x)} />
+        </div>
+        <div>
+          <h3>Raw 90% coverage by cutoff year</h3>
+          <p className="muted" style={{ marginBottom: 6 }}>Conformal scaling for each year is learned only from earlier years' forecasts.</p>
+          <Columns labels={years.map((y) => `'${y.slice(2)}`)} values={years.map((y) => c.by_year[y].cov90)} format={(x) => pct(x)}
+            highlight={(i) => (years[i] === "2019" || years[i] === "2020" ? "var(--s2)" : "var(--s1)")} />
+          <p className="muted">Orange: cutoffs whose forecast window contains the 2020 shock.</p>
+        </div>
+      </div>
+    </Card>
   );
 }

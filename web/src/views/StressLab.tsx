@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Columns, ProbLine, Tornado } from "../charts/Bars";
 import { FanChart } from "../charts/FanChart";
+import { SobolChart } from "../charts/SobolChart";
 import type { Company, Meta } from "../data";
 import { INVESTMENT_GRADE_MIN_RANK, RATINGS } from "../engine/ratings";
 import { KNOB_DEFAULTS } from "../engine/scenario";
@@ -21,6 +22,7 @@ const SLIDERS: { key: KnobKey; label: string; min: number; max: number; step: nu
   { key: "refi_freeze", label: "Debt markets closed", min: 0, max: 8, step: 1, fmt: (v) => (v ? `${v}q` : "open") },
 ];
 const LEVERS: { key: keyof Levers; label: string; desc: string }[] = [
+  { key: "recessions", label: "Random recessions (macro regime)", desc: "NBER base rates since 1947; off = no-recession world" },
   { key: "cut_payouts", label: "Suspend dividends & buybacks", desc: "when cash or coverage is stressed" },
   { key: "cut_capex", label: "Cut capex to maintenance", desc: "when stressed" },
   { key: "cut_costs", label: "Fixed-cost restructuring", desc: "after 2 quarters of margin squeeze" },
@@ -127,8 +129,8 @@ export function StressLab({ c, meta, preset, setPreset }: { c: Company; meta: Me
             </div>
 
             <div className="grid g2">
-              <Card title="Cumulative probability of a liquidity breach" sub="Share of paths that have run out of cash by each quarter">
-                <ProbLine labels={fut} values={s.pBreachByQ} />
+              <Card title="Cumulative probability of a liquidity breach" sub="Share of paths that have run out of cash by each quarter · dashed: share of paths in a recession">
+                <ProbLine labels={fut} values={s.pBreachByQ} secondary={levers.recessions ? s.pRecessionByQ : undefined} />
               </Card>
               <Card title="Synthetic credit rating at horizon" sub="Damodaran coverage → rating map">
                 <Columns labels={RATINGS} values={s.ratingDist} format={(x) => pct(x)}
@@ -162,6 +164,14 @@ export function StressLab({ c, meta, preset, setPreset }: { c: Company; meta: Me
               format={(x) => (x > 0 ? "+" : "") + x.toFixed(1)} />
           </Card>
         </div>
+        {c.sobol && (
+          <Card title="Global sensitivity (Sobol indices)"
+            sub={`Share of health-score variance explained when all six shocks move at once · ${c.sobol.n_runs.toLocaleString()} model runs · ${pct(c.sobol.interaction_share)} of variance comes from interactions`}>
+            {c.sobol.insensitive
+              ? <p className="muted">This company's health score barely moves across the whole scenario space (s.d. {c.sobol.output_sd.toFixed(1)} points), so the decomposition is mostly noise.</p>
+              : <SobolChart rows={c.sobol.rows} />}
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -36,3 +36,29 @@ def macro_quarterly(asof: str | None = None) -> pd.DataFrame:
     if asof:
         df = df[df.index <= pd.Timestamp(asof)]
     return df.resample("QE").mean().dropna()
+
+
+def recession_regime(asof: str | None = None) -> dict:
+    """Markov recession regime from NBER-dated US recessions (FRED USREC) and nominal GDP, post-1947.
+
+    Returns quarterly entry hazard, exit probability, the nominal-GDP growth shortfall per recession quarter,
+    whether the economy is in recession at `asof`, and quarterly YoY nominal GDP growth for beta estimation.
+    """
+    rec = (fred_series("USREC") * 100).resample("QE").max()
+    gdp = (fred_series("GDP") * 100).resample("QE").last()
+    if asof:
+        rec, gdp = rec[rec.index <= pd.Timestamp(asof)], gdp[gdp.index <= pd.Timestamp(asof)]
+    rec = rec[rec.index >= "1947-01-01"]
+    starts = int(((rec == 1) & (rec.shift(1) == 0)).sum())
+    in_rec = float(rec.sum())
+    yoy = (gdp.apply(lambda x: __import__("math").log(x)).diff(4)).dropna()
+    r = rec.reindex(yoy.index, method="nearest")
+    shortfall_q = float(yoy[r == 0].mean() - yoy[r == 1].mean()) / 4.0
+    return {
+        "hazard": starts / max(len(rec) - in_rec, 1.0),
+        "exit": starts / max(in_rec, 1.0),
+        "gdp_shortfall_q": shortfall_q,
+        "in_recession_now": bool(rec.iloc[-1] == 1) if len(rec) else False,
+        "gdp_yoy": yoy,
+        "n_recessions": starts,
+    }

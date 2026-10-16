@@ -7,6 +7,7 @@ def make_params(**over) -> dict:
         "ticker": "TEST", "name": "Test Co", "last_quarter": "2025-12-31", "horizon": 12, "history_quarters": 40,
         "seasonal": [1.0, 1.0, 1.0, 1.0], "season0": 0, "base_rev0": 1000.0,
         "mu": 0.01, "phi": 0.3, "sigma_g": 0.05, "g0": 0.01, "t_df": 6.0, "rho_gm": 0.3,
+        "rec_hazard": 0.045, "rec_exit": 0.24, "rec_drift": -0.015, "rec_vol_mult": 1.5, "rec_state0": 0.0, "beta_gdp": 1.5,
         "F": 300.0, "v": 0.5, "rho_m": 0.5, "sigma_m": 0.01, "infl": 0.006,
         "target_margin": 0.1, "cut_delay": 2, "cut_speed": 0.04, "cut_floor": 0.85,
         "dso": 45.0, "dio": 60.0, "dpo": 50.0, "ddays": 20.0, "tau_ar": 1.0, "tau_inv": 2.0, "dep_rate": 0.03, "capex_ratio": 0.06, "maint_capex": 0.8,

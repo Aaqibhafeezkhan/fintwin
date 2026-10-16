@@ -3,6 +3,7 @@ import type { Company, Meta } from "../data";
 import { RATINGS } from "../engine/ratings";
 import { fixed, futureQuarters, healthStatus, money, moneyTick, pct, quarterLabel } from "../format";
 import { Card, HealthBar, Stat, StatusPill } from "../ui";
+import { MemoCard } from "./MemoCard";
 
 const PARAM_ROWS: [keyof Company["params"] | string, string, (p: Company["params"]) => string][] = [
   ["mu", "Trend revenue growth", (p) => `${pct(Math.exp(p.mu * 4) - 1, 1)} / yr`],
@@ -72,6 +73,8 @@ export function TwinView({ c, meta, onStress }: { c: Company; meta: Meta; onStre
           <Stat label="Coverage stress" value={pct(base.p_icr_below_1_5)} foot="P(interest coverage < 1.5× in 3y)" />
         </div>
       </div>
+
+      <MemoCard ticker={c.ticker} />
 
       <div className="grid g3">
         <Card title="Revenue" sub="Quarterly, reported then simulated">

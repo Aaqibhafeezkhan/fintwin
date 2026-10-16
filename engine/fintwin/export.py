@@ -24,7 +24,9 @@ from .model.ratings import ICR_LOWER, RATINGS, SPREADS, rating_rank
 from .model.sd_model import simulate
 from .scenarios.presets import DEFAULT_LEVERS, KNOBS, PRESETS, build_scenario
 from .scenarios.reverse_stress import reverse_stress
+from .sensitivity.sobol import sobol
 from .sensitivity.tornado import tornado
+from .backtest.batch import UNIVERSE_XL
 from .stochastic.calibrate import calibrate
 from .stochastic.mc import run, summarize
 from .stochastic.shocks import draw_shocks
@@ -33,6 +35,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "web" / "public" / "data"
 GOLDEN = ROOT / "web" / "src" / "engine" / "__golden__"
 SHOWCASE = ["AAPL", "TSLA", "CCL", "BA", "INTC", "NFLX"]
+SOBOL_SET = set(SHOWCASE) | set(UNIVERSE)  # the original 30-name universe gets global sensitivity
 HORIZON = 12
 
 SECTORS = {
@@ -42,6 +45,19 @@ SECTORS = {
     "AAL": "Airlines", "MAR": "Lodging", "HLT": "Lodging", "MGM": "Casinos", "LVS": "Casinos", "EXPE": "Travel",
     "M": "Department stores", "KSS": "Department stores", "WMT": "Retail", "NKE": "Apparel", "SBUX": "Restaurants",
     "KO": "Beverages", "PG": "Household products", "JNJ": "Healthcare", "CVX": "Energy",
+    "META": "Technology", "NVDA": "Semiconductors", "AVGO": "Semiconductors", "AMD": "Semiconductors",
+    "QCOM": "Semiconductors", "TXN": "Semiconductors", "ORCL": "Software", "ADBE": "Software", "CRM": "Software",
+    "INTU": "Software", "CSCO": "Technology", "IBM": "Technology", "ACN": "IT services", "CMCSA": "Media & cable",
+    "CHTR": "Media & cable", "T": "Telecom", "VZ": "Telecom", "TMUS": "Telecom", "COST": "Retail", "HD": "Retail",
+    "LOW": "Retail", "TGT": "Retail", "MCD": "Restaurants", "PEP": "Beverages", "CL": "Household products",
+    "MDLZ": "Food", "KHC": "Food", "PM": "Tobacco", "MO": "Tobacco", "PFE": "Pharma", "MRK": "Pharma",
+    "ABBV": "Pharma", "LLY": "Pharma", "BMY": "Pharma", "AMGN": "Biotech", "GILD": "Biotech",
+    "UNH": "Health insurance", "CVS": "Healthcare services", "MDT": "Medical devices", "ABT": "Medical devices",
+    "TMO": "Life sciences tools", "DHR": "Life sciences tools", "LMT": "Defense", "RTX": "Aerospace & defense",
+    "GD": "Defense", "DE": "Industrials", "HON": "Industrials", "MMM": "Industrials", "GE": "Industrials",
+    "EMR": "Industrials", "UPS": "Logistics", "FDX": "Logistics", "UNP": "Railroads", "COP": "Energy",
+    "NEE": "Utilities", "DUK": "Utilities", "SO": "Utilities", "LIN": "Chemicals", "DOW": "Chemicals",
+    "BKNG": "Travel", "LUV": "Airlines", "WYNN": "Casinos", "ABNB": "Travel", "UBER": "Mobility",
 }
 
 
@@ -94,7 +110,7 @@ def history_block(c, n: int = 28) -> dict:
             "series": {k: v.tolist() for k, v in series.items()}, "provenance": prov}
 
 
-def company_block(ticker: str, macro: pd.DataFrame, n_paths: int = 5000) -> dict:
+def company_block(ticker: str, macro: pd.DataFrame, n_paths: int = 5000, with_sobol: bool = False) -> dict:
     c = load_company(ticker)
     p = calibrate(c, macro, HORIZON)
     eps = draw_shocks(p, n_paths, HORIZON, seed=7)
@@ -111,13 +127,15 @@ def company_block(ticker: str, macro: pd.DataFrame, n_paths: int = 5000) -> dict
         "edgar_url": f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={c.cik}&type=10-",
         "quality": quality_report(c), "params": p, "history": history_block(c), "presets": presets,
         "reverse_stress": reverse_stress(p), "tornado": tornado(p),
+        **({"sobol": sobol(p)} if with_sobol else {}),
     }
 
 
 def golden_cases(macro: pd.DataFrame) -> None:
     """Small reference runs that the TypeScript engine must reproduce."""
     cases = [("CCL", "pandemic", {}), ("AAPL", "rates_200", {}), ("BA", "credit_crunch", {"issue_equity": True}),
-             ("NFLX", "supply_chain", {"cut_costs": False, "draw_revolver": False})]
+             ("NFLX", "supply_chain", {"cut_costs": False, "draw_revolver": False}), ("INTC", "base", {}),
+             ("TSLA", "recession", {"recessions": False})]
     for ticker, preset, lev in cases:
         p = calibrate(load_company(ticker), macro, HORIZON)
         eps = draw_shocks(p, 64, HORIZON, seed=3)
@@ -127,7 +145,7 @@ def golden_cases(macro: pd.DataFrame) -> None:
         _write(GOLDEN / f"{ticker}_{preset}.json", {
             "params": p, "knobs": knobs, "levers": levers, "eps": eps,
             "expected": {k: out[k] for k in ("revenue", "cash", "debt", "revolver", "interest", "icr", "health",
-                                             "zscore", "breach", "equity", "debt_issued")},
+                                             "zscore", "breach", "equity", "debt_issued", "recession")},
         }, sig=17)
 
 
@@ -151,7 +169,7 @@ def build(tickers: list[str], with_backtests: bool = True) -> None:
     for t in tickers:
         t0 = time.time()
         try:
-            block = company_block(t, macro)
+            block = company_block(t, macro, with_sobol=t in SOBOL_SET)
         except Exception as e:
             print(f"  {t}: FAILED {type(e).__name__}: {e}")
             failed.append(t)
@@ -203,4 +221,4 @@ if __name__ == "__main__":
     elif args:
         build(args, with_backtests=False)
     else:
-        build(list(dict.fromkeys(SHOWCASE + UNIVERSE)))
+        build(list(dict.fromkeys(SHOWCASE + UNIVERSE + UNIVERSE_XL)))

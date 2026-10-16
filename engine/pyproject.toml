@@ -13,6 +13,9 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.29"]
+ai = [
+    "anthropic>=0.70",
+]
 
 [dependency-groups]
 dev = ["pytest>=8", "hypothesis>=6.100", "matplotlib>=3.8"]

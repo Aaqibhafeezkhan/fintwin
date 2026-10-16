@@ -74,12 +74,12 @@ export function Columns({ labels, values, highlight, format }: { labels: string[
 }
 
 /** Thin area/step line for a probability over time (e.g. cumulative breach probability). */
-export function ProbLine({ labels, values, color = "var(--critical)" }: { labels: string[]; values: number[]; color?: string }) {
+export function ProbLine({ labels, values, secondary, color = "var(--critical)" }: { labels: string[]; values: number[]; secondary?: number[]; color?: string }) {
   const [ref, width] = useSize<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const H = 150, M = { l: 40, r: 10, t: 10, b: 22 };
   const x = scaleLinear().domain([0, Math.max(values.length - 1, 1)]).range([M.l, width - M.r]);
-  const top = Math.max(0.1, Math.min(1, Math.ceil(Math.max(...values) * 10 + 0.5) / 10));
+  const top = Math.max(0.1, Math.min(1, Math.ceil(Math.max(...values, ...(secondary ?? [])) * 10 + 0.5) / 10));
   const y = scaleLinear().domain([0, top]).range([H - M.b, M.t]);
   const pts = values.map((v, i) => `${x(i)},${y(v)}`).join(" ");
   return (
@@ -94,12 +94,15 @@ export function ProbLine({ labels, values, color = "var(--critical)" }: { labels
           ))}
           <polygon points={`${x(0)},${y(0)} ${pts} ${x(values.length - 1)},${y(0)}`} fill={color} opacity={0.1} />
           <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />
+          {secondary && <polyline points={secondary.map((v, i) => `${x(i)},${y(v)}`).join(" ")} fill="none" stroke="var(--ink-2)" strokeWidth={1.5} strokeDasharray="4 3" />}
           {labels.map((l, i) => i % Math.ceil(labels.length / 6) === 0 && <text key={i} className="tick" x={x(i)} y={H - 6} textAnchor="middle">{l}</text>)}
           {hover != null && (
             <g>
               <line x1={x(hover)} x2={x(hover)} y1={M.t} y2={H - M.b} stroke="var(--ink-2)" opacity={0.5} />
               <circle cx={x(hover)} cy={y(values[hover])} r={4} fill={color} stroke="var(--surface)" strokeWidth={2} />
-              <text x={Math.min(x(hover) + 8, width - 60)} y={M.t + 12} fontSize={12} fill="var(--ink)" className="num">{labels[hover]}: {(values[hover] * 100).toFixed(1)}%</text>
+              <text x={Math.min(x(hover) + 8, width - 150)} y={M.t + 12} fontSize={12} fill="var(--ink)" className="num">
+                {labels[hover]}: breach {(values[hover] * 100).toFixed(1)}%{secondary ? ` · recession ${(secondary[hover] * 100).toFixed(0)}%` : ""}
+              </text>
             </g>
           )}
           <rect x={M.l} y={0} width={Math.max(width - M.l - M.r, 0)} height={H} fill="transparent"

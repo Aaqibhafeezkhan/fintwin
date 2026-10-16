@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use FinTwin, please cite the accompanying preprint."
+title: "FinTwin: A Point-in-Time System-Dynamics Digital Twin for Corporate Liquidity Stress Testing from SEC Filings"
+authors:
+  - family-names: Dimakopoulos
+    given-names: Spilios
+date-released: 2026-10-16
+license: MIT
+repository-code: "https://github.com/SpiliosDimakopoulos/fintwin"
+keywords: [system dynamics, digital twin, Monte Carlo, stress testing, XBRL, conformal prediction]

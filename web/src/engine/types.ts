@@ -2,6 +2,7 @@ export type Params = {
   ticker: string; name: string; last_quarter: string; horizon: number; history_quarters: number;
   seasonal: number[]; season0: number; base_rev0: number;
   mu: number; phi: number; sigma_g: number; g0: number; t_df: number; rho_gm: number;
+  rec_hazard: number; rec_exit: number; rec_drift: number; rec_vol_mult: number; rec_state0: number; beta_gdp: number;
   F: number; v: number; rho_m: number; sigma_m: number; infl: number;
   target_margin: number; cut_delay: number; cut_speed: number; cut_floor: number;
   dso: number; dio: number; dpo: number; ddays: number; tau_ar: number; tau_inv: number;
@@ -21,7 +22,7 @@ export type Knobs = Partial<{
 }>;
 
 export type Levers = {
-  cut_capex: boolean; cut_payouts: boolean; issue_debt: boolean; draw_revolver: boolean;
+  recessions: boolean; cut_capex: boolean; cut_payouts: boolean; issue_debt: boolean; draw_revolver: boolean;
   issue_equity: boolean; cut_costs: boolean;
 };
 
@@ -33,7 +34,7 @@ export type Scenario = {
 export const OUTPUT_KEYS = [
   "revenue", "ebitda", "ebit", "net_income", "cfo", "fcf", "capex", "cash", "debt", "revolver", "liquidity",
   "interest", "icr", "nd_ebitda", "rating", "zscore", "health", "breach", "equity", "issued", "fixed_cost_mult",
-  "debt_issued",
+  "debt_issued", "recession",
 ] as const;
 export type OutputKey = (typeof OUTPUT_KEYS)[number];
 /** Each output is a row-major [N * T] matrix (path-major). */
