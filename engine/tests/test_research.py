@@ -139,3 +139,17 @@ def test_stats_pipeline_recovers_planted_signal(tmp_path, monkeypatch):
     assert sb["out_of_sample"]["benchmarks_plus_twin"]["auc"] > sb["out_of_sample"]["benchmarks"]["auc"]
     assert res["forecasts"]["revenue"]["ets"]["skill_scaled"] > 0
     assert (tmp_path / "research.json").exists()
+
+
+def test_health_at_open_is_a_valid_score_near_the_first_simulated_quarter(params):
+    from fintwin.research.experiments import health_at_open
+
+    h0 = health_at_open({**params, "sector_tol": 1.0})
+    assert 0 <= h0 <= 100
+    out = simulate(
+        {**params, "sigma_g": 0.0, "sigma_m": 0.0, "sigma_r": 0.0, "sigma_fin": 0.0},
+        build_scenario({}, 4),
+        np.zeros((1, 4, 5)) + [0, 0, 0, 0, 0.99],
+        DEFAULT_LEVERS,
+    )
+    assert abs(out["health"][0, 0] - h0) < 25  # one quarter of steady-state dynamics moves the score only a little

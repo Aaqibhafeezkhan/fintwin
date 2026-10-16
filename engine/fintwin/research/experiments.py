@@ -21,6 +21,7 @@ from ..backtest.batch import _baseline, _realized
 from ..backtest.scoring import crps_gaussian, crps_samples
 from ..data.facts import CompanyData, load_company
 from ..data.fred import macro_quarterly
+from ..model.ratings import rating_rank
 from ..model.sd_model import simulate
 from ..scenarios.presets import DEFAULT_LEVERS, PRESETS, build_scenario
 from ..stochastic.calibrate import calibrate
@@ -55,6 +56,29 @@ def _f(x) -> float | None:
 def _ttm(q: pd.DataFrame, col: str) -> float:
     s = q[col].tail(4)
     return float(s.sum()) if s.notna().sum() == 4 else np.nan
+
+
+def health_at_open(p: dict) -> float:
+    """The twin's health formula evaluated on the opening balance sheet, without any simulation.
+
+    Mirrors the scoring block of model.sd_model (runway, coverage rating, leverage, Altman Z'') with no sector
+    norms, so comparing it with the simulated score isolates what the simulation adds to the formula.
+    """
+    ebit, ebitda = float(np.sum(p["ebit_ttm0"])), float(np.sum(p["ebitda_ttm0"]))
+    interest = float(np.sum(p["interest_ttm0"]))
+    icr = ebit / max(interest, 1e-9)
+    access = 1.0 if icr >= 1.5 else 0.6 if icr >= 0.8 else 0.3
+    burn = max(p["F"] + interest / 4 + p["maturities_q"][0] * (1 - access), 1e-9)
+    s_liq = float(np.clip((p["cash0"] + p["revolver_cap"]) / burn / 8.0, 0.0, 1.0)) * 100
+    s_cov = float(rating_rank(np.array([icr]))[0]) / 14.0 * 100
+    nd = (p["debt0"] - p["cash0"]) / ebitda if ebitda > 0 else 99.0
+    s_lev = float(np.clip((6.0 - nd) / 6.0, 0.0, 1.0)) * 100 if ebitda > 0 else 0.0
+    assets = p["cash0"] + p["ar0"] + p["inv0"] + p["ppe0"] + p["other_net0"] + p["other_liab0"]
+    liabilities = max(assets - p["equity0"], 1e-9)
+    wc = p["cash0"] + p["ar0"] + p["inv0"] - p["ap0"] - p["def0"] + p["wc_other0"]
+    z = (6.56 * wc + 3.26 * p["retained0"] + 6.72 * ebit) / max(assets, 1e-9) + 1.05 * p["equity0"] / liabilities
+    s_solv = float(np.clip((z - 1.1) / 1.5, 0.0, 1.0)) * 100
+    return 0.3 * s_liq + 0.3 * s_cov + 0.2 * s_lev + 0.2 * s_solv
 
 
 def features(c: CompanyData, p: dict) -> dict:
@@ -97,7 +121,11 @@ def features(c: CompanyData, p: dict) -> dict:
     due = float(np.sum(p["maturities_q"][:3]))
     static = (cash + p["revolver_cap"]) / max(3 * need_q + due, 1e-9)
     yoy = np.log(q["revenue"] / q["revenue"].shift(4)).dropna().tail(20)
+    fcf = _ttm(q, "cfo") - _ttm(q, "capex")
     return {
+        "fcf_margin": _f(fcf / rev),
+        "capex_rev": _f(_ttm(q, "capex") / rev),
+        "health_t0": _f(health_at_open(p)),
         "z2": _f(z2),
         "o_score": _f(o),
         "zmijewski": _f(zm),

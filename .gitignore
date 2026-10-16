@@ -14,3 +14,11 @@ tools/*.png
 docs/paper/*.aux
 docs/paper/*.log
 docs/paper/*.out
+
+# paper build outputs
+docs/paper/dist/
+docs/paper/build.log
+docs/paper/*.bbl
+docs/paper/*.blg
+docs/paper/*.fls
+docs/paper/*.fdb_latexmk
