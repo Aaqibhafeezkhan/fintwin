@@ -1,0 +1,28 @@
+[project]
+name = "fintwin"
+version = "0.1.0"
+description = "Corporate financial health digital twin: SEC XBRL -> system dynamics -> Monte Carlo stress tests"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "requests>=2.31",
+  "scipy>=1.11",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.110", "uvicorn>=0.29"]
+
+[dependency-groups]
+dev = ["pytest>=8", "hypothesis>=6.100", "matplotlib>=3.8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fintwin"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
