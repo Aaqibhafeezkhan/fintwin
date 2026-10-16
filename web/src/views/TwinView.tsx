@@ -121,7 +121,7 @@ export function TwinView({ c, meta, index, onStress, onMachine, onOpen, onRewind
       <Section eyebrow="Scenarios" title="How it holds up" note="Each row is a full Monte Carlo run on this company's twin. Choose a row to explore it in the stress lab.">
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Scenario</th><th style={{ width: "36%" }}>Health</th><th className="r">Runs out of cash</th><th className="r">Junk at horizon</th><th className="r">Coverage &lt;1.5×</th><th style={{ width: 24 }}></th></tr></thead>
+            <thead><tr><th>Scenario</th><th style={{ width: "36%" }}>Health</th><th className="r">Runs out of cash</th><th className="r">Junk at horizon</th><th className="r">Coverage &lt;1.5×</th><th style={{ width: 24 }}><span className="sr-only">Open</span></th></tr></thead>
             <tbody>
               {Object.entries(meta.presets).map(([k, v]) => {
                 const s = c.presets[k];

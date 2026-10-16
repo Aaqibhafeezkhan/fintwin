@@ -1,18 +1,20 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { loadCompany, loadIndex, type Company, type Index } from "./data";
 import { prettyName, shortcutLabel } from "./format";
 import { useHashState } from "./hooks";
 import { IconChevron, IconMoon, IconSun, Skeleton, Wordmark } from "./ui";
-import { BacktestView } from "./views/BacktestView";
-import { CompareView } from "./views/CompareView";
-import { MachineView } from "./views/MachineView";
-import { MethodView } from "./views/MethodView";
 import { OverviewView } from "./views/OverviewView";
-import { StressLab } from "./views/StressLab";
-import { TimeMachineView } from "./views/TimeMachineView";
+
+// Secondary views load on demand so the landing page ships less JavaScript.
+const StressLab = lazy(() => import("./views/StressLab").then((m) => ({ default: m.StressLab })));
+const TimeMachineView = lazy(() => import("./views/TimeMachineView").then((m) => ({ default: m.TimeMachineView })));
+const VersusView = lazy(() => import("./views/VersusView").then((m) => ({ default: m.VersusView })));
+const CompareView = lazy(() => import("./views/CompareView").then((m) => ({ default: m.CompareView })));
+const BacktestView = lazy(() => import("./views/BacktestView").then((m) => ({ default: m.BacktestView })));
+const MachineView = lazy(() => import("./views/MachineView").then((m) => ({ default: m.MachineView })));
+const MethodView = lazy(() => import("./views/MethodView").then((m) => ({ default: m.MethodView })));
 import { TwinView } from "./views/TwinView";
-import { VersusView } from "./views/VersusView";
 
 const NAV = [
   ["overview", "Overview"], ["twin", "Company"], ["stress", "Stress lab"], ["time", "Time machine"],
@@ -94,7 +96,7 @@ export default function App() {
             ))}
           </nav>
           <div className="bar-actions">
-            <button className="switcher" onClick={() => setPalette(true)} aria-label="Change company (Ctrl+K)">
+            <button className="switcher" onClick={() => setPalette(true)} title="Change company">
               <span className="tk">{ticker}</span>
               <span className="nm">{entry ? prettyName(entry.name) : "Find a company"}</span>
               <span className="kbd">{shortcutLabel}</span>
@@ -112,7 +114,7 @@ export default function App() {
       <main className="page">
         {error && <p className="callout" style={{ marginBottom: 24 }}>{error}</p>}
         {!index ? <Skeleton h={420} /> : (
-          <>
+          <Suspense fallback={<Skeleton h={520} />}>
             {view === "overview" && <OverviewView index={index} onOpen={(t) => go("twin", t)} onGo={(v) => go(v)} onStress={(p) => go("stress", "CCL", p)} />}
             {COMPANY_VIEWS.has(view) && (!company || company.ticker !== ticker) && !error && <Skeleton h={520} />}
             {view === "twin" && company?.ticker === ticker && (
@@ -128,7 +130,7 @@ export default function App() {
             {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
             {view === "backtest" && <BacktestView onOpen={(t) => go("twin", t)} />}
             {view === "method" && <MethodView />}
-          </>
+          </Suspense>
         )}
       </main>
 

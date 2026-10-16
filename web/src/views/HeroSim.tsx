@@ -19,7 +19,12 @@ export function HeroSim({ meta, onOpen }: { meta: Meta; onOpen: (preset: string)
   const runId = useRef(0);
   const [ref, width] = useSize<HTMLDivElement>();
 
-  useEffect(() => { loadCompany("CCL").then(setC); }, []);
+  // start once the browser is idle, so the first paint and the headline are never delayed by the simulation
+  useEffect(() => {
+    const start = () => loadCompany("CCL").then(setC);
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(start, { timeout: 1200 }); else setTimeout(start, 300);
+  }, []);
   useEffect(() => {
     if (!c) return;
     const id = ++runId.current;

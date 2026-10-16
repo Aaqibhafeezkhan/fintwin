@@ -45,6 +45,7 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
         </div>
       </Section>
 
+      {!(cal && xs) && <div className="skeleton" style={{ height: 120, marginBottom: 8 }} aria-hidden />}
       {cal && xs && (
         <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 8 }}>
           <Metric label="Pre-COVID fragility ranking" value={xs.spearman} format={(v) => `ρ ${v.toFixed(2)}`}
@@ -90,7 +91,7 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Company</th><th style={{ width: "34%" }}></th><th style={{ width: 180 }}>Health today</th><th style={{ width: 180 }}>In a demand freeze</th></tr>
+              <tr><th>Company</th><th style={{ width: "34%" }}><span className="sr-only">Profile</span></th><th style={{ width: 180 }}>Health today</th><th style={{ width: 180 }}>In a demand freeze</th></tr>
             </thead>
             <tbody>
               {Object.keys(FEATURED).filter((t) => index.companies[t]).map((t) => {

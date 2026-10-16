@@ -10,7 +10,7 @@
   --raised: #ffffff;
   --ink: #16150f;
   --ink-2: #4b4840;
-  --muted: #8a867c;
+  --muted: #6e6a61;
   --rule: #e2ded3;
   --rule-2: #cdc7b8;
   --wash: #efece4;
@@ -42,7 +42,7 @@
     --raised: #1e1d1b;
     --ink: #edebe4;
     --ink-2: #b9b5a9;
-    --muted: #807c72;
+    --muted: #949085;
     --rule: #2a2926;
     --rule-2: #3a3834;
     --wash: #1f1e1b;
@@ -305,7 +305,7 @@ tr.clickable:hover td { background: var(--wash); }
 .palette input:focus-visible { box-shadow: none; }
 
 /* ---------- hero terminal ---------- */
-.terminal { --t-bg: #16150f; --t-ink: #f6f4ef; --t-muted: #8f8a7e; --t-rule: rgba(246, 244, 239, 0.12);
+.terminal { min-height: 470px; --t-bg: #16150f; --t-ink: #f6f4ef; --t-muted: #8f8a7e; --t-rule: rgba(246, 244, 239, 0.12);
   background: var(--t-bg); color: var(--t-ink); border-radius: 14px; padding: 16px 18px 14px; box-shadow: 0 30px 60px -30px rgba(22, 21, 15, 0.55); }
 :root[data-theme="dark"] .terminal { --t-bg: #1f1e1b; box-shadow: 0 0 0 1px var(--rule); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .terminal { --t-bg: #1f1e1b; box-shadow: 0 0 0 1px var(--rule); } }
@@ -345,3 +345,5 @@ tr.clickable:hover td { background: var(--wash); }
 .timeline-bar .yr { font-family: var(--font-mono); font-size: 12px; }
 .timeline-bar .mini { width: 10px; border-radius: 2px 2px 0 0; opacity: 0.85; transition: height 0.3s; }
 .timeline-bar .years button[aria-pressed="true"] .mini { opacity: 1; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
