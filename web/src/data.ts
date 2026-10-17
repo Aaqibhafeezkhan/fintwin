@@ -119,3 +119,16 @@ export async function loadCompany(ticker: string): Promise<Company> {
 export type Vintage = { asof: string; last_quarter: string; health: number; health_p10: number; p_breach: number; params: Omit<import("./engine/types").Params, "_sources"> };
 export type Timeline = { ticker: string; series: { dates: string[]; revenue: (number | null)[]; cash: (number | null)[]; debt: (number | null)[] }; vintages: Vintage[] };
 export const loadTimeline = (t: string) => getJson<Timeline>(`data/timeline/${t}.json`).catch(() => null);
+
+export type ChangeDriver = { component: "liq" | "cov" | "lev" | "solv"; label: string; points: number };
+export type Mover = {
+  ticker: string; name: string; sector: string; health_before: number; health_after: number; delta: number;
+  stress_before: number | null; stress_after: number | null; p_breach_before: number; p_breach_after: number;
+  new_filing: boolean; quarter: string | null; drivers: ChangeDriver[];
+};
+export type ChangeWeek = {
+  date: string; previous: string | null; n_companies: number; n_new_filings: number; n_weaker: number; n_stronger: number;
+  movers: Mover[]; new_filings: { ticker: string; name: string; quarter: string | null }[]; added: string[]; removed: string[];
+};
+export type Changes = { threshold: number; weeks: ChangeWeek[] };
+export const loadChanges = () => getJson<Changes>("data/changes.json").catch(() => null);

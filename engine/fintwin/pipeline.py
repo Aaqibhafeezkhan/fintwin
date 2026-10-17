@@ -91,6 +91,8 @@ def build_index() -> dict:
             "showcase": b["ticker"] in SHOWCASE,
             "last_quarter": b["params"]["last_quarter"],
             "matrix": {k: {"health": v["health_score"], "p_breach": v["p_breach"]} for k, v in b["presets"].items()},
+            # baseline score components, so next week's changes feed can say which one moved
+            "components": b["presets"]["base"].get("components"),
         }
     index = {
         "companies": companies,
@@ -101,13 +103,26 @@ def build_index() -> dict:
 
 
 def aggregate() -> None:
+    from . import changes
     from .backtest.batch import aggregate as calib
     from .data.fred import macro_quarterly
     from .export import build_backtests, golden_cases
     from .notes import build as notes
 
+    # last week's index (committed by the weekly workflow) is the baseline for the "what changed" feed
+    prev = json.loads((DATA / "index.json").read_text(encoding="utf-8")) if (DATA / "index.json").exists() else None
     idx = build_index()
     print(f"  index: {len(idx['companies'])} companies")
+    if prev:
+        hist_path = DATA / "changes.json"
+        history = json.loads(hist_path.read_text(encoding="utf-8")) if hist_path.exists() else None
+        week = changes.diff(prev, idx)
+        history = changes.update_history(history, week)
+        _json(hist_path, history)
+        (DATA / "feed.xml").write_text(changes.rss(history), encoding="utf-8")
+        print(
+            f"  changes: {week['n_weaker']} weaker, {week['n_stronger']} stronger, {week['n_new_filings']} new filings"
+        )
     r = calib()
     print(
         f"  calibration: {r['n_companies']} companies, {r['n_forecasts']} forecasts, rho={r['cross_section']['spearman']:.2f}"

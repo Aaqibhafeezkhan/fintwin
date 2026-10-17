@@ -14,10 +14,11 @@ const CompareView = lazy(() => import("./views/CompareView").then((m) => ({ defa
 const BacktestView = lazy(() => import("./views/BacktestView").then((m) => ({ default: m.BacktestView })));
 const MachineView = lazy(() => import("./views/MachineView").then((m) => ({ default: m.MachineView })));
 const MethodView = lazy(() => import("./views/MethodView").then((m) => ({ default: m.MethodView })));
+const ChangesView = lazy(() => import("./views/ChangesView").then((m) => ({ default: m.ChangesView })));
 import { TwinView } from "./views/TwinView";
 
 const NAV = [
-  ["overview", "Overview"], ["twin", "Company"], ["stress", "Stress lab"], ["time", "Time machine"],
+  ["overview", "Overview"], ["changes", "This week"], ["twin", "Company"], ["stress", "Stress lab"], ["time", "Time machine"],
   ["versus", "Compare"], ["compare", "Matrix"], ["backtest", "Evidence"], ["method", "Method"],
 ] as const;
 const VIEWS = new Set<string>([...NAV.map(([k]) => k), "machine"]);
@@ -67,7 +68,7 @@ export default function App() {
       if (e.key === "?") setHelp((h) => !h);
       else if (e.key === "Escape") setHelp(false);
       else if (e.key === "t") toggleThemeRef.current();
-      else if (/^[1-8]$/.test(e.key)) navRef.current(NAV[+e.key - 1][0]);
+      else if (/^[1-9]$/.test(e.key) && NAV[+e.key - 1]) navRef.current(NAV[+e.key - 1][0]);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -130,6 +131,7 @@ export default function App() {
             {view === "compare" && <CompareView index={index} onOpen={(t) => go("twin", t)} />}
             {view === "backtest" && <BacktestView onOpen={(t) => go("twin", t)} />}
             {view === "method" && <MethodView />}
+            {view === "changes" && <ChangesView onOpen={(t) => go("twin", t)} />}
           </Suspense>
         )}
       </main>
@@ -139,7 +141,7 @@ export default function App() {
           <div className="palette fade-in" style={{ padding: "18px 20px" }} role="dialog" aria-label="Keyboard shortcuts" onMouseDown={(e) => e.stopPropagation()}>
             <div className="eyebrow" style={{ marginBottom: 12 }}>Keyboard shortcuts</div>
             <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 18px", margin: 0 }}>
-              {[[`${shortcutLabel} or /`, "Find a company"], ["1 – 8", NAV.map(([, l]) => l).join(" · ")], ["T", "Toggle light and dark"], ["?", "Show or hide this panel"], ["Esc", "Close"]].map(([k, d]) => (
+              {[[`${shortcutLabel} or /`, "Find a company"], [`1 – ${NAV.length}`, NAV.map(([, l]) => l).join(" · ")], ["T", "Toggle light and dark"], ["?", "Show or hide this panel"], ["Esc", "Close"]].map(([k, d]) => (
                 <Fragment key={k}><dt><span className="kbd">{k}</span></dt><dd className="sub" style={{ margin: 0 }}>{d}</dd></Fragment>
               ))}
             </dl>

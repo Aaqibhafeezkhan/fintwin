@@ -98,6 +98,7 @@ jobs:
           git config user.name "SpiliosDimakopoulos"
           git config user.email "spiliosdimakk@gmail.com"
           git add web/public/data/build_report.json web/public/data/calibration.json web/public/data/index.json
+          git add web/public/data/changes.json web/public/data/feed.xml 2>/dev/null || true
           git diff --cached --quiet || git commit -m "data: weekly refresh $(date -u +%Y-%m-%d)"
           git push || echo "push skipped"
 
