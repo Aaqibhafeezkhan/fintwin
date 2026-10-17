@@ -26,9 +26,9 @@ const html = `<!doctype html><html><head><meta charset="utf-8">
 </style></head><body>
 <div>
  <div class="mark"><svg width="30" height="30" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#16150f"/><path d="M7 20.5c3-0.2 4.6-7 8-7s4.6 4.2 10 3.5" stroke="#f6f4ef" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>FinTwin</div>
- <div class="eyebrow">392 S&amp;P 500 companies · refreshed weekly</div>
+ <div class="eyebrow">390+ S&amp;P 500 companies · refreshed weekly</div>
  <h1>What happens to a company's cash when the world breaks?</h1>
- <div class="stats"><div><b>ρ 0.39</b>pre-COVID ranking, n=331</div><div><b>30,414</b>out-of-sample forecasts</div><div><b>+28%</b>vs naive</div></div>
+ <div class="stats"><div><b>ρ 0.30</b>where cash departs from simple rules, 2014–23</div><div><b>30,414</b>out-of-sample forecasts</div><div><b>+28%</b>vs naive</div></div>
 </div>
 <img src="data:image/png;base64,${png}">
 </body></html>`;
