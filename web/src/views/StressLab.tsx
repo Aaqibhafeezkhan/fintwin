@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { AskTwin } from "../ask/AskTwin";
+import { describe, type Scenario } from "../ask/parse";
 import { Columns, ProbLine, Tornado } from "../charts/Bars";
 import { FanChart, FanLegend } from "../charts/FanChart";
 import { ShockPreview } from "../charts/ShockPreview";
@@ -54,6 +56,17 @@ function decode(query: string, meta: Meta, preset: string): { knobs: Knobs; leve
   for (const name of (q.get("on") ?? "").split(",").filter(Boolean)) if (name in levers) levers[name as keyof Levers] = true;
   return { knobs, levers };
 }
+/** A readable description of a custom scenario, e.g. "Revenue down 40% for 4 quarters; debt markets closed for 2 quarters." */
+function customDescription(k: Required<Knobs>, levers: Levers, meta: Meta): string {
+  const kd: Partial<Required<Knobs>> = Object.fromEntries((Object.keys(KNOB_DEFAULTS) as KnobKey[]).filter((n) => k[n] !== KNOB_DEFAULTS[n]).map((n) => [n, k[n]]));
+  if (kd.sales_depth) { kd.sales_duration = k.sales_duration; kd.sales_recovery = k.sales_recovery; }
+  if (kd.spread_bp) kd.spread_duration = k.spread_duration;
+  if (kd.cost_pp) kd.cost_duration = k.cost_duration;
+  const lv = Object.fromEntries((Object.keys(levers) as (keyof Levers)[]).filter((n) => levers[n] !== meta.levers[n]).map((n) => [n, levers[n]]));
+  const lines = describe({ knobs: kd, levers: lv });
+  return lines.length ? `${lines.join("; ").replace(/^./, (ch) => ch.toUpperCase())}.` : "Your own combination of shocks.";
+}
+
 function encode(knobs: Knobs, levers: Levers, meta: Meta, preset: string): string {
   const ref = { ...KNOB_DEFAULTS, ...(meta.presets[preset]?.knobs ?? {}) };
   const k = { ...KNOB_DEFAULTS, ...knobs };
@@ -67,8 +80,9 @@ function encode(knobs: Knobs, levers: Levers, meta: Meta, preset: string): strin
   return q.toString().replace(/%3A/g, ":").replace(/%3B/g, ";").replace(/%2C/g, ",");
 }
 
-export function StressLab({ c, meta, preset: initialPreset, query = "", setPreset: syncUrl }: {
+export function StressLab({ c, meta, preset: initialPreset, query = "", setPreset: syncUrl, names = {}, onCompany }: {
   c: Company; meta: Meta; preset: string; query?: string; setPreset: (p: string, q: string) => void;
+  names?: Record<string, string>; onCompany?: (ticker: string, query: string) => void;
 }) {
   // Local state drives the UI; the URL mirrors it so any scenario can be shared as a link.
   const startPreset = meta.presets[initialPreset] || initialPreset === "custom" ? initialPreset : "pandemic";
@@ -90,7 +104,16 @@ export function StressLab({ c, meta, preset: initialPreset, query = "", setPrese
   const isBase = Object.entries(k).every(([kk, v]) => v === KNOB_DEFAULTS[kk as KnobKey]);
   const s = stress.summary, b = base.summary;
   const title = meta.presets[preset]?.label ?? "Custom scenario";
-  const desc = meta.presets[preset]?.desc ?? "Your own combination of shocks.";
+  const desc = meta.presets[preset]?.desc ?? customDescription(k, levers, meta);
+
+  // "Ask the twin": a described crisis replaces the scenario (or opens the named company with it)
+  const applyAsk = (sc: Scenario) => {
+    const lv = { ...meta.levers, ...sc.levers };
+    if (sc.ticker && sc.ticker !== c.ticker && onCompany) { onCompany(sc.ticker, encode(sc.knobs as Knobs, lv, meta, "custom")); return; }
+    setPreset("custom");
+    setKnobs({ ...sc.knobs });
+    setLevers(lv);
+  };
 
   const choose = (key: string) => { setPreset(key); setKnobs({ ...meta.presets[key].knobs }); };
   const layers = (key: "cash" | "health" | "revenue" | "icr") => {
@@ -147,6 +170,7 @@ export function StressLab({ c, meta, preset: initialPreset, query = "", setPrese
       </aside>
 
       <div>
+        <AskTwin names={names} onApply={applyAsk} />
         <div style={{ marginBottom: 22 }}>
           <div className="eyebrow">{c.ticker} · stress lab</div>
           <h1 className="display h-l" style={{ margin: "8px 0 6px" }}>{title}</h1>

@@ -1,4 +1,4 @@
-import { Fragment, lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { CommandPalette } from "./CommandPalette";
 import { loadCompany, loadIndex, type Company, type Index } from "./data";
 import { prettyName, shortcutLabel } from "./format";
@@ -85,6 +85,7 @@ export default function App() {
   toggleThemeRef.current = toggleTheme;
   const openCompany = (t: string) => go(COMPANY_VIEWS.has(view) ? view : "twin", t);
   const entry = index?.companies[ticker];
+  const names = useMemo(() => Object.fromEntries(Object.entries(index?.companies ?? {}).map(([t2, e]) => [t2, prettyName(e.name)])), [index]);
 
   return (
     <div className="app">
@@ -123,7 +124,8 @@ export default function App() {
             )}
             {view === "stress" && company?.ticker === ticker && (
               <StressLab key={ticker} c={company} meta={index.meta} preset={presetRaw ?? "pandemic"} query={query}
-                setPreset={(p, q) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}${q ? `?${q}` : ""}`)} />
+                setPreset={(p, q) => history.replaceState(null, "", `#${["stress", ticker, p].join("/")}${q ? `?${q}` : ""}`)}
+                names={names} onCompany={(t2, q) => setRoute(`stress/${t2}/custom${q ? `?${q}` : ""}`)} />
             )}
             {view === "machine" && company?.ticker === ticker && <MachineView c={company} meta={index.meta} />}
             {view === "time" && company?.ticker === ticker && <TimeMachineView key={ticker} ticker={ticker} name={company.name} meta={index.meta} />}
