@@ -7,6 +7,7 @@
 ![mypy](https://img.shields.io/badge/types-mypy-2a6db2)
 ![lighthouse](https://img.shields.io/badge/lighthouse-94%20%C2%B7%20100%20%C2%B7%20100%20%C2%B7%20100-brightgreen)
 ![licence](https://img.shields.io/badge/licence-MIT-lightgrey)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23434606.svg)](https://doi.org/10.5281/zenodo.23434606)
 
 **[Live dashboard](https://spiliosdimakopoulos.github.io/fintwin/)** · **[Paper (PDF)](docs/paper/fintwin.pdf)** · [Methodology](docs/METHODOLOGY.md) · [Backtest report](docs/BACKTEST.md) · [Carnival case study](docs/CASE_STUDY_CCL.md)
 

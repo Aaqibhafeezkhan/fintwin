@@ -45,6 +45,8 @@ uv run python scripts/arxiv_bundle.py         # -> docs/paper/dist/fintwin-arxiv
 
 **JEL:** G32, G33, G17, C53, C63
 
-**arXiv comments field:** `21 pages. Code, data and an interactive version: https://github.com/SpiliosDimakopoulos/fintwin`
+**arXiv comments field:** `21 pages. Code and data: https://github.com/SpiliosDimakopoulos/fintwin, archived at doi:10.5281/zenodo.23434606`
+
+**Zenodo DOI (done):** concept DOI 10.5281/zenodo.23434606 (always the latest version); v1.0.0 is 10.5281/zenodo.23434607.
 
 **Abstract (plain text):** see `abstract.txt` next to this file; it is regenerated together with the paper.

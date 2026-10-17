@@ -22,7 +22,7 @@
 \newcommand{\twin}{FinTwin}
 
 \title{\textbf{What Can a Financial Digital Twin Tell Us?\\Simulating Corporate Liquidity Stress from SEC Filings,\\with Out-of-Sample Evidence from COVID-19 and a Decade of Data}}
-\author{Spilios Dimakopoulos\thanks{Independent researcher. E-mail: \href{mailto:spiliosdimakk@gmail.com}{spiliosdimakk@gmail.com}. Code, data snapshots and an interactive implementation: \url{https://github.com/SpiliosDimakopoulos/fintwin}.}}
+\author{Spilios Dimakopoulos\thanks{Independent researcher. E-mail: \href{mailto:spiliosdimakk@gmail.com}{spiliosdimakk@gmail.com}. Code and data: \url{https://github.com/SpiliosDimakopoulos/fintwin}, archived at \href{https://doi.org/10.5281/zenodo.23434606}{doi:10.5281/zenodo.23434606}.}}
 \date{October 2026}
 
 \begin{document}
@@ -289,7 +289,7 @@ Raw predictive intervals are too narrow (Figure~\ref{fig:cal}). In the weekly va
 A transparent stock-and-flow model of the firm, calibrated automatically from public filings and evaluated without look-ahead, does not tell us in advance who a crisis will hit: once persistence is controlled for, neither it nor the classic distress scores ranked the 2020 shock. What it does is identify where a proportional rule misjudges the cash response to a given shock, consistently across a decade of out-of-sample tests, and forecast revenue better than standard time-series benchmarks. That is the job a stress test is for. Because the twin runs in a web browser and every number in this paper is generated from open code, the tests can be repeated and extended --- with market-based inputs, industry-specific scenarios and outcomes such as defaults --- by anyone.
 
 \section*{Data and code availability}
-All code, the point-in-time data pipeline, the research experiments and the scripts that generate every table, figure and number in this paper are available at \url{https://github.com/SpiliosDimakopoulos/fintwin} under the MIT licence, with an archived version on Zenodo. The experiments run on free GitHub-hosted runners (\texttt{.github/workflows/research.yml}). An interactive version of the twin, which recomputes 5{,}000 Monte Carlo paths in the browser, is at \url{https://spiliosdimakopoulos.github.io/fintwin/}. All inputs are public: SEC EDGAR XBRL filings and FRED.
+All code, the point-in-time data pipeline, the research experiments and the scripts that generate every table, figure and number in this paper are available at \url{https://github.com/SpiliosDimakopoulos/fintwin} under the MIT licence, and archived on Zenodo (\href{https://doi.org/10.5281/zenodo.23434606}{doi:10.5281/zenodo.23434606}). The experiments run on free GitHub-hosted runners (\texttt{.github/workflows/research.yml}). An interactive version of the twin, which recomputes 5{,}000 Monte Carlo paths in the browser, is at \url{https://spiliosdimakopoulos.github.io/fintwin/}. All inputs are public: SEC EDGAR XBRL filings and FRED.
 
 \section*{Use of AI tools}
 Software development, data analysis and drafting were assisted by an AI coding assistant (Claude, Anthropic), and an AI-generated referee report was used to identify weaknesses in an earlier version. The author designed the study, reviewed all code, results and text, and takes full responsibility for the content.
