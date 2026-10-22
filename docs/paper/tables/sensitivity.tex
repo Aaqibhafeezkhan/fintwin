@@ -1,0 +1,22 @@
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+ & Median error & \multicolumn{2}{c}{Incremental $\rho$ against} & \multicolumn{2}{c}{Baseline score AUC} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Assumption & (pp of revenue) & 4q margin & regression & Bankruptcy & Severe burn \\
+\midrule
+As specified & 11.3 & 0.33 & 0.39 & 0.84 & 0.73 \\
+\addlinespace
+Credit line 4\% of revenue (untagged) & 11.3 & 0.33 & 0.39 & 0.84 & 0.73 \\
+Credit line 15\% of revenue (untagged) & 11.3 & 0.33 & 0.38 & 0.84 & 0.74 \\
+Fixed-cost prior 20\% & 9.9 & 0.35 & 0.43 & 0.84 & 0.75 \\
+Fixed-cost prior 50\% & 13.3 & 0.31 & 0.34 & 0.83 & 0.72 \\
+Prior weight 0.5 (data dominate) & 10.0 & 0.35 & 0.41 & 0.84 & 0.75 \\
+Prior weight 8 (prior dominates) & 12.4 & 0.32 & 0.37 & 0.83 & 0.72 \\
+No shrinkage of growth and cyclicality & 11.3 & 0.33 & 0.39 & 0.84 & 0.72 \\
+Market access cut below 2.5$\times$ / 1.5$\times$ coverage & 11.3 & 0.33 & 0.39 & 0.84 & 0.73 \\
+Market access cut below 1.0$\times$ / 0.5$\times$, milder cuts & 11.4 & 0.33 & 0.38 & 0.84 & 0.73 \\
+Faster, deeper restructuring & 11.0 & 0.33 & 0.40 & 0.84 & 0.73 \\
+Rating spreads at the cutoff's Baa spread & 11.4 & 0.32 & 0.38 & 0.84 & 0.73 \\
+\bottomrule
+\end{tabular}}

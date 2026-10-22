@@ -30,9 +30,9 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         <p className="lede">Every test below is out of sample and point-in-time. Each twin is calibrated only on facts
           <i> filed</i> before its test date, so later restatements stay invisible, and nothing was tuned on the outcomes.</p>
         <figure style={{ margin: "24px 0 0" }}>
-          <img src={`${import.meta.env.BASE_URL}findings.png`} width={1900} height={838} loading="lazy"
+          <img src={`${import.meta.env.BASE_URL}findings.png`} width={2136} height={838} loading="lazy"
             style={{ width: "100%", height: "auto", borderRadius: 6, border: "1px solid var(--rule)" }}
-            alt="Left: rank correlation with 2020-21 cash burn. The twin reaches 0.40, Altman Z'' 0.31, the trailing free-cash-flow margin 0.68; for burn caused by the shock, the twin and Altman are near zero. Right: in every year 2014 to 2023, the twin explains where cash departs from a margin rule, pooled correlation 0.30." />
+            alt="Left: out-of-sample error of eight-quarter operating cash flow given the realized revenue. The 16-quarter margin is more accurate than the twin alone; adding a small fraction of the twin's departure to the margin lowers its error. Right: AUC for a bankruptcy petition within two years across all non-financial SEC filers. The twin, its own scoring formula without simulation and the Ohlson score are level." />
           <figcaption className="muted" style={{ marginTop: 8, fontSize: 13 }}>The research paper in one picture.{" "}
             <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</figcaption>
         </figure>
@@ -53,10 +53,12 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           labelIds={["CCL", "RCL", "NCLH", "BA", "AAL", "MSFT", "GOOGL", "WMT", "LVS", "EXPE", "WYNN"]} onClick={onOpen} />
         <p className="muted" style={{ marginTop: 10, maxWidth: 760 }}>Every company receives the same generic shock, so this measures structural fragility, not who the
           pandemic actually hit. Walmart is the visible miss: fragile to a demand collapse it never suffered.</p>
-        <p className="muted" style={{ marginTop: 6, maxWidth: 760 }}>The research paper adds harder controls. A trailing free-cash-flow
-          margin ranks this outcome better (ρ ≈ 0.68), and against each company's own pre-2020 run-rate no balance-sheet model,
-          the twin included, ranks the shock. The twin's robust strength is transmission: fed the revenue that actually happened, it
-          identifies where a margin rule misjudges cash flow, in every year from 2014 to 2023.{" "}
+        <p className="muted" style={{ marginTop: 6, maxWidth: 760 }}>The research paper tests this on every non-financial SEC filer
+          (5,220 companies, including those that later disappeared) and a census of 377 bankruptcy petitions. Most of the twin's
+          ranking skill is persistence: a trailing free-cash-flow margin ranks 2020 cash burn better, and the twin's own scoring
+          formula, without any simulation, predicts bankruptcies as well as the simulated score. Fed the revenue that actually
+          happened, the twin alone is less accurate than a 16-quarter cash-flow margin, but its departures from the margin carry
+          information the margin lacks: adding about 15% of them lowers the out-of-sample error by about 3.5%.{" "}
           <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</p>
       </Section>
 

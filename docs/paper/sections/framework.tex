@@ -31,6 +31,12 @@ Updating & periodic re-estimation & daily & manual & annual & weekly, automatic 
 \end{tabular}
 \end{table}
 
+\subsection{Further related work}
+\paragraph{Corporate liquidity.} Firms hold cash and credit lines to insure against cash-flow shortfalls \citep{opler1999,almeida2004,bates2009,sufi2009}. The 2020 shock offered a natural experiment. \citet{fahlenbrach2021} show that firms with more financial flexibility before the pandemic suffered smaller stock-price declines, \citet{ramelli2020} and \citet{ding2021} document that pre-pandemic leverage and cash holdings shaped stock returns, and \citet{acharya2020} describe the dash for cash through credit-line drawdowns and bond issuance by firms at risk of downgrade. These studies explain market reactions with balance-sheet characteristics. We use the same episode to evaluate a model that was not estimated on it, and we measure outcomes in cash rather than in prices.
+
+\paragraph{Forecast evaluation.} We evaluate the twin's predictive distributions with the continuous ranked probability score and probability integral transform histograms \citep{gneiting2007,gneiting2007b}, compare predictive accuracy with Diebold--Mariano tests \citep{diebold1995} using clustered standard errors \citep{petersen2009,cameron2008}, benchmark against exponential smoothing in state-space form \citep{hyndman2008}, and recalibrate intervals with online split-conformal prediction \citep{vovk2005,gibbs2021}.
+
+
 \subsection{Hypotheses}
 The design of Section~\ref{sec:design} tests three hypotheses, each against rivals that see the same information.
 
