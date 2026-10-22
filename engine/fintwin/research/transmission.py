@@ -261,10 +261,12 @@ def hybrid(df: pd.DataFrame, var: str, firms: np.ndarray, b: int) -> dict:
     yrs = df["year"].to_numpy()
     pairs = {
         "N1+T1": ("N1", "T1"),
-        "N6+T1": ("N6", "T1"),
+        "N3+T1": ("N3", "T1"),
         "N4+T1": ("N4", "T1"),
-        "N1+N6": ("N1", "N6"),
+        "N6+T1": ("N6", "T1"),
         "N1+N3": ("N1", "N3"),
+        "N1+N6": ("N1", "N6"),
+        "N3+N6": ("N3", "N6"),
     }
     preds: dict[str, np.ndarray] = {}
     lambdas: dict[str, dict[int, float]] = {}
@@ -300,11 +302,13 @@ def hybrid(df: pd.DataFrame, var: str, firms: np.ndarray, b: int) -> dict:
     f = firms[test]
     for a, c in (
         ("N1+T1", "N1"),
-        ("N6+T1", "N6"),
+        ("N3+T1", "N3"),
+        ("N3+T1", "N3+N6"),
         ("N4+T1", "N4"),
+        ("N6+T1", "N6"),
         ("N1+T1", "N1+N6"),
-        ("N6+T1", "N1+N6"),
         ("T1", "N1"),
+        ("T1", "N3"),
         ("T1", "N6"),
     ):
         d = S.boot(lambda u, v, t: mae(u, t) - mae(v, t), [preds[a][test], preds[c][test], real[test]], f, b=b)
