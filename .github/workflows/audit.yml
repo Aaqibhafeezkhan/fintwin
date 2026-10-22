@@ -1,0 +1,22 @@
+# Completeness audit of the quarterly panels (fiscal calendars, missing quarters, latest filings), before and after
+# the 52/53-week fix. Manual only; writes docs/paper/data_audit.json as an artifact.
+name: audit
+on: { workflow_dispatch: {} }
+permissions: { contents: read }
+env:
+  SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+  FINTWIN_FACTS_MAX_AGE: "100000"
+  PYTHONWARNINGS: ignore
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    defaults: { run: { working-directory: engine } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/cache/restore@v4
+        with: { path: engine/.cache/edgar, key: "edgar-research", restore-keys: "edgar-" }
+      - run: uv sync && uv run python scripts/data_audit.py
+      - uses: actions/upload-artifact@v4
+        with: { name: data-audit, path: docs/paper/data_audit.json }
