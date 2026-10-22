@@ -25,8 +25,10 @@ jobs:
       - uses: actions/cache/restore@v4
         with: { path: engine/.cache/edgar, key: "edgar-research", restore-keys: "edgar-" }
       - run: uv sync
-      - run: uv run python -m fintwin.research shard ${{ matrix.i }} $SHARDS
+      # stop cleanly before the job limit so finished companies are always uploaded
+      - run: timeout 320m uv run python -m fintwin.research shard ${{ matrix.i }} $SHARDS || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with: { name: "research-${{ matrix.i }}", include-hidden-files: true, path: engine/.cache/research/ }
   stats:
     needs: shard
