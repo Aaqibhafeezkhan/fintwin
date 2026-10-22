@@ -156,7 +156,7 @@ def add_shrunk(df: pd.DataFrame) -> pd.DataFrame:
             past = df["year"] < y
             if past.sum() >= 100:
                 err = {w: np.nanmedian(np.abs(pred[w][past] - df.loc[past, f"real_{var}"])) for w in weights}
-                w = min(err, key=err.get)
+                w = min(err, key=lambda k: err[k])
             else:
                 w = 0.5
             chosen[int(y)] = float(w)
@@ -316,7 +316,7 @@ def by_year(df: pd.DataFrame, var: str) -> dict:
     out = {}
     for y, g in df.groupby("year"):
         real = g[f"real_{var}"].to_numpy(float)
-        cell = {"n": int(len(g))}
+        cell: dict[str, float] = {"n": int(len(g))}
         for k, base in (("T1", "N1"), ("N3", "N1"), ("N4", "N1"), ("N6", "N1"), ("T1", "N6"), ("T1", "N4")):
             x, bx = g[f"{k}_{var}"].to_numpy(float), g[f"{base}_{var}"].to_numpy(float)
             cell[f"{k}|{base}"] = S.rho(x - bx, real - bx)
@@ -342,7 +342,7 @@ def heterogeneity(df: pd.DataFrame, var: str) -> dict:
         for lev in gr.cat.categories:
             m = (gr == lev).to_numpy()
             r = real[m]
-            cell = {"n": int(m.sum())}
+            cell: dict[str, float] = {"n": int(m.sum())}
             for k, base in (("T1", "N1"), ("T1", "N6"), ("N3", "N1"), ("N6", "N1")):
                 x, bx = df[f"{k}_{var}"].to_numpy(float)[m], df[f"{base}_{var}"].to_numpy(float)[m]
                 cell[f"{k}|{base}"] = S.rho(x - bx, r - bx)
@@ -392,7 +392,7 @@ def _oos_events(df: pd.DataFrame, preds: dict, y: np.ndarray, firms: np.ndarray,
     yrs = df["year"].to_numpy()
     # percentile ranks within each cutoff year: the cross-section an analyst would have seen on that day
     X = pd.DataFrame({k: _pct_by(preds[k], yrs) for k in ("static", "formula", "fcf_margin", "twin")}).fillna(0.5)
-    P = {"rule_score": [], "rule_score_twin": []}
+    P: dict[str, list[np.ndarray]] = {"rule_score": [], "rule_score_twin": []}
     ys, fs = [], []
     for yr in sorted(set(yrs)):
         tr, te = (yrs <= yr - 3) & np.isfinite(y), (yrs == yr) & np.isfinite(y)
@@ -405,8 +405,9 @@ def _oos_events(df: pd.DataFrame, preds: dict, y: np.ndarray, firms: np.ndarray,
             use = [c for c in cols if X.loc[tr, c].std() > 0]
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                fit = sm.GLM(y[tr], sm.add_constant(X.loc[tr, use], has_constant="add"),
-                             family=sm.families.Binomial()).fit_regularized(alpha=0.001, L1_wt=0.0)
+                fit = sm.GLM(
+                    y[tr], sm.add_constant(X.loc[tr, use], has_constant="add"), family=sm.families.Binomial()
+                ).fit_regularized(alpha=0.001, L1_wt=0.0)
             P[key].append(np.asarray(fit.predict(sm.add_constant(X.loc[te, use], has_constant="add"))))
         ys.append(y[te])
         fs.append(firms[te])

@@ -38,10 +38,24 @@ def _rows(twin_kind: str, n_firms: int = 150, years=range(2014, 2024), seed: int
                 "noloops_cfo": (twin_m * rev).tolist(),
                 "noloops_fcf": (twin_m * rev - 1).tolist(),
             }
-            recs.append({"ticker": f"F{f}", "year": y, "industry": ["A", "B", "C"][f % 3], "st": st,
-                         "nd_ebitda": rng.normal(), "fixed_share": rng.uniform(), "due_cash": rng.uniform(),
-                         "health_t0": 50.0, "fcf_margin": m4, "z2": 3.0, "log_rev": 20.0, "h_base": 60.0,
-                         "y_bk8": 0.0, "y_burn8": 0.0})
+            recs.append(
+                {
+                    "ticker": f"F{f}",
+                    "year": y,
+                    "industry": ["A", "B", "C"][f % 3],
+                    "st": st,
+                    "nd_ebitda": rng.normal(),
+                    "fixed_share": rng.uniform(),
+                    "due_cash": rng.uniform(),
+                    "health_t0": 50.0,
+                    "fcf_margin": m4,
+                    "z2": 3.0,
+                    "log_rev": 20.0,
+                    "h_base": 60.0,
+                    "y_bk8": 0.0,
+                    "y_burn8": 0.0,
+                }
+            )
     return pd.DataFrame(recs)
 
 

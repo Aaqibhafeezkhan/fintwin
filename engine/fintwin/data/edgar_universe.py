@@ -124,8 +124,22 @@ def candidates() -> pd.DataFrame:
     return big.join(names).rename(columns={"min": "first_year", "max": "last_year"}).reset_index()
 
 
+def sp500_ciks() -> set[int]:
+    """Non-financial S&P 500 members (today's and those of 20 Feb 2020) are always included: GICS puts managed-care
+    insurers (SIC 6324) in Health Care, and a few large filers are missing from some revenue frames."""
+    out: set[int] = set()
+    for f in ("universe_sp500.csv", "sp500_2020-02-20.csv"):
+        d = pd.read_csv(HERE / f)
+        d = d[~d["sector"].isin(["Financials", "Real Estate"])].dropna(subset=["cik"])
+        out |= set(d["cik"].astype(int))
+    return out
+
+
 def build() -> pd.DataFrame:
     cand = candidates()
+    forced = sp500_ciks()
+    extra = sorted(forced - set(cand["cik"]))
+    cand = pd.concat([cand, pd.DataFrame({"cik": extra, "first_year": None, "last_year": None, "name": ""})])
     print(f"{len(cand)} companies with >= $50M revenue in some year {YEARS.start}-{YEARS.stop - 1}", flush=True)
     out = []
     for i, r in enumerate(cand.itertuples()):
@@ -136,7 +150,7 @@ def build() -> pd.DataFrame:
             continue
         meta, f = s["meta"], s["filings"]
         sic = int(meta["sic"]) if str(meta.get("sic") or "").isdigit() else None
-        if sic is not None and 6000 <= sic <= 6799:
+        if sic is not None and 6000 <= sic <= 6799 and r.cik not in forced:
             continue
         items = f["items"].fillna("") if "items" in f else pd.Series("", index=f.index)
         is_8k = f["form"].isin(["8-K", "8-K/A"])
@@ -168,7 +182,7 @@ def sp500_on(date: str) -> pd.DataFrame:
     """S&P 500 constituents on `date` (ticker, name, GICS sector and sub-industry, CIK)."""
     api = "https://en.wikipedia.org/w/api.php"
     ua = {"User-Agent": "fintwin-research (github.com/SpiliosDimakopoulos/fintwin)"}
-    q = {
+    q: dict[str, str | int] = {
         "action": "query",
         "prop": "revisions",
         "titles": "List of S&P 500 companies",

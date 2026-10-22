@@ -74,8 +74,8 @@ if __name__ == "__main__":
     out = {"current": summary(new), "old_window_75_105": summary(old)}
     fixed = old.merge(new, on="key", suffixes=("_old", "_new"))
     out["companies_recovered"] = int(((fixed["gaps_over_126d_old"] > 0) & (fixed["gaps_over_126d_new"] == 0)).sum())
-    out["examples_recovered"] = fixed.loc[
-        (fixed["gaps_over_126d_old"] > 0) & (fixed["gaps_over_126d_new"] == 0), "key"
-    ].head(20).tolist()
+    out["examples_recovered"] = (
+        fixed.loc[(fixed["gaps_over_126d_old"] > 0) & (fixed["gaps_over_126d_new"] == 0), "key"].head(20).tolist()
+    )
     OUT.write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(json.dumps(out, indent=1))

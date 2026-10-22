@@ -54,7 +54,7 @@ def gdp_vintage(asof: str) -> pd.Series | None:
     usable = [c for c, d in dated.items() if d <= t]
     if not usable:
         return None
-    s = v[max(usable, key=dated.get)].dropna()
+    s = v[max(usable, key=lambda c: dated[c])].dropna()
     s.index = pd.PeriodIndex(s.index.str.replace(":", ""), freq="Q").to_timestamp(how="end").normalize()
     return s.astype(float)
 

@@ -658,7 +658,9 @@ def main(cache: Path) -> dict:
         "bankruptcy_panel": distress.bankruptcy_panel(panel, B_PANEL),
         "exposure": distress.exposure(xs, B),
         "panel": panel_section(panel),
-        "panel_sp": panel_section(sp.reset_index(drop=True)) if len(sp := panel[panel["sp_today"] | panel["sp2020"]]) >= 300 else {},
+        "panel_sp": panel_section(sp.reset_index(drop=True))
+        if len(sp := panel[panel["sp_today"] | panel["sp2020"]]) >= 300
+        else {},
         "transmission": {
             "panel": transmission.section(panel, B_PANEL),
             "covid": transmission.section(xs, B, panel=False),

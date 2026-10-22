@@ -85,8 +85,8 @@ def _sic2(ciks: pd.Series) -> pd.Series:
     if not (DATA / "universe_edgar.csv").exists():
         return pd.Series(np.nan, index=ciks.index)
     u = pd.read_csv(DATA / "universe_edgar.csv", usecols=["cik", "sic"])
-    m = dict(zip(u["cik"].astype(int), u["sic"], strict=True))
-    return ciks.map(lambda c: (m.get(int(c)) // 100) if pd.notna(c) and pd.notna(m.get(int(c))) else np.nan)
+    m = {int(c): float(s) for c, s in zip(u["cik"], u["sic"], strict=True) if pd.notna(s)}
+    return ciks.map(lambda c: m[int(c)] // 100 if pd.notna(c) and int(c) in m else np.nan)
 
 
 def exposure(xs: pd.DataFrame, b: int) -> dict:

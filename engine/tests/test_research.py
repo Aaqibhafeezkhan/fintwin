@@ -39,8 +39,22 @@ def _synthetic_research(tmp_path, n=160, bankrupt=12):
 
     rng = np.random.default_rng(0)
     sectors = ["Energy", "Manufacturing", "Shops", "Business Equipment"]
-    keys = ("z2", "o_score", "zmijewski", "nd_ebitda", "icr", "cash_rev", "current_ratio", "static_cover", "rev_vol",
-            "fixed_share", "due_cash", "health_t0", "fcf_margin", "capex_rev")
+    keys = (
+        "z2",
+        "o_score",
+        "zmijewski",
+        "nd_ebitda",
+        "icr",
+        "cash_rev",
+        "current_ratio",
+        "static_cover",
+        "rev_vol",
+        "fixed_share",
+        "due_cash",
+        "health_t0",
+        "fcf_margin",
+        "capex_rev",
+    )
     bk_dates = {}
     for i in range(n + bankrupt):
         bk = i >= n
@@ -52,17 +66,31 @@ def _synthetic_research(tmp_path, n=160, bankrupt=12):
         run = {"health": h, "p_breach": float(frag > 0.7), "health_p10": h - 10}
         rev = np.full(8, 25.0)
         real = (0.1 - 0.1 * frag) * rev + rng.normal(0, 0.3, 8)
-        st = {"rev": rev.tolist(), "real_cfo": real.tolist(), "real_fcf": (real - 1).tolist(),
-              "m": {f"{v}{k}": 0.05 for v in ("cfo", "fcf") for k in (4, 8, 16)},
-              **{f"{m}_{v}": ((0.1 - 0.1 * frag) * rev + rng.normal(0, 0.3, 8)).tolist()
-                 for m in ("ols", "dyn", "twin", "noloops") for v in ("cfo", "fcf")},
-              "events": {"cash_half": bool(frag > 0.6), "debt_raise": bool(rng.uniform() < frag),
-                         "div_cut": bool(frag > 0.7), "capex_cut": bool(rng.uniform() < 0.3)},
-              "probs": {a: {"cash_half": frag, "debt_raise": frag, "div_cut": frag, "capex_cut": 0.3}
-                        for a in ("full", "no_r1", "no_r2", "no_b1", "no_b2", "no_loops")},
-              "static": {"cash_min": 1 - frag, "fin_need": frag, "div_pressure": frag, "rev4": 1.0},
-              "sens": {"revolver_low": {"cfo": real.tolist(), "fcf": real.tolist(), "health": h,
-                                        "probs": {"cash_half": frag}}}}
+        st = {
+            "rev": rev.tolist(),
+            "real_cfo": real.tolist(),
+            "real_fcf": (real - 1).tolist(),
+            "m": {f"{v}{k}": 0.05 for v in ("cfo", "fcf") for k in (4, 8, 16)},
+            **{
+                f"{m}_{v}": ((0.1 - 0.1 * frag) * rev + rng.normal(0, 0.3, 8)).tolist()
+                for m in ("ols", "dyn", "twin", "noloops")
+                for v in ("cfo", "fcf")
+            },
+            "events": {
+                "cash_half": bool(frag > 0.6),
+                "debt_raise": bool(rng.uniform() < frag),
+                "div_cut": bool(frag > 0.7),
+                "capex_cut": bool(rng.uniform() < 0.3),
+            },
+            "probs": {
+                a: {"cash_half": frag, "debt_raise": frag, "div_cut": frag, "capex_cut": 0.3}
+                for a in ("full", "no_r1", "no_r2", "no_b1", "no_b2", "no_loops")
+            },
+            "static": {"cash_min": 1 - frag, "fin_need": frag, "div_pressure": frag, "rev4": 1.0},
+            "sens": {
+                "revolver_low": {"cfo": real.tolist(), "fcf": real.tolist(), "health": h, "probs": {"cash_half": frag}}
+            },
+        }
         rec = {
             "ticker": f"CIK{1000 + i:010d}",
             "cik": 1000 + i,
@@ -72,7 +100,9 @@ def _synthetic_research(tmp_path, n=160, bankrupt=12):
                 "ticker": f"CIK{1000 + i:010d}",
                 "name": f"Firm {i}",
                 "sector": sectors[i % 4],
-                "scenarios": {k: run for k in ("base", "rates_200", "sales_20", "recession", "pandemic", "credit_crunch")},
+                "scenarios": {
+                    k: run for k in ("base", "rates_200", "sales_20", "recession", "pandemic", "credit_crunch")
+                },
                 "ablations": {k: run for k in ("full", "no_r1", "no_r2", "no_b1", "no_b2", "no_loops")},
                 "sector_adjusted": run,
                 "features": feats,
