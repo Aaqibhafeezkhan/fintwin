@@ -30,7 +30,7 @@ from ..stochastic.shocks import draw_shocks
 from ..universe import classify
 
 COVID_CUT = "2020-02-20"
-PANEL_ORIGINS = [f"{y}-02-15" for y in range(2013, 2024)]
+PANEL_ORIGINS = [f"{y}-02-15" for y in range(2013, 2025)]
 FORECAST_ORIGINS = [f"{y}-02-15" for y in range(2013, 2026)]
 SCENARIOS = ["base", "rates_200", "sales_20", "recession", "pandemic", "credit_crunch"]
 ABLATIONS: dict[str, dict] = {
@@ -43,6 +43,7 @@ ABLATIONS: dict[str, dict] = {
 }
 H_FC = 4
 FREEZE = PRESETS["pandemic"]["knobs"]
+DEPTHS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8)
 
 
 def _f(x) -> float | None:
@@ -51,6 +52,15 @@ def _f(x) -> float | None:
     except (TypeError, ValueError):
         return None
     return v if np.isfinite(v) else None
+
+
+def usable(hist: CompanyData, asof: str) -> bool:
+    """16 quarters of history, and a company that was still filing: the last known quarter is recent.
+
+    Without the second condition a company that stopped filing in 2016 would enter a 2019 cutoff with stale data.
+    """
+    q = hist.quarters
+    return len(q) >= 16 and (pd.Timestamp(asof) - q.index[-1]).days <= 200
 
 
 def _ttm(q: pd.DataFrame, col: str) -> float:
@@ -150,7 +160,7 @@ def _run(p: dict, knobs: dict, levers: dict, n: int, horizon: int, seed: int) ->
 
 def covid(ticker: str, full: pd.DataFrame | None) -> dict | None:
     hist = load_company(ticker, asof=COVID_CUT)
-    if len(hist.quarters) < 16:
+    if not usable(hist, COVID_CUT):
         return None
     p = calibrate(hist, macro_quarterly(COVID_CUT), 8)
     tol = p.get("sector_tol", 1.0)
@@ -169,51 +179,183 @@ def covid(ticker: str, full: pd.DataFrame | None) -> dict | None:
     out["sector_adjusted"] = _run({**p, "sector_tol": tol}, FREEZE, {}, 2000, 8, 7)
     out["features"] = features(hist, p)
     out["realized"] = covid_outcomes(hist, full) if full is not None else {}
-    out["structural"] = structural(hist, raw, full) if full is not None else {}
+    out["structural"] = structural(hist, raw, full, macro_quarterly(COVID_CUT)) if full is not None else {}
+    # the stress score under a demand freeze of each depth: `stats` evaluates it at the company's industry shock
+    out["depth_grid"] = {f"{d:.2f}": _run(raw, {**FREEZE, "sales_depth": d}, {}, 1000, 8, 7)["health"] for d in DEPTHS}
     return out
 
 
-def structural(hist: CompanyData, p: dict, full: pd.DataFrame, n_q: int = 8) -> dict:
+# Judgement calls varied in the sensitivity analysis: calibration assumptions (`calib`) and model assumptions (`p`).
+SENSITIVITY: dict[str, dict] = {
+    "revolver_low": {"calib": {"revolver_share": 0.04}},
+    "revolver_high": {"calib": {"revolver_share": 0.15}},
+    "fixed_prior_low": {"calib": {"fixed_share_prior": 0.20}},
+    "fixed_prior_high": {"calib": {"fixed_share_prior": 0.50}},
+    "prior_weak": {"calib": {"prior_weight": 0.5}},
+    "prior_strong": {"calib": {"prior_weight": 8.0}},
+    "no_shrinkage": {"calib": {"growth_shrink": 1.0, "beta_shrink": 1.0}},
+    "access_strict": {"p": {"access_icr": (2.5, 1.5)}},
+    "access_lenient": {"p": {"access_icr": (1.0, 0.5), "access_levels": (0.8, 0.5)}},
+    "cuts_fast": {"p": {"cut_delay": 1, "cut_speed": 0.08, "cut_floor": 0.75}},
+    "spreads_pit": {"p": {}},  # rating spreads rescaled to the Baa spread known at the cutoff (set at run time)
+}
+EVENTS = ("cash_half", "debt_raise", "div_cut", "capex_cut")
+
+
+def _spread_scale(asof: str) -> float:
+    """Rating spreads are Damodaran's January 2026 table; rescale them by the Baa-Treasury spread known at `asof`."""
+    from ..data.fred import fred_series
+
+    s = fred_series("BAA10Y")
+    ref = float(s[(s.index >= "2025-12-01") & (s.index <= "2026-01-31")].mean())
+    now = float(s[s.index <= pd.Timestamp(asof)].tail(63).mean())
+    return float(np.clip(now / ref, 0.5, 3.0)) if np.isfinite(now) and ref > 0 else 1.0
+
+
+def _margin(pre: pd.DataFrame, cash: pd.Series, k: int) -> float:
+    c, r = cash.tail(k), pre["revenue"].tail(k)
+    if c.notna().sum() < k or r.notna().sum() < k or r.sum() <= 0:
+        return np.nan
+    return float(c.sum() / r.sum())
+
+
+def _cash_rule(pre: pd.DataFrame, cash: pd.Series, dynamic: bool) -> np.ndarray | None:
+    """Per-company regression of quarterly cash flow on revenue (and its change) over the last 16 quarters.
+
+    The static version is operating leverage without simulation (cash = a + b * revenue, i.e. a fixed and a
+    variable part); the dynamic version adds working-capital timing (cash also responds to the change in revenue).
+    """
+    d = pd.DataFrame({"rev": pre["revenue"], "y": cash})
+    d["drev"] = d["rev"].diff()
+    d = d.dropna().tail(16)
+    if len(d) < 12:
+        return None
+    X = np.column_stack([np.ones(len(d)), d["rev"], *([d["drev"]] if dynamic else [])])
+    return np.linalg.lstsq(X, d["y"].to_numpy(float), rcond=None)[0]
+
+
+def _apply_rule(beta: np.ndarray | None, rev: np.ndarray, rev_prev: float) -> np.ndarray:
+    if beta is None:
+        return np.full(len(rev), np.nan)
+    out = beta[0] + beta[1] * rev
+    if len(beta) == 3:
+        out = out + beta[2] * np.diff(np.concatenate([[rev_prev], rev]))
+    return out
+
+
+def _probs(sim: dict, p: dict, n_q: int, rev_ttm: float, capex_pre: float) -> dict:
+    """Share of simulated paths on which each liquidity event happens (same definitions as the realized events)."""
+    cash = sim["cash"][:, :n_q]
+    debt = (sim["debt"] + sim["revolver"])[:, :n_q]
+    return {
+        "cash_half": float(np.mean(cash.min(1) < 0.5 * p["cash0"])) if p["cash0"] > 0 else None,
+        "debt_raise": float(np.mean((debt.max(1) - p["debt0"]) / rev_ttm > 0.05)),
+        "div_cut": float(np.mean(sim["dividends"][:, :4].sum(1) < 0.5 * 4 * p["div_q"])) if p["div_q"] > 0 else None,
+        "capex_cut": float(np.mean(sim["capex"][:, :4].sum(1) < 0.75 * capex_pre)) if capex_pre > 0 else None,
+    }
+
+
+def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFrame | None = None, n_q: int = 8) -> dict:
     """Feed the revenue that actually followed the cutoff into the twin and compare its cash response with reality.
 
     Predicting *which* shock hits a company is the scenario's job; translating a given revenue path into cash is
-    the simulation's job. This isolates the second. Benchmarks use the same realized revenue: the trailing FCF (and
-    operating-cash-flow) margin applied to it, and the trailing FCF run-rate, which ignores revenue altogether.
-    Outputs are worst cumulative values over the window, % of trailing revenue, and per-quarter paths.
+    the simulation's job. This isolates the second. Every rival sees the same realized revenue, quarter by quarter:
+    trailing cash-flow margins over 4, 8 and 16 quarters (the sector-shrunk margin is built in `stats`), and two
+    per-company regressions of cash flow on revenue, without and with working-capital timing. Paths are stored as
+    % of trailing revenue, so totals, worst cumulative values and further rules can be computed downstream.
+
+    The same run yields the liquidity decisions a risk user cares about (cash halves, new borrowing, dividend and
+    capex cuts) for the twin, each loop ablation, a static runway calculation with the same inputs, and reality.
     """
     pre = hist.quarters
     nxt = full[full.index > pre.index[-1] + pd.Timedelta(days=20)].head(n_q)
     rev_ttm = _ttm(pre, "revenue")
     if len(nxt) < n_q or nxt["revenue"].isna().any() or not np.isfinite(rev_ttm) or rev_ttm <= 0:
         return {}
+    rev = nxt["revenue"].to_numpy(float)
+    cfo, capex = nxt["cfo"].to_numpy(float), nxt["capex"].to_numpy(float)
+    if not (np.isfinite(cfo).all() and np.isfinite(capex).all()):
+        return {}
     T = int(p["horizon"])
     scn = build_scenario({}, T)
     override = np.full(T, np.nan)
-    override[:n_q] = nxt["revenue"].to_numpy(float)
+    override[:n_q] = rev
     scn["revenue_override"] = override
-    sim = simulate(p, scn, draw_shocks(p, 500, T, seed=3), DEFAULT_LEVERS)
-    fcf_sim = np.median(sim["fcf"][:, :n_q], axis=0)
-    cfo_sim = np.median(sim["cfo"][:, :n_q], axis=0)
-    cfo, capex = nxt["cfo"].to_numpy(float), nxt["capex"].to_numpy(float)
-    fcf_m = (_ttm(pre, "cfo") - _ttm(pre, "capex")) / rev_ttm
-    cfo_m = _ttm(pre, "cfo") / rev_ttm
-    rev = nxt["revenue"].to_numpy(float)
+    eps = draw_shocks(p, 500, T, seed=3)
 
-    def worst(x):
-        return float(np.min(np.cumsum(x)) / rev_ttm * 100)
+    def pc(x) -> list[float]:
+        return [round(float(v) / rev_ttm * 100, 4) for v in x]
 
-    if not (np.isfinite(cfo).all() and np.isfinite(capex).all() and np.isfinite(fcf_m)):
-        return {}
-    return {
-        "real_fcf": worst(cfo - capex),
-        "twin_fcf": worst(fcf_sim),
-        "margin_fcf": worst(fcf_m * rev),
-        "runrate_fcf": worst(np.full(n_q, fcf_m * rev_ttm / 4)),
-        "real_cfo": worst(cfo),
-        "twin_cfo": worst(cfo_sim),
-        "margin_cfo": worst(cfo_m * rev),
-        "rev_change": float((rev.sum() / (n_q / 4) - rev_ttm) / rev_ttm * 100),
+    pre_cfo, pre_fcf = pre["cfo"], pre["cfo"] - pre["capex"]
+    capex_pre = float(pre["capex"].tail(4).sum())
+    out: dict = {
+        "rev": pc(rev),
+        "real_cfo": pc(cfo),
+        "real_fcf": pc(cfo - capex),
+        "m": {f"{n}{k}": _f(_margin(pre, c, k)) for n, c in (("cfo", pre_cfo), ("fcf", pre_fcf)) for k in (4, 8, 16)},
     }
+    rev_prev = float(pre["revenue"].iloc[-1])
+    for name, cash in (("cfo", pre_cfo), ("fcf", pre_fcf)):
+        out[f"ols_{name}"] = pc(_apply_rule(_cash_rule(pre, cash, False), rev, rev_prev))
+        out[f"dyn_{name}"] = pc(_apply_rule(_cash_rule(pre, cash, True), rev, rev_prev))
+    probs = {}
+    for k, lv in ABLATIONS.items():
+        sim = simulate(p, scn, eps, {**DEFAULT_LEVERS, **lv})
+        probs[k] = _probs(sim, p, n_q, rev_ttm, capex_pre)
+        if k in ("full", "no_loops"):
+            tag = "twin" if k == "full" else "noloops"
+            out[f"{tag}_cfo"] = pc(np.median(sim["cfo"][:, :n_q], axis=0))
+            out[f"{tag}_fcf"] = pc(np.median(sim["fcf"][:, :n_q], axis=0))
+    out["probs"] = probs
+
+    # realized liquidity decisions
+    cash_like = (nxt["cash"] + nxt["short_investments"].fillna(0)).to_numpy(float)
+    debt = nxt["total_debt"].to_numpy(float)
+    div_pre = float(pre["dividends"].tail(4).fillna(0).sum())
+    out["events"] = {
+        "cash_half": bool(np.nanmin(cash_like) < 0.5 * p["cash0"])
+        if p["cash0"] > 0 and np.isfinite(cash_like).any()
+        else None,
+        "debt_raise": bool((np.nanmax(debt) - p["debt0"]) / rev_ttm > 0.05) if np.isfinite(debt).any() else None,
+        "div_cut": bool(nxt["dividends"].head(4).fillna(0).sum() < 0.5 * div_pre) if div_pre > 0 else None,
+        "capex_cut": bool(capex[:4].sum() < 0.75 * capex_pre) if capex_pre > 0 else None,
+    }
+    # an analyst's static runway with the same inputs: the trailing FCF margin on the realized revenue, minus the
+    # current dividend and buyback run-rate and the maturities the company does not usually refinance
+    fcf_m = out["m"]["fcf4"]
+    if fcf_m is not None:
+        payout_q = div_pre / 4 + float(pre["buybacks"].tail(4).fillna(0).sum()) / 4
+        mat = np.asarray(p["maturities_q"][:n_q], float) * (1 - p["refi_ratio"])
+        path = p["cash0"] + np.cumsum(fcf_m * rev - payout_q - mat)
+        fcf4 = fcf_m * rev[:4].sum()
+        out["static"] = {
+            "cash_min": _f(path.min() / max(p["cash0"], 1e-9)),
+            "fin_need": _f(max(p["cash_target"] - path.min(), 0.0) / rev_ttm * 100),
+            "div_pressure": _f(min(div_pre / fcf4, 50.0)) if fcf4 > 0 else 50.0,
+            "rev4": _f(rev[:4].sum() / rev_ttm),
+        }
+
+    # sensitivity of the transmission result and of the baseline verdict to the model's judgement calls
+    if macro is not None:
+        sens = {}
+        for name, var in SENSITIVITY.items():
+            try:
+                pv = calibrate(hist, macro, T, var["calib"]) if "calib" in var else dict(p)
+                pv = {**pv, "sector_tol": 1.0, **var.get("p", {})}
+                if name == "spreads_pit":
+                    pv["spread_scale"] = _spread_scale(str((pre.index[-1] + pd.Timedelta(days=45)).date()))
+                sim = simulate(pv, scn, draw_shocks(pv, 500, T, seed=3), DEFAULT_LEVERS)
+                base = simulate(pv, build_scenario({}, T), draw_shocks(pv, 1000, T, seed=5), DEFAULT_LEVERS)
+                sens[name] = {
+                    "cfo": pc(np.median(sim["cfo"][:, :n_q], axis=0)),
+                    "fcf": pc(np.median(sim["fcf"][:, :n_q], axis=0)),
+                    "probs": _probs(sim, pv, n_q, rev_ttm, capex_pre),
+                    "health": summarize(base)["health_score"],
+                }
+            except Exception:  # a variant that cannot be calibrated is skipped, not fatal
+                continue
+        out["sens"] = sens
+    return out
 
 
 def _abnormal_burn(pre: pd.DataFrame, window: pd.DataFrame, rev_ttm: float) -> float:
@@ -311,7 +453,7 @@ def forecasts(ticker: str, full_data: CompanyData, hists: dict[str, CompanyData]
     rows: list[dict] = []
     for origin in FORECAST_ORIGINS:
         hist = hists.get(origin)
-        if hist is None or len(hist.quarters) < 16:
+        if hist is None or not usable(hist, origin):
             continue
         try:
             rows += _forecast_origin(origin, hist, full)
@@ -354,15 +496,26 @@ def _forecast_origin(origin: str, hist: CompanyData, full: pd.DataFrame) -> list
                     "crps_rw": crps_gaussian(mu_b, sd_b, y),
                     "crps_ets": crps_samples(e[h], y) if e is not None else None,
                     "pit_ets": float(np.mean(e[h] <= y)) if e is not None else None,
+                    # for conditional coverage: the realized value, the twin's quantiles and the quarter forecast
+                    "y": y,
+                    "q": [float(v) for v in np.percentile(out[key][:, h], [5, 25, 50, 75, 95])],
+                    "pit_twin": float(np.mean(out[key][:, h] <= y)),
+                    "target": str(real.index[h].date()),
                 }
             )
     return rows
 
 
-def company(ticker: str) -> dict:
+def company(ticker: str, with_forecasts: bool = True) -> dict:
+    """All designs for one company. `ticker` is a ticker, a ``CIK0000012345`` key or a legacy ``XXX~2020`` key."""
     is_bk = "~" in ticker
     full_data = None if is_bk else load_company(ticker)
-    res: dict = {"ticker": ticker, "bankrupt_2020": is_bk, "errors": {}}
+    res: dict = {
+        "ticker": ticker,
+        "cik": int(full_data.cik) if full_data else None,
+        "bankrupt_2020": is_bk,
+        "errors": {},
+    }
     try:
         res["covid"] = covid(ticker, None if full_data is None else full_data.quarters)
     except Exception as e:
@@ -370,7 +523,7 @@ def company(ticker: str) -> dict:
     if full_data is None:
         return res
     hists: dict[str, CompanyData] = {}
-    for origin in FORECAST_ORIGINS:
+    for origin in FORECAST_ORIGINS if with_forecasts else PANEL_ORIGINS:
         try:
             hists[origin] = load_company(ticker, asof=origin)
         except Exception as e:
@@ -378,7 +531,7 @@ def company(ticker: str) -> dict:
     panel = []
     for origin in PANEL_ORIGINS:
         hist = hists.get(origin)
-        if hist is None or len(hist.quarters) < 16:
+        if hist is None or not usable(hist, origin):
             continue
         try:
             p = calibrate(hist, macro_quarterly(origin), 12)
@@ -391,12 +544,14 @@ def company(ticker: str) -> dict:
                     "base_no_loops": _run(raw, {}, ABLATIONS["no_loops"], 1500, 12, 5),
                     "features": features(hist, p),
                     "outcome": _distress(hist, full_data.quarters),
-                    "structural": structural(hist, raw, full_data.quarters),
+                    "structural": structural(hist, raw, full_data.quarters, macro_quarterly(origin)),
                 }
             )
         except Exception as e:
             res["errors"][f"panel {origin}"] = f"{type(e).__name__}: {e}"
     res["panel"] = panel
+    if not with_forecasts:
+        return res
     try:
         res["forecasts"] = forecasts(ticker, full_data, hists)
     except Exception as e:

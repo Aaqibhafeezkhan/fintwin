@@ -45,6 +45,8 @@ OUTPUTS = [
     "fixed_cost_mult",
     "debt_issued",
     "recession",
+    "dividends",
+    "buybacks",
     "h_liq",
     "h_cov",
     "h_lev",
@@ -97,6 +99,10 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
     use_regime = levers.get("recessions", True)
     # research switches (loop ablations); both loops are always on in the product and the browser engine
     loop_r1, loop_r2 = levers.get("loop_r1", True), levers.get("loop_r2", True)
+    # research-only assumptions (sensitivity analysis); the product and the browser engine use the defaults
+    spread_scale = p.get("spread_scale", 1.0)
+    acc_hi, acc_lo = p.get("access_icr", (1.5, 0.8))
+    acc_mid, acc_low = p.get("access_levels", (0.6, 0.3))
     icr_fixed = np.full(N, float(np.sum(p["ebit_ttm0"])) / max(float(np.sum(p["interest_ttm0"])), 1e-9), f)
 
     out = {k: np.zeros((N, T), f) for k in OUTPUTS}
@@ -137,7 +143,7 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         rate = rate + p["kappa"] * (p["theta"] - rate) + p["sigma_r"] * e_r
         r_eff = np.maximum(rate + scn["rate_shift"][t], 0.0)
         icr_prev = ebit_hist.sum(1) / np.maximum(int_hist.sum(1), 1e-9)
-        spread = SPREADS[_rank(icr_prev if loop_r1 else icr_fixed)] + scn["spread_shift"][t]
+        spread = SPREADS[_rank(icr_prev if loop_r1 else icr_fixed)] * spread_scale + scn["spread_shift"][t]
         mkt_rate = r_eff + p["term_premium"] + spread
 
         eff_rate = (1.0 - p["floating"]) * coupon + p["floating"] * (r_eff + spread)
@@ -179,7 +185,11 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
         # R2: market access shrinks as coverage deteriorates (distressed issuers only place part of
         # what they need, at punitive spreads), and closes entirely in a credit freeze ---
         maturing = np.minimum(ladder[t], debt)
-        access = np.where(icr_prev >= 1.5, 1.0, np.where(icr_prev >= 0.8, 0.6, 0.3)) if loop_r2 else np.ones(N, f)
+        access = (
+            np.where(icr_prev >= acc_hi, 1.0, np.where(icr_prev >= acc_lo, acc_mid, acc_low))
+            if loop_r2
+            else np.ones(N, f)
+        )
         access = access * scn["refi_access"][t]
         refi = maturing * p["refi_ratio"] * access
         cash = cash + cfo - capex - div - bb - maturing + refi
@@ -288,6 +298,8 @@ def simulate(p: dict, scn: dict, eps: np.ndarray, levers: dict) -> dict:
             ("fixed_cost_mult", cut_mult),
             ("debt_issued", issued_debt),
             ("recession", regime),
+            ("dividends", div),
+            ("buybacks", bb),
             ("h_liq", s_liq),
             ("h_cov", s_cov),
             ("h_lev", s_lev),

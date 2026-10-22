@@ -1,0 +1,43 @@
+\section{Conceptual framework}\label{sec:framework}
+
+\subsection{Twin, shadow or simulation model?}
+The term \emph{digital twin} is used loosely, so we state which of its defining properties the model has. \citet{kritzinger2018} separate three levels by the direction and automation of data flows between a physical system and its virtual counterpart: a \emph{digital model} is updated by hand, a \emph{digital shadow} is updated automatically from the physical system, and a \emph{digital twin} also feeds decisions back into the physical system automatically. By this taxonomy \twin{} is a digital shadow with a human in the loop. It is synchronized automatically: every week a scheduled job reads each company's newest filings, re-estimates every parameter and re-runs the simulations, and its state can be rewound to any past filing date. It represents the firm's financial system as stocks and flows that map one-to-one onto the balance sheet, rather than as a statistical summary of it. And it supports decisions through what-if analysis: scenarios, management levers (cutting capital expenditure or payouts, drawing the revolver, issuing debt or equity) and reverse stress tests. It does not close the loop automatically, since no decision taken in the model is executed in the firm, and its synchronization frequency is bounded by the quarterly reporting cycle. We keep the term because it is established in the system-dynamics and engineering literature for models with these properties, but the evidence in this paper concerns the model, not the label.
+
+\subsection{Relation to existing models}
+Table~\ref{tab:framework} places the twin among four families of models that address related questions.
+
+\emph{Accounting-based distress scores} \citep{beaver1966,altman1968,ohlson1980,zmijewski1984} and their hazard-model successors \citep{shumway2001,chava2004,campbell2008} map ratios to the probability of an event. They are estimated on default samples and are not conditional on a scenario. \emph{Structural credit models} \citep{merton1974,leland1994} derive default probabilities from asset value and volatility, inferred from equity prices; their state variable is a single asset value, not cash, working capital or a maturity ladder, so they cannot say whether a given revenue path exhausts liquidity before the debt is due. \emph{Corporate financial-planning models} \citep{carleton1970,warren1971} are simultaneous-equation projections of the financial statements under managerial assumptions; they are close in spirit to the twin's accounting core but are deterministic, specified by the analyst and rarely validated out of sample. \emph{Top-down corporate stress tests} run by central banks and the IMF \citep{ifc2021} apply sector-level shocks to firm-level balance sheets, usually with static or one-period cash-flow rules. Finally, the accounting literature on \emph{cash-flow prediction} \citep{dechow1998,barth2001} and on the mean reversion of profitability \citep{fama2000} provides the simplest rivals for the twin's transmission mechanics: rules that map revenue or earnings into cash through margins, accruals and working capital.
+
+The twin combines elements that these families keep apart: an accounting identity that holds on every path, firm-specific parameters estimated automatically from filings, contractual debt maturities and credit lines, path-dependent financing constraints (feedback loops), and a probabilistic description of uncertainty. Whether this combination predicts anything that the simpler members of each family do not is an empirical question. The rest of the paper answers it against the strongest simple rival in each case.
+
+\begin{table}[t]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Models of corporate financial fragility}
+\label{tab:framework}
+\begin{tabular}{p{0.2\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}p{0.14\linewidth}}
+\toprule
+ & Distress scores & Structural credit & Financial planning & Top-down stress tests & \twin{} \\
+\midrule
+Question & probability of default & default probability from market values & projected statements & sector shock $\rightarrow$ firm losses & shock path $\rightarrow$ cash, debt, breaches \\
+Conditional on a scenario & no & partly & yes & yes & yes \\
+State variables & ratios & asset value & statements & balance sheet & 9 balance-sheet stocks \\
+Liquidity timing (maturities, credit lines) & no & no & sometimes & sometimes & yes \\
+Feedback (spreads, market access, management response) & no & endogenous default & no & rarely & 4 loops \\
+Uncertainty & event probability & diffusion & none & scenarios & Monte Carlo \\
+Parameters & pooled estimates & market-implied & analyst & mixed & per firm, from filings \\
+Updating & periodic re-estimation & daily & manual & annual & weekly, automatic \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Hypotheses}
+The design of Section~\ref{sec:design} tests three hypotheses, each against rivals that see the same information.
+
+\begin{description}
+\item[H1 (ranking).] Under a common scenario, the twin's stress score ranks firms' subsequent distress better than accounting scores and simple cash-flow benchmarks computed from the same filings.
+\item[H2 (transmission).] Given the revenue path that actually occurred, the twin's cash-flow response contains information about realized cash flows that is not contained in margin rules (including long-window and industry-shrunk margins) or in a per-firm regression of cash flow on revenue and its change.
+\item[H3 (feedback).] The feedback loops improve the prediction of the outcomes they are designed to produce --- new borrowing, cash depletion, dividend and capital-expenditure cuts --- not only the cross-sectional ranking of firms.
+\end{description}
+
+\noindent For each hypothesis the decision rule was fixed before the corresponding test was run on the full sample (the repository records the order of changes). H2 is accepted only if the twin's incremental correlation is positive against every simple rule with a confidence interval that excludes zero and its coefficient in an encompassing regression \citep{chong1986,fair1990} is significant at 5\%.

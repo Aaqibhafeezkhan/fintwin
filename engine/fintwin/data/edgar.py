@@ -38,11 +38,25 @@ def _get_json(url: str, cache_name: str, max_age_hours: float) -> dict:
             return json.load(fh)
 
     global _last_request
-    wait = _MIN_INTERVAL - (time.time() - _last_request)
-    if wait > 0:
-        time.sleep(wait)
-    resp = requests.get(url, headers={"User-Agent": _user_agent(), "Accept-Encoding": "gzip, deflate"}, timeout=60)
-    _last_request = time.time()
+    for attempt in range(4):  # transient network errors, SEC throttling (429) and 5xx are retried with backoff
+        wait = _MIN_INTERVAL - (time.time() - _last_request)
+        if wait > 0:
+            time.sleep(wait)
+        try:
+            resp = requests.get(
+                url, headers={"User-Agent": _user_agent(), "Accept-Encoding": "gzip, deflate"}, timeout=60
+            )
+        except (requests.ConnectionError, requests.Timeout):
+            if attempt == 3:
+                raise
+            time.sleep(5 * 2**attempt)
+            continue
+        finally:
+            _last_request = time.time()
+        if (resp.status_code == 429 or resp.status_code >= 500) and attempt < 3:
+            time.sleep(5 * 2**attempt)
+            continue
+        break
     resp.raise_for_status()
     data = resp.json()
     with gzip.open(path, "wt", encoding="utf-8") as fh:
@@ -51,7 +65,17 @@ def _get_json(url: str, cache_name: str, max_age_hours: float) -> dict:
 
 
 def ticker_to_cik(ticker: str) -> tuple[int, str]:
-    """Return (cik, company title) for a ticker. Keys like ``HTZ~2020`` name delisted 2020 Chapter 11 filers."""
+    """Return (cik, company title) for a ticker. Keys like ``HTZ~2020`` name delisted 2020 Chapter 11 filers, keys
+    like ``CIK0000012345`` any company in the EDGAR research universe (including ones that no longer exist)."""
+    if ticker.upper().startswith("CIK"):
+        import csv
+
+        cik, path = int(ticker[3:]), Path(__file__).with_name("universe_edgar.csv")
+        if not path.exists():
+            return cik, ""
+        with open(path, encoding="utf-8") as fh:
+            name = next((r["name"] for r in csv.DictReader(fh) if int(r["cik"]) == cik), "")
+        return cik, name
     if "~" in ticker:
         import csv
 
@@ -67,7 +91,10 @@ def ticker_to_cik(ticker: str) -> tuple[int, str]:
     raise KeyError(f"Unknown ticker: {ticker}")
 
 
-def company_facts(cik: int, max_age_hours: float = 24) -> dict:
+def company_facts(cik: int, max_age_hours: float | None = None) -> dict:
+    """XBRL company facts. FINTWIN_FACTS_MAX_AGE (hours) freezes the data vintage for long research runs."""
+    if max_age_hours is None:
+        max_age_hours = float(os.environ.get("FINTWIN_FACTS_MAX_AGE", 24))
     return _get_json(
         f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json",
         f"companyfacts_{cik:010d}.json",

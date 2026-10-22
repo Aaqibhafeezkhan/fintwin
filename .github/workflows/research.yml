@@ -1,5 +1,7 @@
-# Research experiments behind the paper: benchmarks, loop ablations, a 2013-2023 distress panel, 2020 bankruptcies
-# and ETS forecast comparisons. Manual only; runs on free GitHub-hosted runners.
+# Research experiments behind the paper, on the survivorship-free EDGAR universe (engine/fintwin/data/universe_edgar.csv):
+# the transmission test with its null ladder, liquidity decisions, loop ablations, sensitivity analysis, a 2014-2024
+# distress panel with the Chapter 11 census, the 2020 cross-section and ETS forecast comparisons.
+# Manual only; runs on free GitHub-hosted runners.
 name: research
 on: { workflow_dispatch: {} }
 permissions: { contents: read, actions: read }
@@ -7,11 +9,12 @@ env:
   SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
   OPENBLAS_NUM_THREADS: "2"
   PYTHONWARNINGS: ignore
+  FINTWIN_FACTS_MAX_AGE: "100000"  # one data vintage for the whole run
   SHARDS: 16
 jobs:
   shard:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 340
     strategy:
       fail-fast: false
       matrix: { i: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] }

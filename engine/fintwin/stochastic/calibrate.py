@@ -37,20 +37,22 @@ FIXED_SHARE_PRIOR = 0.35  # typical share of operating costs that does not scale
 PRIOR_WEIGHT = 2.0
 
 
-def _fixed_variable_split(rev: np.ndarray, costs: np.ndarray) -> tuple[float, float]:
+def _fixed_variable_split(
+    rev: np.ndarray, costs: np.ndarray, prior_share: float = FIXED_SHARE_PRIOR, prior_weight: float = PRIOR_WEIGHT
+) -> tuple[float, float]:
     """Penalized least squares costs = F + v*rev, F >= 0.
 
     When revenue barely moves the regression cannot tell fixed from variable costs, so the fit is shrunk
     toward a 35% fixed-cost share; the data dominate once revenue has varied enough to identify the slope.
     """
     ratio = float(np.median(costs / rev))
-    v_prior = ratio * (1 - FIXED_SHARE_PRIOR)
+    v_prior = ratio * (1 - prior_share)
     scale = float(np.var(costs)) * len(costs) + 1e-9
     best = (np.inf, 0.0, v_prior)
     for v in np.arange(0.1, 1.051, 0.005):
         F = max(float(np.mean(costs - v * rev)), 0.0)
         sse = float(np.sum((costs - F - v * rev) ** 2)) / scale
-        obj = sse + PRIOR_WEIGHT * ((v - v_prior) / max(ratio, 1e-9)) ** 2
+        obj = sse + prior_weight * ((v - v_prior) / max(ratio, 1e-9)) ** 2
         if obj < best[0]:
             best = (obj, F, float(v))
     return best[1], best[2]
@@ -80,13 +82,24 @@ def fit_vasicek(short_rate: pd.Series) -> dict:
     }
 
 
-def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12) -> dict:
+# Judgement calls that are not estimated from the company's filings. The research code varies them for the
+# sensitivity analysis; the product always uses these values.
+ASSUMPTIONS = {
+    "fixed_share_prior": FIXED_SHARE_PRIOR,
+    "prior_weight": PRIOR_WEIGHT,
+    "revolver_share": 0.08,  # committed facility as a share of TTM revenue when none is tagged
+    "growth_shrink": 0.5,  # weight on the company's own trend growth (rest: long-run anchor)
+    "beta_shrink": 0.5,  # weight on the company's own GDP beta (rest: 1.5)
+}
+
+
+def calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int = 12, assumptions: dict | None = None) -> dict:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows fall back to documented defaults
-        return _calibrate(c, macro, horizon)
+        return _calibrate(c, macro, horizon, {**ASSUMPTIONS, **(assumptions or {})})
 
 
-def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
+def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int, a: dict) -> dict:
     q = c.quarters.copy()
     src: dict[str, str] = {}
     rev = q["revenue"]
@@ -100,7 +113,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     g = g[np.isfinite(g)]
     g_recent = g.tail(12)
     mu_hist = float(np.median(g_recent)) if len(g_recent) else LONG_RUN_GROWTH_Q
-    mu = _clip(0.5 * mu_hist + 0.5 * LONG_RUN_GROWTH_Q, -0.04, 0.06, LONG_RUN_GROWTH_Q)
+    w_g = a["growth_shrink"]
+    mu = _clip(w_g * mu_hist + (1 - w_g) * LONG_RUN_GROWTH_Q, -0.04, 0.06, LONG_RUN_GROWTH_Q)
     phi, sigma_g, resid_g = _ar1(g.tail(32).values)
     phi = _clip(phi, 0.0, 0.8, 0.2)
     sigma_g = _clip(sigma_g, 0.01, 0.35, 0.05)
@@ -131,7 +145,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         xg, yr = np.array(pairs).T
         if np.var(xg) > 0:
             beta_ols = float(np.cov(xg, yr)[0, 1] / np.var(xg, ddof=1))
-    beta_gdp = _clip(0.5 * beta_ols + 0.5 * 1.5 if np.isfinite(beta_ols) else 1.5, 0.5, 5.0, 1.5)
+    w_b = a["beta_shrink"]
+    beta_gdp = _clip(w_b * beta_ols + (1 - w_b) * 1.5 if np.isfinite(beta_ols) else 1.5, 0.5, 5.0, 1.5)
     src["beta_gdp"] = (
         f"revenue sensitivity to nominal GDP ({len(pairs)} quarters), shrunk 50% toward 1.5"
         if np.isfinite(beta_ols)
@@ -146,7 +161,7 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
     ebitda = q["operating_income"] + q["da"].fillna(0)
     costs = rev - ebitda
     win = pd.DataFrame({"rev": rev, "costs": costs}).dropna().tail(16)
-    F, v = _fixed_variable_split(win["rev"].values, win["costs"].values)
+    F, v = _fixed_variable_split(win["rev"].values, win["costs"].values, a["fixed_share_prior"], a["prior_weight"])
     src["F,v"] = f"constrained regression of cash operating costs on revenue, {len(win)} quarters"
     m_resid = (win["costs"] - F - v * win["rev"]) / win["rev"]
     rho_m, sigma_m, resid_m = _ar1(m_resid.values)
@@ -217,8 +232,8 @@ def _calibrate(c: CompanyData, macro: pd.DataFrame, horizon: int) -> dict:
         revolver_cap = float(cap_recent.iloc[-1])
         src["revolver_cap"] = "LineOfCreditFacilityMaximumBorrowingCapacity tag"
     else:
-        revolver_cap = 0.08 * rev_ttm
-        src["revolver_cap"] = "assumption: committed facility = 8% of TTM revenue"
+        revolver_cap = a["revolver_share"] * rev_ttm
+        src["revolver_cap"] = f"assumption: committed facility = {a['revolver_share']:.0%} of TTM revenue"
 
     # the latest quarter occasionally lacks the cash tag: carry the last reported balance forward
     cash0 = float(q["cash"].ffill().iloc[-1] + q["short_investments"].fillna(0).iloc[-1])

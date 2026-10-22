@@ -42,3 +42,25 @@ def test_season_handles_52_53_week_calendars():
     # Apple-style fiscal quarter ending on April 1 belongs with March quarter ends.
     assert season_of(pd.Timestamp("2023-04-01")) == season_of(pd.Timestamp("2024-03-30"))
     assert season_of(pd.Timestamp("2023-12-30")) == season_of(pd.Timestamp("2022-12-31"))
+
+
+def test_sixteen_week_quarters_are_kept():
+    # Kroger-style 52-week year: a 16-week first quarter, then three 12-week quarters
+    rows = [
+        fact("2024-02-04", "2024-05-25", 160, "2024-06-20"),
+        fact("2024-02-04", "2024-08-17", 280, "2024-09-20"),  # 28-week YTD
+        fact("2024-05-26", "2024-08-17", 120, "2024-09-20"),
+        fact("2024-02-04", "2024-11-09", 400, "2024-12-10"),  # 40-week YTD
+        fact("2024-02-04", "2025-02-01", 520, "2025-04-01", form="10-K"),
+    ]
+    q = duration_quarters(gaap("X", rows), "X")
+    assert [v[0] for _, v in sorted(q.items())] == [160, 120, 120, 120]
+    # Costco-style: the fourth quarter is 16 weeks and exists only as FY minus 36-week YTD
+    rows = [
+        fact("2023-09-04", "2023-11-26", 120, "2023-12-20"),
+        fact("2023-09-04", "2024-02-18", 240, "2024-03-10"),
+        fact("2023-09-04", "2024-05-12", 360, "2024-06-10"),
+        fact("2023-09-04", "2024-09-01", 520, "2024-10-10", form="10-K"),
+    ]
+    q = duration_quarters(gaap("X", rows), "X")
+    assert q[pd.Timestamp("2024-09-01")][0] == 160 and len(q) == 4

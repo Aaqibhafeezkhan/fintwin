@@ -27,7 +27,9 @@ def company_facts(cik: int) -> dict:
 
 
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "10-KT", "20-F", "40-F"}
-QUARTER_DAYS = (75, 105)
+# A fiscal quarter is 12-14 weeks, but 52/53-week retailers run one 16- or 17-week quarter a year (Kroger's first,
+# Costco's and AutoZone's fourth): anything from 11 to 18 weeks is one quarter.
+QUARTER_DAYS = (75, 126)
 ALIGN_TOLERANCE_DAYS = 12
 
 # field -> ordered tag fallbacks. Duration concepts are flows over a period, instants are balances.
