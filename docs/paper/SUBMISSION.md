@@ -17,8 +17,8 @@ gh release create vX.Y.Z docs/paper/dist/fintwin.pdf docs/paper/dist/fintwin-arx
 `arxiv_bundle.py` also writes a plain-text abstract (`abstract.txt`) and compiles the LaTeX source in an empty folder,
 so the bundle is ready if the paper is ever submitted to arXiv, SSRN or a journal.
 
-**Title:** What Can a Financial Digital Twin Tell Us? Simulating Corporate Liquidity Stress from SEC Filings, with Out-of-Sample Evidence from COVID-19 and a Decade of Data
+**Title:** Does Simulation Add Information Beyond Persistence? A Financial Digital Twin Tested on a Survivorship-Free Panel of SEC Filers
 
-**Keywords:** stress testing; corporate liquidity; financial distress prediction; system dynamics; digital twin; XBRL; COVID-19; probabilistic forecasting
+**Keywords:** digital twin; system dynamics; corporate liquidity; cash-flow prediction; bankruptcy prediction; stress testing; XBRL; forecast encompassing
 
-**JEL:** G32, G33, G17, C53, C63
+**JEL:** G32, G33, G17, C53, C63, M41

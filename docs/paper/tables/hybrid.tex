@@ -1,3 +1,4 @@
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lrrrr}
 \toprule
  & \multicolumn{2}{c}{Operating cash flow} & \multicolumn{2}{c}{Free cash flow} \\
@@ -9,13 +10,17 @@ Margin, 16 quarters & 12.90 & 6.94 & 14.33 & 7.33 \\
 Regression + revenue change & 16.03 & 9.27 & 17.80 & 9.94 \\
 Twin alone & 18.64 & 11.38 & 19.95 & 11.89 \\
 4-quarter margin + $\lambda$(twin $-$ rule) & 13.06 & 7.31 & 14.33 & 7.85 \\
-16-quarter margin + $\lambda$(regression $-$ rule) & 12.55 & 6.95 & 14.07 & 7.31 \\
+16-quarter margin + $\lambda$(4-quarter margin $-$ rule) & 12.61 & 6.91 & 13.98 & 7.28 \\
+16-quarter margin + $\lambda$(regression $-$ rule) & 12.49 & 6.95 & 14.00 & 7.27 \\
+16-quarter margin + $\lambda$(regression with timing $-$ rule) & 12.55 & 6.95 & 14.07 & 7.31 \\
 16-quarter margin + $\lambda$(twin $-$ rule) & 12.45 & 6.79 & 13.77 & 7.15 \\
 \midrule
 \multicolumn{5}{l}{\emph{Difference in mean error (negative: the first is better), firm-clustered CI}} \\
-16q margin + twin vs.\ 16q margin & \multicolumn{2}{r}{$-$0.45 [$-$0.58, $-$0.32]$^{***}$} & \multicolumn{2}{r}{$-$0.56 [$-$0.69, $-$0.44]$^{***}$} \\
-16q margin + twin vs.\ 16q margin + regression & \multicolumn{2}{r}{$-$0.10 [$-$0.20, $-$0.01]$^{**}$} & \multicolumn{2}{r}{$-$0.30 [$-$0.45, $-$0.17]$^{***}$} \\
-4q margin + twin vs.\ 4q margin & \multicolumn{2}{r}{$-$0.81 [$-$0.93, $-$0.69]$^{***}$} & \multicolumn{2}{r}{$-$1.04 [$-$1.20, $-$0.88]$^{***}$} \\
-Twin vs.\ 16q margin & \multicolumn{2}{r}{+5.73 [5.10, 6.34]$^{***}$} & \multicolumn{2}{r}{+5.62 [5.01, 6.20]$^{***}$} \\
+16q margin + twin vs.\ 16q margin & \multicolumn{2}{r}{$-$0.45 [$-$0.58, $-$0.32]$^{***}$} & \multicolumn{2}{r}{$-$0.56 [$-$0.68, $-$0.43]$^{***}$} \\
+16q margin + twin vs.\ 16q margin + 4q margin & \multicolumn{2}{r}{$-$0.16 [$-$0.34, 0.01]$^{*}$} & \multicolumn{2}{r}{$-$0.21 [$-$0.37, $-$0.05]$^{**}$} \\
+16q margin + twin vs.\ 16q margin + regression & \multicolumn{2}{r}{$-$0.05 [$-$0.14, 0.04]} & \multicolumn{2}{r}{$-$0.23 [$-$0.33, $-$0.12]$^{***}$} \\
+16q margin + twin vs.\ 16q margin + regression with timing & \multicolumn{2}{r}{$-$0.10 [$-$0.20, $-$0.01]$^{**}$} & \multicolumn{2}{r}{$-$0.29 [$-$0.44, $-$0.17]$^{***}$} \\
+4q margin + twin vs.\ 4q margin & \multicolumn{2}{r}{$-$0.81 [$-$0.93, $-$0.69]$^{***}$} & \multicolumn{2}{r}{$-$1.04 [$-$1.19, $-$0.88]$^{***}$} \\
+Twin vs.\ 16q margin & \multicolumn{2}{r}{+5.75 [5.13, 6.38]$^{***}$} & \multicolumn{2}{r}{+5.61 [4.96, 6.23]$^{***}$} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}

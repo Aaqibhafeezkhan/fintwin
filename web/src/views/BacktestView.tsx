@@ -30,9 +30,9 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         <p className="lede">Every test below is out of sample and point-in-time. Each twin is calibrated only on facts
           <i> filed</i> before its test date, so later restatements stay invisible, and nothing was tuned on the outcomes.</p>
         <figure style={{ margin: "24px 0 0" }}>
-          <img src={`${import.meta.env.BASE_URL}findings.png`} width={2136} height={838} loading="lazy"
+          <img src={`${import.meta.env.BASE_URL}findings.png`} width={2227} height={838} loading="lazy"
             style={{ width: "100%", height: "auto", borderRadius: 6, border: "1px solid var(--rule)" }}
-            alt="Left: out-of-sample error of eight-quarter operating cash flow given the realized revenue. The 16-quarter margin is more accurate than the twin alone; adding a small fraction of the twin's departure to the margin lowers its error. Right: AUC for a bankruptcy petition within two years across all non-financial SEC filers. The twin, its own scoring formula without simulation and the Ohlson score are level." />
+            alt="Left: out-of-sample error of eight-quarter operating cash flow given the realized revenue. The 16-quarter margin is more accurate than the twin alone; blending a small share of the twin into the margin lowers its error, but blending a simple regression does almost as well. Right: AUC for a bankruptcy petition within two years across all non-financial SEC filers. The twin, its own scoring formula without simulation and the Ohlson score are level." />
           <figcaption className="muted" style={{ marginTop: 8, fontSize: 13 }}>The research paper in one picture.{" "}
             <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</figcaption>
         </figure>
@@ -58,7 +58,8 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           ranking skill is persistence: a trailing free-cash-flow margin ranks 2020 cash burn better, and the twin's own scoring
           formula, without any simulation, predicts bankruptcies as well as the simulated score. Fed the revenue that actually
           happened, the twin alone is less accurate than a 16-quarter cash-flow margin, but its departures from the margin carry
-          information the margin lacks: adding about 15% of them lowers the out-of-sample error by about 3.5%.{" "}
+          information the margin lacks. Out of sample that is worth little: for operating cash flow a simple regression
+          blended in the same way does almost as well, and only for free cash flow does the twin beat every simple rule.{" "}
           <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</p>
       </Section>
 

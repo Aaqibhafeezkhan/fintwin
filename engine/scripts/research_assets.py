@@ -107,7 +107,7 @@ CLASSIC = ["altman_z2", "ohlson_o", "zmijewski", "icr", "nd_ebitda", "cash_rev",
            "rev_vol", "fixed_share", "size"]
 CASHFLOW = ["fcf_margin", "capex_rev"]
 MODEL = {"N1": "Margin, 4 quarters", "N2": "Margin, 8 quarters", "N3": "Margin, 16 quarters",
-         "N4": "Margin shrunk to industry", "N5": "Cash = $a + b\\cdot$revenue", "N6": "N5 + change in revenue",
+         "N4": "Margin shrunk to industry", "N5": "Cash = $a + b\\cdot$revenue", "N6": "Regression + change in revenue",
          "T0": "Twin without loops", "T1": "Twin"}
 
 
@@ -157,6 +157,10 @@ m("TrEncSixteenT", f1(enc["t"]["N3"]))
 m("TrEncShrunkT", f1(enc["t"]["N4"]))
 m("TrEncRegT", f1(enc["t"]["N6"]))
 m("TrEncFcfTwinT", f1(fcf["encompassing"]["all"]["t"]["T1"]))
+lev_e = cfo["encompassing"]["levels"]
+m("TrEncLevTwinT", f1(lev_e["t"]["T1"]))
+m("TrEncLevTwinCoef", f2(lev_e["coef"]["T1"]))
+m("TrEncLevFcfTwinT", f1(fcf["encompassing"]["levels"]["t"]["T1"]))
 m("TrVerdict", "survives" if T["verdict"]["transmission_claim_survives"] else "fails")
 hy = cfo["hybrid"]
 m("TrHybN", big(hy["n"]))
@@ -170,11 +174,23 @@ m("TrHybGainHi", f2(-hy["N3+T1_vs_N3"]["ci"][0]))
 m("TrHybGainPct", pc(-hy["N3+T1_vs_N3"]["diff"] / hy["mae_w"]["N3"], 1))
 m("TrHybVsNull", f2(-hy["N3+T1_vs_N3+N6"]["diff"]))
 m("TrHybVsNullP", pv(hy["N3+T1_vs_N3+N6"]["p"]))
+m("TrHybSixteenRegFive", f2(hy["mae_w"]["N3+N5"]))
+m("TrHybVsRegFive", f2(-hy["N3+T1_vs_N3+N5"]["diff"]))
+m("TrHybVsRegFiveP", pv(hy["N3+T1_vs_N3+N5"]["p"]))
+m("TrHybVsFour", f2(-hy["N3+T1_vs_N3+N1"]["diff"]))
+m("TrHybVsFourP", pv(hy["N3+T1_vs_N3+N1"]["p"]))
+m("TrHybRegFiveGainPct", pc((hy["mae_w"]["N3"] - hy["mae_w"]["N3+N5"]) / hy["mae_w"]["N3"], 1))
 lams = list(hy["lambda"]["N3+T1"].values())
 m("TrLambdaLo", f2(min(lams)))
 m("TrLambdaHi", f2(max(lams)))
 fhy = fcf["hybrid"]
 m("TrFcfHybGainPct", pc(-fhy["N3+T1_vs_N3"]["diff"] / fhy["mae_w"]["N3"], 1))
+best_null_fcf = min(("N3+N1", "N3+N2", "N3+N5", "N3+N6"), key=lambda k: fhy["mae_w"][k])
+m("TrFcfVsBestNull", f2(-fhy[f"N3+T1_vs_{best_null_fcf}"]["diff"]))
+m("TrFcfVsBestNullLo", f2(-fhy[f"N3+T1_vs_{best_null_fcf}"]["ci"][1]))
+m("TrFcfVsBestNullHi", f2(-fhy[f"N3+T1_vs_{best_null_fcf}"]["ci"][0]))
+m("TrFcfVsBestNullP", pv(fhy[f"N3+T1_vs_{best_null_fcf}"]["p"]))
+m("TrFcfVsWorstP", pv(max(fhy[f"N3+T1_vs_{k}"]["p"] for k in ("N3+N1", "N3+N2", "N3+N5", "N3+N6"))))
 
 rows = []
 for k, label in MODEL.items():
@@ -200,22 +216,29 @@ rows = []
 for var, lab in (("cfo", "Operating cash flow"), ("fcf", "Free cash flow")):
     e = T[var]["encompassing"]
     cells = []
-    for spec in ("twin_only", "nulls_only", "all"):
+    specs = ("twin_only", "nulls_only", "all", "levels_nulls_only", "levels")
+    for spec in specs:
         x = e[spec]
         cells.append(" & ".join(
-            f"{f2(x['coef'][k])} ({f1(x['t'][k])}){stars(x['p'][k])}" if k in x["coef"] else "" for k in ("T1", "N3", "N4", "N6")
+            f"{f2(x['coef'][k])} ({f1(x['t'][k])}){stars(x['p'][k])}" if k in x["coef"] else ""
+            for k in ("N1", "T1", "N3", "N4", "N6")
         ) + f" & {f2(x['r2'])}")
-    for spec, c in zip(("Twin only", "Simple rules only", "All"), cells, strict=True):
-        rows.append(f"{lab if spec == 'Twin only' else ''} & {spec} & {c} \\\\")
+    labels = ("Departures: twin only", "Departures: simple rules only", "Departures: all",
+              "Levels: simple rules only", "Levels: all")
+    for spec, c in zip(labels, cells, strict=True):
+        rows.append(f"{lab if spec.endswith('twin only') else ''} & {spec} & {c} \\\\")
     rows.append("\\addlinespace")
 table("encompassing", [
-    "\\begin{tabular}{llrrrrr}", "\\toprule",
-    "Cash measure & Specification & Twin & 16q margin & Shrunk margin & Regression & $R^2$ \\\\", "\\midrule",
-    *rows[:-1], "\\bottomrule", "\\end{tabular}"])
+    "\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{llrrrrrr}", "\\toprule",
+    "Cash measure & Specification & 4q margin & Twin & 16q margin & Shrunk margin & Regression + timing & $R^2$ \\\\",
+    "\\midrule",
+    *rows[:-1], "\\bottomrule", "\\end{tabular}}"])
 
 HYB = [("N1", "Margin, 4 quarters"), ("N3", "Margin, 16 quarters"), ("N6", "Regression + revenue change"),
        ("T1", "Twin alone"), ("N1+T1", "4-quarter margin + $\\lambda$(twin $-$ rule)"),
-       ("N3+N6", "16-quarter margin + $\\lambda$(regression $-$ rule)"),
+       ("N3+N1", "16-quarter margin + $\\lambda$(4-quarter margin $-$ rule)"),
+       ("N3+N5", "16-quarter margin + $\\lambda$(regression $-$ rule)"),
+       ("N3+N6", "16-quarter margin + $\\lambda$(regression with timing $-$ rule)"),
        ("N3+T1", "16-quarter margin + $\\lambda$(twin $-$ rule)")]
 rows = []
 for k, lab in HYB:
@@ -223,18 +246,20 @@ for k, lab in HYB:
                 f"{f2(fhy['median_ae'][k])} \\\\")
 cmp_rows = []
 for a, b, lab in (("N3+T1", "N3", "16q margin + twin vs.\\ 16q margin"),
-                  ("N3+T1", "N3+N6", "16q margin + twin vs.\\ 16q margin + regression"),
+                  ("N3+T1", "N3+N1", "16q margin + twin vs.\\ 16q margin + 4q margin"),
+                  ("N3+T1", "N3+N5", "16q margin + twin vs.\\ 16q margin + regression"),
+                  ("N3+T1", "N3+N6", "16q margin + twin vs.\\ 16q margin + regression with timing"),
                   ("N1+T1", "N1", "4q margin + twin vs.\\ 4q margin"), ("T1", "N3", "Twin vs.\\ 16q margin")):
     x, y = hy[f"{a}_vs_{b}"], fhy[f"{a}_vs_{b}"]
     cmp_rows.append(f"{lab} & \\multicolumn{{2}}{{r}}{{{sgn(x['diff'])} {ci_txt(x['ci'])}{stars(x['p'])}}} & "
                     f"\\multicolumn{{2}}{{r}}{{{sgn(y['diff'])} {ci_txt(y['ci'])}{stars(y['p'])}}} \\\\")
 table("hybrid", [
-    "\\begin{tabular}{lrrrr}", "\\toprule",
+    "\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrrr}", "\\toprule",
     " & \\multicolumn{2}{c}{Operating cash flow} & \\multicolumn{2}{c}{Free cash flow} \\\\",
     "\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}",
     "Out-of-sample prediction & Mean error & Median error & Mean error & Median error \\\\", "\\midrule", *rows,
     "\\midrule", "\\multicolumn{5}{l}{\\emph{Difference in mean error (negative: the first is better), firm-clustered CI}} \\\\",
-    *cmp_rows, "\\bottomrule", "\\end{tabular}"])
+    *cmp_rows, "\\bottomrule", "\\end{tabular}}"])
 
 HET = {"leverage": "Net debt / EBITDA", "fixed_costs": "Fixed-cost share", "maturities": "Debt due / cash",
        "revenue_shock": "Revenue over the window"}
@@ -528,7 +553,7 @@ ax.barh(yy, [cfo["levels"][k]["median_ae"] for k in order],
         color=[BLUE if k.startswith("T") else "#b9b8ad" for k in order], height=0.6)
 for y_, k in zip(yy, order, strict=True):
     ax.text(cfo["levels"][k]["median_ae"] + 0.1, y_, f"{cfo['levels'][k]['median_ae']:.1f}", va="center", fontsize=7)
-ax.set_yticks(yy, [MODEL[k].replace("$a + b\\cdot$", "a + b·").replace("N5 +", "Regression +") for k in order])
+ax.set_yticks(yy, [MODEL[k].replace("$a + b\\cdot$", "a + b·") for k in order])
 ax.set_xlabel("Median absolute error, cumulative operating cash flow over 8 quarters (pp of trailing revenue)")
 ax.grid(axis="y", visible=False)
 fig.tight_layout()
@@ -556,8 +581,9 @@ with plt.rc_context({"font.family": "sans-serif", "font.size": 10, "axes.edgecol
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11.5, 4.3), gridspec_kw={"width_ratios": [1, 1], "wspace": 0.55})
     fig.patch.set_facecolor(SURFACE)
     labels = {"N1": "Margin, 4 quarters", "N3": "Margin, 16 quarters", "N6": "Regression on revenue",
-              "T1": "Twin alone", "N3+T1": "16q margin + 15% of twin's departure"}
-    ks = ["N1", "N3", "N6", "T1", "N3+T1"]
+              "T1": "Twin alone", "N3+N5": "16q margin + share of regression's departure",
+              "N3+T1": "16q margin + share of twin's departure"}
+    ks = ["N1", "N3", "N6", "T1", "N3+N5", "N3+T1"]
     yv = np.arange(len(ks))[::-1]
     vals = [hy["mae_w"][k] for k in ks]
     a1.barh(yv, vals, 0.6, color=[ORANGE if k == "N3+T1" else BLUE if k == "T1" else "#b9b8ad" for k in ks])
@@ -567,8 +593,9 @@ with plt.rc_context({"font.family": "sans-serif", "font.size": 10, "axes.edgecol
     a1.set_xlabel("Out-of-sample error, 8-quarter operating cash flow (pp of revenue)")
     a1.grid(axis="y", visible=False)
     a1.set_facecolor(SURFACE)
-    a1.set_title("1  Given the revenue that happened, how much cash?\nAlone the twin is the least accurate; added to the best\n"
-                 "simple rule it lowers the error, out of sample", loc="left", fontsize=10.5, color=TEXT, pad=10)
+    a1.set_title("1  Given the revenue that happened, how much cash?\nAlone the twin is the least accurate; blended into the\n"
+                 "best rule it helps, but a simple regression helps almost as much", loc="left", fontsize=10.5, color=TEXT,
+                 pad=10)
     pk = [("Twin (simulated)", BP["all"]["predictors"]["twin"]["auc"], BP["weak"]["predictors"]["twin"]["auc"]),
           ("Twin's formula, no simulation", BP["all"]["predictors"]["formula"]["auc"], BP["weak"]["predictors"]["formula"]["auc"]),
           ("Ohlson O-score", BP["all"]["predictors"]["ohlson_o"]["auc"], BP["weak"]["predictors"]["ohlson_o"]["auc"]),
