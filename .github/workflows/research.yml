@@ -3,7 +3,10 @@
 # distress panel with the Chapter 11 census, the 2020 cross-section and ETS forecast comparisons.
 # Manual only; runs on free GitHub-hosted runners.
 name: research
-on: { workflow_dispatch: {} }
+on:
+  workflow_dispatch:
+    inputs:
+      mode: { description: "research, or audit (data completeness only)", default: research }
 permissions: { contents: read, actions: read }
 env:
   SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
@@ -12,7 +15,19 @@ env:
   FINTWIN_FACTS_MAX_AGE: "100000"  # one data vintage for the whole run
   SHARDS: 16
 jobs:
+  audit:
+    if: ${{ inputs.mode == 'audit' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    defaults: { run: { working-directory: engine } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync && uv run python scripts/data_audit.py
+      - uses: actions/upload-artifact@v4
+        with: { name: data-audit, path: docs/paper/data_audit.json }
   shard:
+    if: ${{ inputs.mode != 'audit' }}
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
@@ -32,7 +47,7 @@ jobs:
         with: { name: "research-${{ matrix.i }}", include-hidden-files: true, path: engine/.cache/research/ }
   stats:
     needs: shard
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && inputs.mode != 'audit' }}
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: engine } }
     steps:
