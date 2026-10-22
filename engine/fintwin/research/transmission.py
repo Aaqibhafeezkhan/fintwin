@@ -248,6 +248,22 @@ def encompassing(df: pd.DataFrame, var: str) -> dict:
             "r2": float(m.rsquared),
             "n": int(m.nobs),
         }
+    # unconstrained form (Fair and Shiller 1990): realized on every forecast in levels, so that noise in the four-quarter
+    # rule cannot load on the other forecasts through a coefficient restricted to 1 - sum(b)
+    lv = pd.DataFrame({k: _wins(d[f"{k}_{var}"], lo, hi) for k in ["N1", *cols]})
+    lv = pd.concat([lv, X[[c for c in X if c.startswith("y_")]]], axis=1)
+    for name, use in (("levels", ["N1", *cols]), ("levels_nulls_only", ["N1", "N3", "N4", "N6"])):
+        Xs = sm.add_constant(lv[[*use, *[c for c in lv if c.startswith("y_")]]])
+        m = sm.OLS(_wins(real, lo, hi).to_numpy(float), Xs).fit(
+            cov_type="cluster", cov_kwds={"groups": pd.factorize(d["ticker"])[0]}
+        )
+        out[name] = {
+            "coef": {k: float(m.params[k]) for k in use},
+            "t": {k: float(m.tvalues[k]) for k in use},
+            "p": {k: float(m.pvalues[k]) for k in use},
+            "r2": float(m.rsquared),
+            "n": int(m.nobs),
+        }
     return out
 
 
@@ -267,6 +283,11 @@ def hybrid(df: pd.DataFrame, var: str, firms: np.ndarray, b: int) -> dict:
         "N1+N3": ("N1", "N3"),
         "N1+N6": ("N1", "N6"),
         "N3+N6": ("N3", "N6"),
+        # combination-puzzle controls: any second, noisier estimate given a small weight
+        "N3+N1": ("N3", "N1"),
+        "N3+N2": ("N3", "N2"),
+        "N3+N5": ("N3", "N5"),
+        "N3+T0": ("N3", "T0"),
     }
     preds: dict[str, np.ndarray] = {}
     lambdas: dict[str, dict[int, float]] = {}
@@ -304,6 +325,10 @@ def hybrid(df: pd.DataFrame, var: str, firms: np.ndarray, b: int) -> dict:
         ("N1+T1", "N1"),
         ("N3+T1", "N3"),
         ("N3+T1", "N3+N6"),
+        ("N3+T1", "N3+N1"),
+        ("N3+T1", "N3+N2"),
+        ("N3+T1", "N3+N5"),
+        ("N3+T1", "N3+T0"),
         ("N4+T1", "N4"),
         ("N6+T1", "N6"),
         ("N1+T1", "N1+N6"),
