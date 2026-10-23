@@ -44,6 +44,7 @@ ABLATIONS: dict[str, dict] = {
 H_FC = 4
 FREEZE = PRESETS["pandemic"]["knobs"]
 DEPTHS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8)
+DEMAND = {"sales_duration": 3, "sales_recovery": 8, "spread_bp": 200, "spread_duration": 4}
 
 
 def data_vintage(cik: int) -> dict:
@@ -218,6 +219,13 @@ SENSITIVITY: dict[str, dict] = {
     "prior_weak": {"calib": {"prior_weight": 0.5}},
     "prior_strong": {"calib": {"prior_weight": 8.0}},
     "no_shrinkage": {"calib": {"growth_shrink": 1.0, "beta_shrink": 1.0}},
+    # grid of fixed-cost priors (weight 2, as specified) and the unshrunk estimate, from which `stats` selects a revised
+    # specification walk-forward, globally and by industry
+    **{
+        f"prior_share_{int(x * 100):02d}": {"calib": {"fixed_share_prior": x}}
+        for x in (0.05, 0.10, 0.15, 0.25, 0.30, 0.45)
+    },
+    "prior_none": {"calib": {"prior_weight": 0.0}},
     "access_strict": {"p": {"access_icr": (2.5, 1.5)}},
     "access_lenient": {"p": {"access_icr": (1.0, 0.5), "access_levels": (0.8, 0.5)}},
     "cuts_fast": {"p": {"cut_delay": 1, "cut_speed": 0.08, "cut_floor": 0.75}},
@@ -272,12 +280,30 @@ def _probs(sim: dict, p: dict, n_q: int, rev_ttm: float, capex_pre: float) -> di
     """Share of simulated paths on which each liquidity event happens (same definitions as the realized events)."""
     cash = sim["cash"][:, :n_q]
     debt = (sim["debt"] + sim["revolver"])[:, :n_q]
-    return {
+    div4, capex4 = sim["dividends"][:, :4].sum(1), sim["capex"][:, :4].sum(1)
+    raise_ = (debt - p["debt0"]) / rev_ttm
+    out: dict = {
         "cash_half": float(np.mean(cash.min(1) < 0.5 * p["cash0"])) if p["cash0"] > 0 else None,
-        "debt_raise": float(np.mean((debt.max(1) - p["debt0"]) / rev_ttm > 0.05)),
-        "div_cut": float(np.mean(sim["dividends"][:, :4].sum(1) < 0.5 * 4 * p["div_q"])) if p["div_q"] > 0 else None,
-        "capex_cut": float(np.mean(sim["capex"][:, :4].sum(1) < 0.75 * capex_pre)) if capex_pre > 0 else None,
+        "debt_raise": float(np.mean(raise_.max(1) > 0.05)),
+        "div_cut": float(np.mean(div4 < 0.5 * 4 * p["div_q"])) if p["div_q"] > 0 else None,
+        "capex_cut": float(np.mean(capex4 < 0.75 * capex_pre)) if capex_pre > 0 else None,
     }
+    # the same events at other thresholds, and when they happen (cumulative probability by quarter)
+    out["grid"] = {
+        "cash": {f"{x}": float(np.mean(cash.min(1) < x * p["cash0"])) for x in (0.3, 0.5, 0.7)}
+        if p["cash0"] > 0
+        else {},
+        "debt": {f"{x}": float(np.mean(raise_.max(1) > x)) for x in (0.03, 0.05, 0.10)},
+        "div": {f"{x}": float(np.mean(div4 < (1 - x) * 4 * p["div_q"])) for x in (0.25, 0.5)} if p["div_q"] > 0 else {},
+        "capex": {f"{x}": float(np.mean(capex4 < (1 - x) * capex_pre)) for x in (0.25, 0.5)} if capex_pre > 0 else {},
+    }
+    out["timing"] = {
+        "cash_half": [float(np.mean((cash[:, : k + 1] < 0.5 * p["cash0"]).any(1))) for k in range(n_q)]
+        if p["cash0"] > 0
+        else None,
+        "debt_raise": [float(np.mean((raise_[:, : k + 1] > 0.05).any(1))) for k in range(n_q)],
+    }
+    return out
 
 
 def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFrame | None = None, n_q: int = 8) -> dict:
@@ -313,10 +339,13 @@ def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFra
 
     pre_cfo, pre_fcf = pre["cfo"], pre["cfo"] - pre["capex"]
     capex_pre = float(pre["capex"].tail(4).sum())
+    ebitda_real = (nxt["operating_income"] + nxt["da"].fillna(0)).to_numpy(float)
     out: dict = {
         "rev": pc(rev),
         "real_cfo": pc(cfo),
         "real_fcf": pc(cfo - capex),
+        "real_ebitda": pc(ebitda_real) if np.isfinite(ebitda_real).all() else None,
+        "real_capex": pc(capex),
         "m": {f"{n}{k}": _f(_margin(pre, c, k)) for n, c in (("cfo", pre_cfo), ("fcf", pre_fcf)) for k in (4, 8, 16)},
     }
     rev_prev = float(pre["revenue"].iloc[-1])
@@ -331,6 +360,9 @@ def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFra
             tag = "twin" if k == "full" else "noloops"
             out[f"{tag}_cfo"] = pc(np.median(sim["cfo"][:, :n_q], axis=0))
             out[f"{tag}_fcf"] = pc(np.median(sim["fcf"][:, :n_q], axis=0))
+            if k == "full":
+                out["twin_ebitda"] = pc(np.median(sim["ebitda"][:, :n_q], axis=0))
+                out["twin_capex"] = pc(np.median(sim["capex"][:, :n_q], axis=0))
     out["probs"] = probs
 
     # realized liquidity decisions
@@ -344,6 +376,22 @@ def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFra
         "debt_raise": bool((np.nanmax(debt) - p["debt0"]) / rev_ttm > 0.05) if np.isfinite(debt).any() else None,
         "div_cut": bool(nxt["dividends"].head(4).fillna(0).sum() < 0.5 * div_pre) if div_pre > 0 else None,
         "capex_cut": bool(capex[:4].sum() < 0.75 * capex_pre) if capex_pre > 0 else None,
+    }
+
+    def first(mask: np.ndarray) -> int | None:
+        hit = np.flatnonzero(mask)
+        return int(hit[0]) + 1 if len(hit) else None
+
+    raise_real = (debt - p["debt0"]) / rev_ttm
+    out["realized_cont"] = {
+        "cash_min_ratio": _f(np.nanmin(cash_like) / p["cash0"])
+        if p["cash0"] > 0 and np.isfinite(cash_like).any()
+        else None,
+        "debt_raise_ratio": _f(np.nanmax(raise_real)) if np.isfinite(debt).any() else None,
+        "div_ratio": _f(nxt["dividends"].head(4).fillna(0).sum() / div_pre) if div_pre > 0 else None,
+        "capex_ratio": _f(capex[:4].sum() / capex_pre) if capex_pre > 0 else None,
+        "t_cash_half": first(cash_like < 0.5 * p["cash0"]) if p["cash0"] > 0 else None,
+        "t_debt_raise": first(np.nan_to_num(raise_real, nan=-1) > 0.05),
     }
     # an analyst's static runway with the same inputs: the trailing FCF margin on the realized revenue, minus the
     # current dividend and buyback run-rate and the maturities the company does not usually refinance
@@ -445,6 +493,7 @@ def _distress(hist: CompanyData, full: pd.DataFrame) -> dict:
         "icr_min": _f(icr.min()) if len(icr) else None,
         "div_payer": bool(div_pre > 0),
         "div_cut": bool(div_pre > 0 and div_post < 0.5 * div_pre),
+        "rev_drop8": _f((nxt["revenue"] / both["revenue"].shift(4).reindex(nxt.index) - 1).min() * 100),
     }
 
 
@@ -528,6 +577,8 @@ def _forecast_origin(origin: str, hist: CompanyData, full: pd.DataFrame) -> list
                     "q": [float(v) for v in np.percentile(out[key][:, h], [5, 25, 50, 75, 95])],
                     "pit_twin": float(np.mean(out[key][:, h] <= y)),
                     "target": str(real.index[h].date()),
+                    "rw_mu": _f(mu_b),
+                    "rw_sd": _f(sd_b),
                 }
             )
     return rows
@@ -574,6 +625,11 @@ def company(ticker: str, with_forecasts: bool = True) -> dict:
                     "features": features(hist, p),
                     "outcome": _distress(hist, full_data.quarters),
                     "structural": structural(hist, raw, full_data.quarters, macro_quarterly(origin)),
+                    # stress score under a generic demand shock of each depth (no market closure), so that `stats`
+                    # can give each firm its industry's realized shock in any episode (2015-16, 2020, 2022)
+                    "depth_grid": {
+                        f"{d:.2f}": _run(raw, {**DEMAND, "sales_depth": d}, {}, 1000, 12, 7)["health"] for d in DEPTHS
+                    },
                 }
             )
         except Exception as e:
