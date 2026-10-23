@@ -64,3 +64,40 @@ def test_sixteen_week_quarters_are_kept():
     ]
     q = duration_quarters(gaap("X", rows), "X")
     assert q[pd.Timestamp("2024-09-01")][0] == 160 and len(q) == 4
+
+
+def test_xbrl_instance_fallback_parses_entity_wide_usd_facts():
+    from fintwin.data.xbrl_fallback import parse_instance
+
+    doc = b"""<?xml version="1.0"?>
+<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025"
+  xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:iso4217="http://www.xbrl.org/2003/iso4217">
+ <xbrli:context id="q"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier></xbrli:entity>
+  <xbrli:period><xbrli:startDate>2026-04-01</xbrli:startDate><xbrli:endDate>2026-06-30</xbrli:endDate></xbrli:period></xbrli:context>
+ <xbrli:context id="seg"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier>
+  <xbrli:segment><xbrldi:explicitMember dimension="a">b</xbrldi:explicitMember></xbrli:segment></xbrli:entity>
+  <xbrli:period><xbrli:startDate>2026-04-01</xbrli:startDate><xbrli:endDate>2026-06-30</xbrli:endDate></xbrli:period></xbrli:context>
+ <xbrli:context id="i"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier></xbrli:entity>
+  <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period></xbrli:context>
+ <xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit>
+ <us-gaap:Revenues contextRef="q" unitRef="usd" decimals="-6">100000000</us-gaap:Revenues>
+ <us-gaap:Revenues contextRef="seg" unitRef="usd" decimals="-6">40000000</us-gaap:Revenues>
+ <us-gaap:Revenues contextRef="q" unitRef="usd" decimals="-6">100000000</us-gaap:Revenues>
+ <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="i" unitRef="usd">7000000</us-gaap:CashAndCashEquivalentsAtCarryingValue>
+ <us-gaap:NetIncomeLoss contextRef="q" unitRef="usd">5</us-gaap:NetIncomeLoss>
+</xbrli:xbrl>"""
+    out = parse_instance(doc, {"Revenues", "CashAndCashEquivalentsAtCarryingValue"}, "a-1", "10-Q", "2026-07-29")
+    assert out["Revenues"] == [
+        {
+            "start": "2026-04-01",
+            "end": "2026-06-30",
+            "val": 1e8,
+            "accn": "a-1",
+            "form": "10-Q",
+            "filed": "2026-07-29",
+            "fy": None,
+            "fp": None,
+        }
+    ]  # segment and duplicate dropped
+    assert out["CashAndCashEquivalentsAtCarryingValue"][0]["end"] == "2026-06-30"
+    assert "NetIncomeLoss" not in out  # not requested

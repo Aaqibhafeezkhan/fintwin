@@ -254,7 +254,7 @@ def encompassing(df: pd.DataFrame, var: str) -> dict:
     lv = pd.concat([lv, X[[c for c in X if c.startswith("y_")]]], axis=1)
     for name, use in (("levels", ["N1", *cols]), ("levels_nulls_only", ["N1", "N3", "N4", "N6"])):
         Xs = sm.add_constant(lv[[*use, *[c for c in lv if c.startswith("y_")]]])
-        m = sm.OLS(_wins(real, lo, hi).to_numpy(float), Xs).fit(
+        m = sm.OLS(np.asarray(_wins(real, lo, hi), float), Xs).fit(
             cov_type="cluster", cov_kwds={"groups": pd.factorize(d["ticker"])[0]}
         )
         out[name] = {

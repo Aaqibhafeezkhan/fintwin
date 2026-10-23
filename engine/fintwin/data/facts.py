@@ -23,7 +23,11 @@ from .edgar import ticker_to_cik
 
 @lru_cache(maxsize=2)
 def company_facts(cik: int) -> dict:
-    return _company_facts(cik)
+    """XBRL company facts, completed from each filing's own XBRL where the SEC API lacks a periodic filing."""
+    from .xbrl_fallback import augment
+
+    tags = {t for tags in (*DURATION.values(), *INSTANT.values()) for t in tags} | set(MATURITY_TAGS)
+    return augment(cik, _company_facts(cik), tags)
 
 
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "10-KT", "20-F", "40-F"}
