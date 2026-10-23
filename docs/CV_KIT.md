@@ -14,7 +14,7 @@
 
 ## 30-second spoken pitch
 
-"I built a flight simulator for a company's finances. It reads 15 years of a company's official SEC filings and learns how its money behaves: which costs are fixed, how fast customers pay, when its debt comes due. Then it replays the next three years 5,000 times under whatever crisis you pick and shows the probability that the company runs out of cash. Then I tried hard to prove it wrong, on every non-financial SEC filer including the ones that went bankrupt. Most of what it seemed to know turned out to be persistence: a simple long-window cash-flow margin predicts better, and its distress score is no better without the simulation. What survives is small and real: given a revenue path, the simulation knows which way cash will depart from the simple rule, and blending a bit of it in makes forecasts measurably better."
+"I built a flight simulator for a company's finances. It reads 15 years of a company's official SEC filings and learns how its money behaves: which costs are fixed, how fast customers pay, when its debt comes due. Then it replays the next three years 5,000 times under whatever crisis you pick and shows the probability that the company runs out of cash. Then I tried hard to prove it wrong, on every US non-financial SEC filer with $50M+ revenue, including the ones that went bankrupt. Most of what it seemed to know turned out to be persistence: a simple long-window cash-flow margin predicts better, and its distress score is no better without the simulation. What survives is small and real: given a revenue path, the simulation knows which way cash will depart from the simple rule, and blending a bit of it in makes forecasts measurably better."
 
 ## Interview deep-dive answers
 
@@ -41,7 +41,7 @@ Industry-specific modules: fleet lay-up costs for cruise and airlines, program a
 >
 > It reads a company's SEC filings, builds a stock-and-flow model of how cash, debt and margins interact, and runs 5,000 simulated futures under any crisis you choose: a pandemic, +300bp rates, closed debt markets. You get a probability distribution, not a guess.
 >
-> What I learned testing it: on every non-financial SEC filer, most of the twin's apparent skill was persistence. A 16-quarter cash-flow margin predicts cash better on its own, and the simulated distress score ranks 377 bankruptcies no better than the same formula without simulation. What survives is small: given a revenue path, the direction of the simulation's departures from the margin is informative, but out of sample it only beats simple rules for free cash flow. Its revenue forecasts beat a random walk and exponential smoothing.
+> What I learned testing it: on every US non-financial SEC filer with $50M+ revenue, most of the twin's apparent skill was persistence. A 16-quarter cash-flow margin predicts cash better on its own, and the simulated distress score ranks 377 bankruptcies no better than the same formula without simulation. What survives is small: given a revenue path, the direction of the simulation's departures from the margin is informative, but out of sample it only beats simple rules for free cash flow. Its revenue forecasts beat a random walk and exponential smoothing.
 >
 > It all runs in the browser, with a Python reference engine and a TypeScript engine parity-tested to 1e-6.
 >
