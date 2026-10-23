@@ -65,14 +65,14 @@ def frame(panel: pd.DataFrame) -> pd.DataFrame:
             ("dyn_cfo", "dyn_cfo"),
         ):
             v = st.get(key)
-            rec[k] = float(np.sum(v)) if v is not None else np.nan
+            rec[k] = float(np.sum(np.asarray(v, float))) if v is not None else np.nan
         for var in ("cfo", "fcf"):
             mv = m.get(f"{var}16")
             rec[f"N3_{var}"] = float(mv) * rev.sum() if mv is not None else np.nan
         rec["N3_capex"] = rec["N3_cfo"] - rec["N3_fcf"]
         rec["N5_capex"] = rec["ols_cfo"] - rec["ols_fcf"]
         for name, v in (st.get("sens") or {}).items():
-            rec[f"S_{name}_cfo"] = float(np.sum(v["cfo"]))
+            rec[f"S_{name}_cfo"] = float(np.sum(np.asarray(v["cfo"], float)))
             rec[f"S_{name}_health"] = v.get("health")
         rec["S_baseline_cfo"], rec["S_baseline_health"] = rec["twin_cfo"], rec["h_base"]
         rc = st.get("realized_cont") or {}

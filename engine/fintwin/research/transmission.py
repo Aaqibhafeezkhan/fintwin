@@ -86,7 +86,7 @@ def frame(rows: pd.DataFrame) -> pd.DataFrame:
             rec[f"m4_{var}"] = m.get(f"{var}4")
             rec["revsum"] = float(rev.sum())
         for k, path in (st.get("sens") or {}).items():
-            rec[f"S_{k}_cfo"] = float(np.sum(path["cfo"]))
+            rec[f"S_{k}_cfo"] = float(np.sum(np.asarray(path["cfo"], float)))
             rec[f"S_{k}_health"] = path.get("health")
             for e in EVENTS:
                 rec[f"S_{k}_pb_{e}"] = (path.get("probs") or {}).get(e)
