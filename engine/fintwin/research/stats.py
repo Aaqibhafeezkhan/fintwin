@@ -237,6 +237,7 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
                 "y_bk4": bk_event(dates, pr["origin"], 365),
                 "st": pr.get("structural") or {},
             }
+            row |= {f"dg_{k}": v for k, v in (pr.get("depth_grid") or {}).items()}
             row |= {
                 "h_base": pr["base"]["health"],
                 "pb_base": pr["base"]["p_breach"],
@@ -248,10 +249,36 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             panel.append(row)
         for fr in r.get("forecasts", []):
             fc.append({"ticker": r["ticker"], **fr})
-    xs, panel = pd.DataFrame(xs), pd.DataFrame(panel)
-    if "log_rev" in panel:  # point-in-time size screen: $50M trailing revenue at the cutoff
-        panel = panel[panel["log_rev"].astype(float) >= MIN_LOG_REV].reset_index(drop=True)
-    return xs, panel, pd.DataFrame(fc), errors
+    return pd.DataFrame(xs), pd.DataFrame(panel), pd.DataFrame(fc), errors
+
+
+def size_screen(df: pd.DataFrame) -> pd.DataFrame:
+    """Point-in-time size screen: $50M trailing revenue at the cutoff."""
+    if "log_rev" not in df:
+        return df
+    return df[df["log_rev"].astype(float) >= MIN_LOG_REV].reset_index(drop=True)
+
+
+def _secondary_pvalues(res: dict) -> dict[str, float]:
+    """p-values of the secondary comparisons, for a Holm adjustment (the H2 rule is the only confirmatory test)."""
+    out: dict[str, float] = {}
+    tp = res.get("transmission", {}).get("panel", {})
+    for var in ("cfo", "fcf"):
+        h = tp.get(var, {}).get("hybrid", {})
+        for k in ("N3+T1_vs_N3+N1", "N3+T1_vs_N3+N5", "N3+T1_vs_N3+N6"):
+            if k in h:
+                out[f"hybrid_{var}_{k}"] = h[k]["p"]
+    for e, d in tp.get("decisions", {}).items():
+        if d.get("oos"):
+            out[f"decision_{e}"] = d["oos"]["delta_twin"]["p"]
+    for e, d in res.get("panel", {}).items():
+        if isinstance(d, dict) and d.get("out_of_sample"):
+            out[f"panel_{e}"] = d["out_of_sample"]["delta_twin_beyond_formula"]["p"]
+    for sub in ("all", "weak"):
+        tm = res.get("bankruptcy_panel", {}).get(sub, {}).get("predictors", {}).get("formula", {}).get("twin_minus")
+        if tm:
+            out[f"bankruptcy_{sub}_twin_minus_formula"] = tm["p"]
+    return out
 
 
 def _industry(key: str) -> str:
@@ -636,8 +663,8 @@ def forecast_section(fc: pd.DataFrame) -> dict:
 def main(cache: Path) -> dict:
     from . import calibration, distress, transmission
 
-    xs, panel, fc, errors = load(cache)
-    xs = xs[xs["log_rev"].astype(float) >= MIN_LOG_REV].reset_index(drop=True) if "log_rev" in xs else xs
+    xs, panel_all, fc, errors = load(cache)
+    xs, panel = size_screen(xs), size_screen(panel_all)
     samples = {
         "edgar": np.ones(len(xs), bool),
         "sp2020": xs["sp2020"].to_numpy(bool),
@@ -669,6 +696,11 @@ def main(cache: Path) -> dict:
         "calibration": calibration.section(fc, panel),
         "errors": errors,
     }
+    from . import plan2
+
+    res["plan2"] = plan2.section(panel_all, panel, fc, B_PANEL)
+    res["plan2"]["verdicts"] = plan2.verdicts(res)
+    res["plan2"]["holm"] = plan2.holm(_secondary_pvalues(res))
     from ..export import _clean
 
     OUT.write_text(json.dumps(_clean(res), indent=1), encoding="utf-8")
