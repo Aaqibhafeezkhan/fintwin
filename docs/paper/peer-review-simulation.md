@@ -80,6 +80,9 @@ reversion ≈38%/yr) ✓ · Dechow–Kothari–Watts 1998 JAE 25(2):133–168 �
 ## Genuine blockers (need something external)
 1. **No submission package.** Run paper-finalizer once a target journal is chosen: cover letter, declarations
    (COI, funding, data availability, CRediT), the journal's format and length.
-2. **Data-audit numbers** (the Georgios point) are missing from §3.1. They wait for workflow run 39849497834.
+2. ~~Data-audit numbers~~: added to §3.1 after workflow run 39849497834 finished (1,043 → 748 gaps; 87% of
+   panels end at the last filed quarter; the mismatches come from SEC companyfacts lag and untagged revenue,
+   verified by hand on HCA, Coca-Cola, Semtech and Garmin). **Still open:** a fallback parser for filings
+   missing from companyfacts.
 3. **Acknowledging the commenting researchers by name** needs their permission.
 4. **SSRN posting** is the author's decision.
