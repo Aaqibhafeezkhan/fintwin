@@ -45,6 +45,15 @@ DURATION = {
         "SalesRevenueServicesGross",
         "RevenueFromContractWithCustomerIncludingAssessedTax",
         "SalesRevenueGoodsNet",
+        # industry-specific totals, used only for periods that none of the tags above covers (found in the audit of
+        # the remaining gaps: services firms, utilities, oil and gas producers, real estate, contractors)
+        "SalesRevenueServicesNet",
+        "RegulatedAndUnregulatedOperatingRevenue",
+        "ElectricUtilityRevenue",
+        "OilAndGasRevenue",
+        "OilAndGasSalesRevenue",
+        "RealEstateRevenueNet",
+        "ContractsRevenue",
     ],
     "operating_income": ["OperatingIncomeLoss"],
     "pretax_income": [

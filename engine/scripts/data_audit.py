@@ -32,11 +32,25 @@ def audit(key: str, cik: int) -> dict:
     gaps = (idx[1:] - idx[:-1]).days
     f = submissions(cik)["filings"]
     per = f[f["form"].isin(["10-Q", "10-K", "10-KT", "10-Q/A", "10-K/A"])]
+    # why each remaining gap exists: no periodic filing for a period inside it, or a filing without a revenue fact
+    reports = pd.to_datetime(per["reportDate"].replace("", None)).dropna()
+    no_filing = tagging = 0
+    for i in range(len(idx) - 1):
+        if gaps[i] > 126:
+            inside = reports[
+                (reports > idx[i] + pd.Timedelta(days=14)) & (reports < idx[i + 1] - pd.Timedelta(days=14))
+            ]
+            if len(inside):
+                tagging += 1
+            else:
+                no_filing += 1
     last_report = pd.to_datetime(per["reportDate"].replace("", None)).max() if len(per) else pd.NaT
     lag = abs((idx[-1] - last_report).days) if pd.notna(last_report) and len(idx) else None
     return {
         "n_quarters": int(len(q)),
         "gaps_over_126d": int((gaps > 126).sum()),
+        "gaps_no_filing": no_filing,
+        "gaps_filed_untagged": tagging,
         "rev_missing": int(q["revenue"].isna().sum()),
         "cfo_missing": int(q["cfo"].isna().sum()),
         "latest_matches_last_filing": bool(lag is not None and lag <= 14),
@@ -64,6 +78,8 @@ def summary(d: pd.DataFrame) -> dict:
         "firm_quarters": int(ok["n_quarters"].sum()),
         "companies_with_gaps": int((ok["gaps_over_126d"] > 0).sum()),
         "gaps": int(ok["gaps_over_126d"].sum()),
+        "gaps_no_filing": int(ok["gaps_no_filing"].sum()) if "gaps_no_filing" in ok else None,
+        "gaps_filed_untagged": int(ok["gaps_filed_untagged"].sum()) if "gaps_filed_untagged" in ok else None,
         "share_latest_matches_last_filing": float(ok["latest_matches_last_filing"].mean()),
         "cfo_missing_quarters": int(ok["cfo_missing"].sum()),
     }
