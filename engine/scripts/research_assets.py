@@ -148,7 +148,21 @@ m("TrTwinVsSixteenLo", f2(inc["N3"]["T1"]["ci"][0]))
 m("TrTwinVsSixteenHi", f2(inc["N3"]["T1"]["ci"][1]))
 m("TrFourVsSixteen", f2(inc["N3"]["N1"]["rho"]))
 m("TrTwinVsShrunk", f2(inc["N4"]["T1"]["rho"]))
+m("TrTwinVsShrunkLo", f2(inc["N4"]["T1"]["ci"][0]))
+m("TrTwinVsShrunkHi", f2(inc["N4"]["T1"]["ci"][1]))
 m("TrTwinVsReg", f2(inc["N6"]["T1"]["rho"]))
+m("TrTwinVsRegLo", f2(inc["N6"]["T1"]["ci"][0]))
+m("TrTwinVsRegHi", f2(inc["N6"]["T1"]["ci"][1]))
+enc2 = cfo["encompassing"]
+if "all_two_way" in enc2:
+    m("TrEncTwinTTwoWay", f1(enc2["all_two_way"]["t"]["T1"]))
+    m("TrEncShrunkTTwoWay", f1(enc2["all_two_way"]["t"]["N4"]))
+    m("TrEncLevelsTwinTTwoWay", f1(enc2["levels"]["t_two_way"]["T1"]))
+    h = enc2["hln"]
+    m("TrHlnTwinOverSixteen", f1(h["T1_encompasses_N3"]["t"]))
+    m("TrHlnSixteenOverTwin", f1(h["N3_encompasses_T1"]["t"]))
+    m("TrHlnTwinOverReg", f1(h["T1_encompasses_N6"]["t"]))
+    m("TrHlnRegOverTwin", f1(h["N6_encompasses_T1"]["t"]))
 m("TrFcfTwinVsSixteen", f2(fcf["incremental"]["N3"]["T1"]["rho"]))
 enc = cfo["encompassing"]["all"]
 m("TrEncTwinCoef", f2(enc["coef"]["T1"]))
@@ -356,6 +370,13 @@ m("BkPanEv", BP["all"]["events"])
 m("BkWeakN", big(BP["weak"]["n"]))
 m("BkWeakEv", BP["weak"]["events"])
 m("BkWeakShare", pc(BP["weak"]["share_of_events"]))
+if "distinct_firms" in BP:
+    m("BkPanFirms", big(BP["distinct_firms"]))
+if "four_quarters" in BP:
+    q4 = BP["four_quarters"]
+    m("BkFourEv", q4["events"])
+    for k, tag in (("twin", "Twin"), ("formula", "Formula"), ("ohlson_o", "Ohlson"), ("altman_z2", "Altman")):
+        m(f"BkFour{tag}", f2(q4["predictors"][k]["auc"]))
 m("BkTwentyN", big(B20["all"]["n"]))
 m("BkTwentyEv", B20["all"]["events"])
 for blk, tag in ((BP["all"], "Pan"), (BP["weak"], "Weak"), (B20["all"], "Twenty"), (B20["weak"], "TwentyWeak")):
@@ -399,7 +420,7 @@ for ev, label in EV.items():
     bb = max((k for k in [*CLASSIC, *CASHFLOW] if k in uni), key=lambda k: uni[k]["auc"])
     o = e["out_of_sample"]
     dd = o["delta_twin_beyond_formula"]
-    rows.append(f"{label} & {big(e['n'])} & {e['events']} & {f2(uni['twin']['auc'])} & {f2(uni['formula']['auc'])} & "
+    rows.append(f"{label} & {big(e['n'])} & {big(e['events'])} & {f2(uni['twin']['auc'])} & {f2(uni['formula']['auc'])} & "
                 f"{f2(uni[bb]['auc'])} ({lower(NAMES[bb])}) & {f2(o['benchmarks_formula']['auc'])} & "
                 f"{f2(o['benchmarks_formula_twin']['auc'])} & {sgn(dd['diff'], 3)} {ci_txt(dd['ci'], 3)}{stars(dd['p'])} \\\\")
 table("panel", [
@@ -428,13 +449,13 @@ for k in ["twin", "twin_base", "formula", *CLASSIC, *CASHFLOW]:
         rows.append("\\addlinespace")
 table("covid", [
     "\\begin{tabular}{lrrrr}", "\\toprule",
-    f" & \\multicolumn{{2}}{{c}}{{All filers ($n$ = {C['edgar']['n']})}} & "
+    f" & \\multicolumn{{2}}{{c}}{{All filers ($n$ = {big(C['edgar']['n'])})}} & "
     f"\\multicolumn{{2}}{{c}}{{S\\&P 500 on 20 Feb 2020 ($n$ = {C['sp2020']['n']})}} \\\\",
     "\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}",
     " & Raw burn & Abnormal burn & Raw burn & Abnormal burn \\\\", "\\midrule", *rows, "\\bottomrule", "\\end{tabular}"])
 for s, tag in (("edgar", "All"), ("sp2020", "Sp")):
     cp, ca = C[s]["predictors"], CA[s]["predictors"]
-    m(f"Cov{tag}N", C[s]["n"])
+    m(f"Cov{tag}N", big(C[s]["n"]))
     m(f"Cov{tag}Twin", f2(cp["twin"]["rho"]))
     m(f"Cov{tag}Altman", f2(cp["altman_z2"]["rho"]))
     m(f"Cov{tag}Fcf", f2(cp["fcf_margin"]["rho"]))
@@ -446,24 +467,28 @@ m("CovSpTodayTwin", f2(C["sp_today"]["predictors"]["twin"]["rho"]))
 rows = []
 for o, lab in (("real_burn", "Raw burn"), ("real_abn_burn", "Abnormal burn")):
     x = EX[o]
-    rg = x["regression"]
+    rg = x.get("regression_robust") or x["regression"]
+    fo = f"{f2(rg['formula']['coef'])} ({f1(rg['formula']['t'])})" if "formula" in rg else "--"
     rows.append(f"{lab} & {f2(x['twin_uniform']['rho'])} & {f2(x['exposure_only']['rho'])} & "
                 f"{f2(x['twin_at_exposure']['rho'])} & {f2(x['fcf_margin']['rho'])} & "
                 f"{f2(rg['exp']['coef'])} ({f1(rg['exp']['t'])}) & {f2(rg['twin']['coef'])} ({f1(rg['twin']['t'])}) & "
-                f"{f2(rg['fcf']['coef'])} ({f1(rg['fcf']['t'])}) \\\\")
+                f"{f2(rg['fcf']['coef'])} ({f1(rg['fcf']['t'])}) & {fo} \\\\")
 table("exposure", [
-    "\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrrrrrr}", "\\toprule",
-    " & \\multicolumn{4}{c}{Spearman $\\rho$ with burn} & \\multicolumn{3}{c}{Rank regression, coefficient ($t$)} \\\\",
-    "\\cmidrule(lr){2-5}\\cmidrule(lr){6-8}",
+    "\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrrrrrrr}", "\\toprule",
+    " & \\multicolumn{4}{c}{Spearman $\\rho$ with burn} & \\multicolumn{4}{c}{Rank regression, coefficient ($t$)} \\\\",
+    "\\cmidrule(lr){2-5}\\cmidrule(lr){6-9}",
     "Outcome & Twin, uniform freeze & Industry shock alone & Twin at industry shock & FCF margin & "
-    "Industry shock & Twin at shock & FCF margin \\\\", "\\midrule", *rows, "\\bottomrule", "\\end{tabular}}"])
+    "Industry shock & Twin at shock & FCF margin & Formula \\\\", "\\midrule", *rows, "\\bottomrule", "\\end{tabular}}"])
 m("ExpDepth", pc(EX["median_depth"]))
 m("ExpTwinRaw", f2(EX["real_burn"]["twin_at_exposure"]["rho"]))
 m("ExpUniformRaw", f2(EX["real_burn"]["twin_uniform"]["rho"]))
 m("ExpOnlyAbn", f2(EX["real_abn_burn"]["exposure_only"]["rho"]))
 m("ExpTwinAbn", f2(EX["real_abn_burn"]["twin_at_exposure"]["rho"]))
-m("ExpTwinAbnT", f1(EX["real_abn_burn"]["regression"]["twin"]["t"]))
-m("ExpFcfAbnT", f1(EX["real_abn_burn"]["regression"]["fcf"]["t"]))
+_rg = EX["real_abn_burn"].get("regression_robust") or EX["real_abn_burn"]["regression"]
+m("ExpTwinAbnT", f1(_rg["twin"]["t"]))
+m("ExpFcfAbnT", f1(_rg["fcf"]["t"]))
+if "formula" in _rg:
+    m("ExpFormulaAbnT", f1(_rg["formula"]["t"]))
 
 # ------------------------------------------------------------------ 7. forecasts and calibration
 FC, CAL = R["forecasts"], R["calibration"]
@@ -537,6 +562,8 @@ if AUDIT.exists():
 P2 = R.get("plan2", {})
 if P2:
     rs = P2["revised_spec"]["global"]
+    m("RevTestN", big(rs["n"]))
+    m("RevFirstYear", min(rs["chosen"]))
     m("RevMaeBase", f1(rs["median_ae_baseline"]))
     m("RevMaeNew", f1(rs["median_ae_revised"]))
     m("RevDiff", f1(-rs["diff"]["diff"]))
@@ -611,18 +638,23 @@ if P2:
             continue
         e = ep[y]
         for o, olab in (("y_burn8", "raw"), ("y_abn_burn8", "abnormal")):
-            t = e[o]["t"]
+            t = e[o].get("t_robust") or e[o]["t"]
             rows.append(f"{lab if o == 'y_burn8' else ''} & {big(e['n']) if o == 'y_burn8' else ''} & "
                         f"{pc(e['median_depth']) if o == 'y_burn8' else ''} & {olab} & {f1(t['exp'])} & {f1(t['twin'])} & "
-                        f"{f1(t['fcf'])} \\\\")
+                        f"{f1(t['fcf'])} & {f1(t['formula']) if 'formula' in t else '--'} \\\\")
         rows.append("\\addlinespace")
-    table("episodes", ["\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrlrrr}", "\\toprule",
-                       " & & Median & & \\multicolumn{3}{c}{Rank regression $t$} \\\\", "\\cmidrule(lr){5-7}",
-                       "Episode & Firms & shock & Burn & Industry shock & Twin at shock & FCF margin \\\\", "\\midrule",
+    table("episodes", ["\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrlrrrr}", "\\toprule",
+                       " & & Median & & \\multicolumn{4}{c}{Rank regression $t$, industry-clustered} \\\\",
+                       "\\cmidrule(lr){5-8}",
+                       "Episode & Firms & shock & Burn & Industry shock & Twin at shock & FCF margin & Formula \\\\",
+                       "\\midrule",
                        *rows[:-1], "\\bottomrule", "\\end{tabular}}"])
     for y, tag in (("2015", "Fifteen"), ("2020", "Twenty"), ("2022", "TwentyTwo")):
         if y in ep:
             m(f"Epi{tag}T", f1(ep[y]["y_abn_burn8"]["t"]["twin"]))
+            m(f"Epi{tag}TRobust", f1(ep[y]["y_abn_burn8"]["t_robust"]["twin"]))
+            m(f"Epi{tag}FormulaT", f1(ep[y]["y_abn_burn8"]["t_robust"]["formula"]))
+            m(f"Epi{tag}Clusters", ep[y]["y_abn_burn8"]["n_clusters"])
             m(f"Epi{tag}Depth", pc(ep[y]["median_depth"]))
     m("EpiVerdict", "generalizes" if ep.get("generalizes") else "does not generalize")
     fm = P2["fcf_mechanism"]
@@ -642,6 +674,15 @@ if P2:
     tw = P2["two_way"]
     m("TwoWayLo", f2(tw["ci_two_way"][0]))
     m("TwoWayHi", f2(tw["ci_two_way"][1]))
+    at = P2.get("attrition", {})
+    if "with_outcome" in at:
+        m("AttrShare", pc(at["share_with_outcome"]))
+        m("AttrShareBk", pc(at["share_with_outcome_bankrupt"]))
+        m("AttrShareNonBk", pc(at["share_with_outcome_not_bankrupt"]))
+        m("AttrTwin", f1(at["median_ae_twin_cfo"]))
+        m("AttrTwinIpw", f1(at["median_ae_twin_cfo_ipw"]))
+        m("AttrSixteen", f1(at["median_ae_N3_cfo"]))
+        m("AttrSixteenIpw", f1(at["median_ae_N3_cfo_ipw"]))
     v = P2["verdicts"]
     m("HOneVerdict", "accepted" if v["H1_accepted"] else "rejected")
     m("HThreeVerdict", "accepted" if v["H3_accepted"] else "rejected")
@@ -696,6 +737,9 @@ if SOB.exists():
     m("SobTopST", f2(min(top["ST"], 1.0)))
     rest = sum(max(r["ST"], 0) for r in SB["median_ae"]["indices"] if r is not top)
     m("SobRestST", f2(rest))
+    if SB.get("specified"):
+        m("SobSpecMae", f1(SB["specified"]["median_ae"]))
+        m("SobSpecIncr", f2(SB["specified"]["incremental"]))
     rows = []
     for a, b in zip(SB["median_ae"]["indices"], SB["incremental"]["indices"], strict=True):
         def cl(x, hi=1.0):

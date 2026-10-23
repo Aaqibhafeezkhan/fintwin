@@ -86,3 +86,48 @@ reversion ≈38%/yr) ✓ · Dechow–Kothari–Watts 1998 JAE 25(2):133–168 �
    missing from companyfacts.
 3. **Acknowledging the commenting researchers by name** needs their permission.
 4. **SSRN posting** is the author's decision.
+
+---
+
+# Round 2 (referee round on the revised paper)
+
+## Step 1: Referee report (Persona A, independent subagent)
+**Overall: Major Revision.** Findings: F1 the H1/H3 decision rules were written after results; F2 H3 "accepted"
+against a comparator (twin without loops) that never produces cash depletion (AUC 0.50); F3 the 0.22 incremental
+statistic needs CIs against the shrunk margin and the timing regression; F4 the FCF claim fails a Holm correction;
+F5 the exposure regressions need industry clustering, a no-simulation control and decomposition language. Major:
+walk-forward look-ahead (logits trained up to Y−1); the transmission test conditions on survival; "petitions"
+counted every Item 1.03 filing; numbers from different samples looked inconsistent; the data-audit macros were 0 and
+the 98% data target was not met; 75-day conformal lag; the revised specification was informed by the sensitivity
+analysis; the 2020 outcome was a worst-point drawdown; firm-only clustering; many overstatements; current SIC/GICS
+and restatements; literature gaps. Minor: thousands separators, citation contexts (Smith–Wallis cited for combination
+gains; Fama–French 2000 cited for "margins"; Fama–French 1997 for the FF12 definitions), referee mentions in the text.
+
+## Step 2: Fixes (Persona B)
+- Code, rerun on GitHub (research 39967917290, Sobol 39967924725, audit 39957502187): logits trained on cutoffs up
+  to Y−3; first Item 1.03 filing per case (420 firm-years at 238 companies); cumulative 2020 FCF; 90-day lag;
+  two-way clustered encompassing and Harvey–Leybourne–Newbold tests; industry-clustered exposure and episode
+  regressions with the health formula as control; attrition and inverse-probability weighting; 4-quarter bankruptcy
+  horizon; Sobol reference point at the specified values; CIs for the twin against N4 and N6.
+- Text: abstract, introduction, discussion and conclusion now say "information in sample, no reliable gain out of
+  sample"; H1/H3 declared descriptive; H3 verdict qualified as mechanical; FCF result "suggestive, not established";
+  exposure and episodes called a decomposition; sample of each differing number stated (revised spec on 2018–2024,
+  AUC on the transmission sample); attrition paragraph; audit numbers and the unmet 98% target; current SIC/GICS and
+  restatements; February cutoffs; 403 non-financial S&P members; 18 new verified references (forecast combination
+  and encompassing, cash-flow prediction, ML distress models, OECD stress test, DT-in-finance work flagged as
+  practitioner or preprint); citation contexts corrected; referee mentions removed; thousands separators.
+- README, site summary, CV kit, response letter and message drafts updated to the new numbers.
+
+## Step 3: Re-check of the changes (independent subagent)
+Nine problems found in the revised text and all fixed: a `\ref` destroyed by a Python escape; the introduction
+attributed cash depletion to two loops (only R2 produces it; B1 produces payout and capex cuts); the 4-quarter
+margin's levels weight is near zero, not negative; the Holm sentence was not scoped to FCF; λ range for FCF is
+0.10–0.20; the "boundary of the grid" wording; 35 vs 27 legacy filers; the 2020 numbers in Table exposure and
+Table episodes differ by design (now explained); a t-statistic range mixed clustered and unclustered values.
+Compile clean, 31 pages.
+
+## Genuine blockers (round 2)
+1. No submission package (no target journal yet; SSRN only, by the author's decision).
+2. Data target: the last panel quarter matches the last filing for 90% of companies, not 98%; disclosed, not fixed.
+3. Naming the commenting researchers needs their permission.
+4. The OECD reference (Roulet 2020) is the closest match found, not confirmed as the intended source.

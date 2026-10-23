@@ -1,6 +1,10 @@
 {
  "n_firm_years": 317,
  "n_points": 640,
+ "specified": {
+  "median_ae": 11.227667070000003,
+  "incremental": 0.18237650109735778
+ },
  "median_ae": {
   "mean": 11.809280567928923,
   "min": 8.581788925,

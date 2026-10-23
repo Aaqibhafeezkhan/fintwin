@@ -48,7 +48,7 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
       <Section eyebrow="Illustration" title="February 2020 in the dashboard's companies: fragility, mostly persistence">
         <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 28 }}>
           <Metric label="Rank correlation" value={xs.spearman} format={(v) => `ρ ${v.toFixed(2)}`} foot={`95% CI ${fixed(xs.ci95[0], 2)}–${fixed(xs.ci95[1], 2)}`}
-            info="Spearman correlation between the twin's demand-freeze health score (Feb 2020 data) and realized worst cumulative free cash flow, 2020Q1–2021Q2." />
+            info="Spearman correlation between the twin's demand-freeze health score (Feb 2020 data) and realized cumulative free cash flow, 2020Q1–2021Q2." />
           <MetricText label="Significance" value="p < 10⁻⁶" foot={`${xs.n} companies`} />
           <Metric label="Severe burn, fragile two-fifths" value={severe(sorted.slice(0, k)) * 100} format={(v) => v.toFixed(0)} unit="%" foot="cash burn worse than 10% of revenue" />
           <Metric label="Severe burn, robust two-fifths" value={severe(sorted.slice(-k)) * 100} format={(v) => v.toFixed(0)} unit="%" foot="same threshold" />
