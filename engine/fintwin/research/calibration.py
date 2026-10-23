@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-REPORT_LAG = pd.Timedelta(days=75)
+REPORT_LAG = pd.Timedelta(days=90)
 
 
 def _norm(fc: pd.DataFrame) -> pd.DataFrame:

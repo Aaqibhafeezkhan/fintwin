@@ -45,9 +45,13 @@ def design(n_base: int = N_BASE, seed: int = 41) -> tuple[np.ndarray, np.ndarray
     return A, B, AB
 
 
+# the specification of the paper's main results, evaluated on the same firm-years as a reference point
+SPECIFIED = [0.35, 2.0, 0.08, 0.5, 0.5, 1.5, 0.04, 0.85]
+
+
 def points() -> np.ndarray:
     A, B, AB = design()
-    return np.vstack([A, B, *AB])
+    return np.vstack([A, B, *AB, np.array([SPECIFIED])])
 
 
 def sample(seed: int = 7) -> list[tuple[str, int]]:
@@ -162,7 +166,9 @@ def stats() -> dict:
     rows = [json.loads(f.read_text(encoding="utf-8")) for f in sorted(CACHE.glob("*.json"))]
     real = np.array([r["real"] for r in rows])
     n1 = np.array([r["n1"] for r in rows])
-    T = np.array([r["twin"] for r in rows])  # firm-years x design points
+    T_all = np.array([r["twin"] for r in rows])  # firm-years x design points (+ the specified point last)
+    has_ref = T_all.shape[1] == N_BASE * (len(FACTORS) + 2) + 1
+    T = T_all[:, :-1] if has_ref else T_all
     mae = np.median(np.abs(T - real[:, None]), axis=0)
     incr = np.array([spearmanr(T[:, j] - n1, real - n1)[0] for j in range(T.shape[1])])
     rng = np.random.default_rng(3)
@@ -170,6 +176,12 @@ def stats() -> dict:
     out = {
         "n_firm_years": int(len(rows)),
         "n_points": int(T.shape[1]),
+        "specified": {
+            "median_ae": float(np.median(np.abs(T_all[:, -1] - real))),
+            "incremental": float(spearmanr(T_all[:, -1] - n1, real - n1)[0]),
+        }
+        if has_ref
+        else None,
         "median_ae": {
             "mean": float(mae.mean()),
             "min": float(mae.min()),

@@ -169,6 +169,8 @@ m("TrHybSixteenTwin", f2(hy["mae_w"]["N3+T1"]))
 m("TrHybSixteenReg", f2(hy["mae_w"]["N3+N6"]))
 m("TrHybTwin", f2(hy["mae_w"]["T1"]))
 m("TrHybGain", f2(-hy["N3+T1_vs_N3"]["diff"]))
+m("TrHybDollar", f"{-hy['N3+T1_vs_N3']['diff'] * 100:.0f}")  # $ million per $10 billion of trailing revenue
+m("TrNRound", f"{round(T['n'], -3):,}".replace(",", "{,}"))
 m("TrHybGainLo", f2(-hy["N3+T1_vs_N3"]["ci"][1]))
 m("TrHybGainHi", f2(-hy["N3+T1_vs_N3"]["ci"][0]))
 m("TrHybGainPct", pc(-hy["N3+T1_vs_N3"]["diff"] / hy["mae_w"]["N3"], 1))

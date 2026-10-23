@@ -69,10 +69,13 @@ def bankruptcy_panel(p: pd.DataFrame, b: int) -> dict:
     firms = df["ticker"].to_numpy()
     R = _risk(df, "h_base", "pb_base")
     R["twin_rec"] = -df["h_rec"].astype(float)
-    out = {"all": auc_table(df, y, R, firms, b)}
+    out: dict = {"all": auc_table(df, y, R, firms, b)}
     weak = _weak(df, "year")
     out["weak"] = auc_table(df[weak].reset_index(drop=True), y[weak], R[weak].reset_index(drop=True), firms[weak], b)
     out["weak"]["share_of_events"] = float(y[weak].sum() / max(y.sum(), 1))
+    out["distinct_firms"] = int(df.loc[y == 1, "ticker"].nunique())
+    y4 = df["y_bk4"].to_numpy(float) if "y_bk4" in df else np.full(len(df), np.nan)
+    out["four_quarters"] = auc_table(df, y4, R, firms, b) if np.nansum(y4) >= 20 else {}
     out["by_year"] = {
         int(yr): {"n": int((df["year"] == yr).sum()), "events": int(y[(df["year"] == yr).to_numpy()].sum())}
         for yr in sorted(df["year"].unique())
@@ -81,6 +84,38 @@ def bankruptcy_panel(p: pd.DataFrame, b: int) -> dict:
 
 
 # ---------------------------------------------------------------- 2020: fragility versus exposure
+def exposure_regression(sev, depth, twin, fcf, formula, cluster) -> dict:
+    """Rank regression of burn severity on the industry shock, the twin at that shock and the FCF margin.
+
+    `pre_specified`: the specification of the plan (HC3). `robust`: standard errors clustered by the industry that
+    defines the shock (the regressor is constant within it), and the twin's own formula without simulation added, so
+    that the twin's coefficient is what the simulation adds to balance-sheet weakness at the same shock.
+    """
+    import statsmodels.api as sm
+
+    d = pd.DataFrame(
+        {
+            "y": S.pct(sev),
+            "exp": S.pct(depth),
+            "twin": S.pct(twin),
+            "fcf": S.pct(fcf),
+            "formula": S.pct(formula),
+            "g": cluster,
+        }
+    ).dropna()
+    out: dict = {"n": int(len(d))}
+    m = sm.OLS(d["y"], sm.add_constant(d[["exp", "twin", "fcf"]])).fit(cov_type="HC3")
+    out["pre_specified"] = {k: {"coef": float(m.params[k]), "t": float(m.tvalues[k])} for k in ("exp", "twin", "fcf")}
+    m2 = sm.OLS(d["y"], sm.add_constant(d[["exp", "twin", "fcf", "formula"]])).fit(
+        cov_type="cluster", cov_kwds={"groups": pd.factorize(d["g"])[0]}
+    )
+    out["robust"] = {
+        k: {"coef": float(m2.params[k]), "t": float(m2.tvalues[k])} for k in ("exp", "twin", "fcf", "formula")
+    }
+    out["n_clusters"] = int(d["g"].nunique())
+    return out
+
+
 def _sic2(ciks: pd.Series) -> pd.Series:
     if not (DATA / "universe_edgar.csv").exists():
         return pd.Series(np.nan, index=ciks.index)
@@ -107,6 +142,7 @@ def exposure(xs: pd.DataFrame, b: int) -> dict:
     n_sic = drop.groupby(df["sic2"]).transform("count").reindex(df.index).fillna(0)
     by_ff = drop.groupby(df["sector"]).transform(loo_median)
     shock = np.where(n_sic >= 6, by_sic, by_ff)
+    cluster = np.where(n_sic >= 6, "sic" + df["sic2"].astype(str), "ff" + df["sector"].astype(str))
     depth = np.clip(-shock / 100, 0.0, 0.8)
     xs_depth = np.array([float(c[5:]) for c in grid])
     H = df[grid].to_numpy(float)
@@ -117,7 +153,9 @@ def exposure(xs: pd.DataFrame, b: int) -> dict:
         ]
     )
     out: dict = {"n": int(len(df)), "median_depth": float(np.nanmedian(depth))}
-    for outcome in ("real_burn", "real_abn_burn"):
+    outcomes = ("real_cum_fcf", "real_abn_cum_fcf") if "real_cum_fcf" in df else ("real_burn", "real_abn_burn")
+    out["outcomes"] = list(outcomes)
+    for outcome in outcomes:
         sev = -df[outcome].to_numpy(float)
         preds = {
             "twin_at_exposure": -h_exp,
@@ -132,14 +170,10 @@ def exposure(xs: pd.DataFrame, b: int) -> dict:
         res["twin_at_exposure_minus_fcf"] = S.paired(
             S.rho, preds["twin_at_exposure"], preds["fcf_margin"], sev, None, b
         )
-        # what fragility adds to exposure: partial rank correlation, controlling for the exposure
-        import statsmodels.api as sm
-
-        d = pd.DataFrame(
-            {"y": S.pct(sev), "exp": S.pct(depth), "twin": S.pct(-h_exp), "fcf": S.pct(preds["fcf_margin"])}
-        ).dropna()
-        m = sm.OLS(d["y"], sm.add_constant(d[["exp", "twin", "fcf"]])).fit(cov_type="HC3")
-        res["regression"] = {k: {"coef": float(m.params[k]), "t": float(m.tvalues[k])} for k in ("exp", "twin", "fcf")}
-        res["regression"]["n"] = int(m.nobs)
-        out[outcome] = res
+        # what fragility adds to exposure, controlling for the exposure (and, robustly, for the formula)
+        reg = exposure_regression(sev, depth, -h_exp, preds["fcf_margin"], -df["health_t0"].to_numpy(float), cluster)
+        res["regression"] = {**reg["pre_specified"], "n": reg["n"]}
+        res["regression_robust"] = reg["robust"]
+        key = "real_burn" if outcome in ("real_burn", "real_cum_fcf") else "real_abn_burn"
+        out[key] = res
     return out

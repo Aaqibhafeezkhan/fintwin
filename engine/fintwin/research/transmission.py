@@ -153,7 +153,7 @@ def add_shrunk(df: pd.DataFrame) -> pd.DataFrame:
         out = pd.Series(np.nan, index=df.index)
         chosen = {}
         for y in sorted(df["year"].unique()):
-            past = df["year"] < y
+            past = df["year"] <= y - 3  # outcomes of later cutoffs were not yet reported
             if past.sum() >= 100:
                 err = {w: np.nanmedian(np.abs(pred[w][past] - df.loc[past, f"real_{var}"])) for w in weights}
                 w = min(err, key=lambda k: err[k])
@@ -248,6 +248,24 @@ def encompassing(df: pd.DataFrame, var: str) -> dict:
             "r2": float(m.rsquared),
             "n": int(m.nobs),
         }
+    # the same with standard errors clustered by firm and by cutoff year (common shocks within a year)
+    two_way = np.column_stack([pd.factorize(d["ticker"])[0], pd.factorize(d["year"])[0]])
+    Xs = sm.add_constant(X[[*cols, *[c for c in X if c.startswith("y_")]]])
+    m = sm.OLS(y.to_numpy(float), Xs).fit(cov_type="cluster", cov_kwds={"groups": two_way})
+    out["all_two_way"] = {"t": {k: float(m.tvalues[k]) for k in cols}, "p": {k: float(m.pvalues[k]) for k in cols}}
+    # Harvey, Leybourne and Newbold (1998): does forecast A encompass forecast B? d = e_A (e_A - e_B), mean > 0 rejects
+    real_w = np.asarray(_wins(real, lo, hi), float)
+    hln: dict = {}
+    for a_, b_ in (("N3", "T1"), ("T1", "N3"), ("N6", "T1"), ("T1", "N6")):
+        e_a = real_w - np.asarray(_wins(d[f"{a_}_{var}"], lo, hi), float)
+        e_b = real_w - np.asarray(_wins(d[f"{b_}_{var}"], lo, hi), float)
+        dd = e_a * (e_a - e_b)
+        mm = sm.OLS(dd, np.ones(len(dd))).fit(cov_type="cluster", cov_kwds={"groups": two_way})
+        hln[f"{a_}_encompasses_{b_}"] = {
+            "t": float(mm.tvalues[0]),
+            "p_one_sided": float(mm.pvalues[0] / 2) if mm.params[0] > 0 else float(1 - mm.pvalues[0] / 2),
+        }
+    out["hln"] = hln
     # unconstrained form (Fair and Shiller 1990): realized on every forecast in levels, so that noise in the four-quarter
     # rule cannot load on the other forecasts through a coefficient restricted to 1 - sum(b)
     lv = pd.DataFrame({k: _wins(d[f"{k}_{var}"], lo, hi) for k in ["N1", *cols]})
@@ -257,12 +275,14 @@ def encompassing(df: pd.DataFrame, var: str) -> dict:
         m = sm.OLS(np.asarray(_wins(real, lo, hi), float), Xs).fit(
             cov_type="cluster", cov_kwds={"groups": pd.factorize(d["ticker"])[0]}
         )
+        m2 = sm.OLS(np.asarray(_wins(real, lo, hi), float), Xs).fit(cov_type="cluster", cov_kwds={"groups": two_way})
         out[name] = {
             "coef": {k: float(m.params[k]) for k in use},
             "t": {k: float(m.tvalues[k]) for k in use},
             "p": {k: float(m.pvalues[k]) for k in use},
             "r2": float(m.rsquared),
             "n": int(m.nobs),
+            "t_two_way": {k: float(m2.tvalues[k]) for k in use},
         }
     return out
 
@@ -296,7 +316,7 @@ def hybrid(df: pd.DataFrame, var: str, firms: np.ndarray, b: int) -> dict:
         p = np.full(len(df), np.nan)
         lambdas[name] = {}
         for y in sorted(set(yrs)):
-            tr = (yrs < y) & np.isfinite(bx) & np.isfinite(ax) & np.isfinite(real)
+            tr = (yrs <= y - 3) & np.isfinite(bx) & np.isfinite(ax) & np.isfinite(real)
             if tr.sum() < 200:
                 continue
             err = [

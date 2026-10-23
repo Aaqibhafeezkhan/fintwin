@@ -295,7 +295,7 @@ def aggregate() -> dict:
         conf90, conf50, factors = [], [], {}
         target = pd.to_datetime(g["target"]) if "target" in g else pd.to_datetime(g["year"].astype(str) + "-01-01")
         for year, gy in g.groupby("year"):
-            seen = target + pd.Timedelta(days=75) <= pd.Timestamp(f"{year}-02-15")
+            seen = target + pd.Timedelta(days=90) <= pd.Timestamp(f"{year}-02-15")
             past = g[(g["year"] < year) & seen]
             if len(past) < 40:
                 continue

@@ -435,6 +435,20 @@ def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFra
     return out
 
 
+def _cumulative(pre: pd.DataFrame, window: pd.DataFrame, rev_ttm: float) -> tuple[float, float]:
+    """Cumulative FCF over the window and its excess over the pre-cutoff run-rate, % of trailing revenue.
+
+    Worst cumulative values (`_abnormal_burn`, `burn`) are drawdowns: for a firm with positive cash flow they equal the
+    first quarter. For rank correlations the whole window is the better continuous outcome.
+    """
+    run_rate = (_ttm(pre, "cfo") - _ttm(pre, "capex")) / 4
+    fcf = window["cfo"] - window["capex"]
+    total = float(fcf.fillna(0).sum() / rev_ttm * 100)
+    if not np.isfinite(run_rate):
+        return total, np.nan
+    return total, float((fcf.fillna(run_rate) - run_rate).sum() / rev_ttm * 100)
+
+
 def _abnormal_burn(pre: pd.DataFrame, window: pd.DataFrame, rev_ttm: float) -> float:
     """Worst cumulative free cash flow *relative to the company's own pre-cutoff run-rate*, % of revenue.
 
@@ -462,9 +476,12 @@ def covid_outcomes(hist: CompanyData, full: pd.DataFrame) -> dict:
     div_pre = float(pre["dividends"].tail(4).fillna(0).sum())
     post = win[win.index > pd.Timestamp("2020-04-15")].head(4)
     div_post = float(post["dividends"].fillna(0).sum())
+    cum, abn_cum = _cumulative(pre, win, rev_ttm)
     return {
         "burn": _f(fcf.min() / rev_ttm * 100),
         "abn_burn": _f(_abnormal_burn(pre, win, rev_ttm)),
+        "cum_fcf": _f(cum),
+        "abn_cum_fcf": _f(abn_cum),
         "rev_drop": _f(yoy.min() * 100),
         "debt_raise": _f((win["total_debt"].max() - pre["total_debt"].iloc[-1]) / rev_ttm * 100),
         "cash_min_ratio": _f(cash_like.min() / cash_pre) if cash_pre > 0 else None,
@@ -490,6 +507,8 @@ def _distress(hist: CompanyData, full: pd.DataFrame) -> dict:
     div_post = float(nxt["dividends"].head(4).fillna(0).sum())
     return {
         "burn8": _f(fcf.min() / rev_ttm * 100),
+        "cum8": _f(_cumulative(pre, nxt, rev_ttm)[0]),
+        "abn_cum8": _f(_cumulative(pre, nxt, rev_ttm)[1]),
         "abn_burn8": _f(_abnormal_burn(pre, nxt, rev_ttm)),
         "icr0": _f(icr0),
         "icr_min": _f(icr.min()) if len(icr) else None,

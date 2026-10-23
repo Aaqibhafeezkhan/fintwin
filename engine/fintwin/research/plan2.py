@@ -117,7 +117,7 @@ def revised_spec(df: pd.DataFrame, firms: np.ndarray, b: int) -> dict:
         health = np.full(len(df), np.nan)
         chosen: dict = {}
         for y in sorted(set(yrs)):
-            past = yrs < y
+            past = yrs <= y - 3
             if past.sum() < 500:
                 continue
             groups = [None] if scope == "global" else sorted(set(ind[yrs == y]))
@@ -367,9 +367,7 @@ def thresholds(df: pd.DataFrame) -> dict:
 def episodes(panel: pd.DataFrame, b: int) -> dict:
     """The 2020 exposure design applied to the 2015-16 commodity bust and the 2022 rate shock: each firm gets the
     leave-one-out median realized revenue shock of its industry, the twin is read at that depth."""
-    import statsmodels.api as sm
-
-    from .distress import _sic2
+    from .distress import _sic2, exposure_regression
 
     out: dict = {}
     for year in (2015, 2020, 2022):
@@ -384,6 +382,7 @@ def episodes(panel: pd.DataFrame, b: int) -> dict:
         n_sic = drop.groupby(sic2).transform("count").reindex(p.index).fillna(0)
         by_ff = drop.groupby(p["industry"]).transform(T.loo_median)
         depth = np.clip(-np.where(n_sic >= 6, by_sic, by_ff) / 100, 0, 0.8)
+        cluster = np.where(n_sic >= 6, "sic" + sic2.astype(str), "ff" + p["industry"].astype(str))
         xs = np.array([float(c[3:]) for c in grid])
         H = p[grid].to_numpy(float)
         h = np.array(
@@ -392,21 +391,33 @@ def episodes(panel: pd.DataFrame, b: int) -> dict:
                 for dd, hh in zip(depth, H, strict=True)
             ]
         )
-        res: dict = {"n": int(len(p)), "median_depth": float(np.nanmedian(depth))}
-        for o in ("y_burn8", "y_abn_burn8"):
-            sev = -p[o].to_numpy(float)
+        res: dict = {
+            "n": int(len(p)),
+            "median_depth": float(np.nanmedian(depth)),
+            "share_with_decline": float(np.mean(drop < 0)),
+        }
+        cum = "y_cum8" in p and p["y_cum8"].notna().any()
+        for o, src in (
+            ("y_burn8", "y_cum8" if cum else "y_burn8"),
+            ("y_abn_burn8", "y_abn_cum8" if cum else "y_abn_burn8"),
+        ):
+            sev = -p[src].to_numpy(float)
             fcf = -p["fcf_margin"].to_numpy(float)
-            d = pd.DataFrame({"y": S.pct(sev), "exp": S.pct(depth), "twin": S.pct(-h), "fcf": S.pct(fcf)}).dropna()
-            m = sm.OLS(d["y"], sm.add_constant(d[["exp", "twin", "fcf"]])).fit(cov_type="HC3")
+            reg = exposure_regression(sev, depth, -h, fcf, -p["health_t0"].to_numpy(float), cluster)
             res[o] = {
+                "outcome": src,
                 "rho_twin_at_exposure": S.rho(-h, sev),
                 "rho_exposure": S.rho(depth, sev),
-                "t": {k: float(m.tvalues[k]) for k in ("exp", "twin", "fcf")},
-                "n": int(m.nobs),
+                "t": {k: v["t"] for k, v in reg["pre_specified"].items()},
+                "t_robust": {k: v["t"] for k, v in reg["robust"].items()},
+                "n": reg["n"],
+                "n_clusters": reg["n_clusters"],
             }
         out[str(year)] = res
     gen = [out[y]["y_abn_burn8"]["t"]["twin"] > 2 for y in ("2015", "2022") if y in out]
-    out["generalizes"] = bool(len(gen) == 2 and all(gen))
+    out["generalizes"] = bool(len(gen) == 2 and all(gen))  # the pre-specified rule
+    rob = [out[y]["y_abn_burn8"]["t_robust"]["twin"] > 2 for y in ("2015", "2022") if y in out]
+    out["generalizes_robust"] = bool(len(rob) == 2 and all(rob))
     return out
 
 
@@ -415,7 +426,7 @@ def _combo(b_: np.ndarray, adj: np.ndarray, real: np.ndarray, yrs: np.ndarray, l
     """Walk-forward combination base + lambda * (adjuster - base), lambda chosen on earlier years."""
     pr = np.full(len(b_), np.nan)
     for y in sorted(set(yrs)):
-        tr = (yrs < y) & np.isfinite(b_) & np.isfinite(adj) & np.isfinite(real)
+        tr = (yrs <= y - 3) & np.isfinite(b_) & np.isfinite(adj) & np.isfinite(real)
         if tr.sum() < 200:
             continue
         err = [
@@ -574,6 +585,43 @@ def census_check() -> dict:
     }
 
 
+def attrition(panel: pd.DataFrame) -> dict:
+    """The transmission test needs eight reported quarters after the cutoff, so it conditions on survival. How many
+    firm-years drop out, how many of the later bankruptcies, and do the main errors change when the surviving
+    firm-years are reweighted by the inverse probability of survival (a logit on the cutoff's characteristics)?"""
+    import statsmodels.api as sm
+
+    has = np.array([bool((st or {}).get("real_cfo")) if isinstance(st, dict) else False for st in panel["st"]])
+    bk = panel["y_bk8"].to_numpy(float)
+    out: dict = {
+        "firm_years": int(len(panel)),
+        "with_outcome": int(has.sum()),
+        "share_with_outcome": float(has.mean()),
+        "share_with_outcome_bankrupt": float(has[bk == 1].mean()) if (bk == 1).any() else None,
+        "share_with_outcome_not_bankrupt": float(has[bk == 0].mean()),
+    }
+    feats = ["fcf_margin", "log_rev", "health_t0", "z2", "nd_ebitda", "rev_vol"]
+    X = pd.DataFrame({c: S.pct(panel[c].to_numpy(float)) if c in panel else np.nan for c in feats}).fillna(0.5)
+    X = pd.concat([X, pd.get_dummies(panel["year"], prefix="y", drop_first=True, dtype=float)], axis=1)
+    fit = sm.Logit(has.astype(float), sm.add_constant(X)).fit(disp=False)
+    ps = np.clip(np.asarray(fit.predict(sm.add_constant(X))), 0.05, 1.0)
+    df = frame(panel[has].reset_index(drop=True))
+    w = 1 / ps[has][: len(df)] if len(df) == has.sum() else None
+    if w is not None:
+
+        def wmed(x, ww):
+            m = np.isfinite(x)
+            o = np.argsort(x[m])
+            c = np.cumsum(ww[m][o])
+            return float(x[m][o][np.searchsorted(c, c[-1] / 2)])
+
+        for k in ("twin_cfo", "N3_cfo"):
+            e = np.abs(df[k].to_numpy(float) - df["real_cfo"].to_numpy(float))
+            out[f"median_ae_{k}"] = float(np.nanmedian(e))
+            out[f"median_ae_{k}_ipw"] = wmed(e, w)
+    return out
+
+
 def _safe(fn, *args) -> dict:
     """Run one analysis; a failure (e.g. outcomes missing in an older run) is recorded instead of stopping the rest."""
     try:
@@ -597,6 +645,7 @@ def section(panel_all: pd.DataFrame, panel: pd.DataFrame, fc: pd.DataFrame, b: i
         "small_firms": _safe(small_firms, panel_all, b),
         "examples": _safe(examples, panel),
         "census": _safe(census_check),
+        "attrition": _safe(attrition, panel),
     }
     out["two_way"] = _safe(lambda: robustness_stats(T.add_shrunk(T.frame(panel)), b))
     return out

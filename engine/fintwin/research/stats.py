@@ -177,10 +177,20 @@ def bankruptcy_dates() -> dict[int, list[pd.Timestamp]]:
         return {}
     u = pd.read_csv(f, dtype={"bankruptcy_8k": str})
     return {
-        int(c): [pd.Timestamp(x) for x in str(d).split(";")]
+        int(c): petitions([pd.Timestamp(x) for x in str(d).split(";")])
         for c, d in zip(u["cik"], u["bankruptcy_8k"], strict=True)
         if isinstance(d, str) and d
     }
+
+
+def petitions(dates: list[pd.Timestamp], gap_days: int = 1095) -> list[pd.Timestamp]:
+    """Item 1.03 is also filed for plan confirmations and other steps of the same case: keep the first filing of each
+    case, a filing more than three years after the previous one starting a new case."""
+    out: list[pd.Timestamp] = []
+    for d in sorted(dates):
+        if not out or (d - out[-1]).days > gap_days:
+            out.append(d)
+    return out
 
 
 def bk_event(dates: list[pd.Timestamp], origin: str, days: int = 730) -> float:
@@ -664,6 +674,8 @@ def main(cache: Path) -> dict:
     from . import calibration, distress, transmission
 
     xs, panel_all, fc, errors = load(cache)
+    RAW = "real_cum_fcf" if "real_cum_fcf" in xs else "real_burn"
+    ABN = "real_abn_cum_fcf" if "real_abn_cum_fcf" in xs else "real_abn_burn"
     xs, panel = size_screen(xs), size_screen(panel_all)
     samples = {
         "edgar": np.ones(len(xs), bool),
@@ -677,9 +689,14 @@ def main(cache: Path) -> dict:
             "panel_firm_years": int(len(panel)),
             "panel_firms": int(panel["ticker"].nunique()) if len(panel) else 0,
         },
-        "covid": {k: covid_section(xs[v].reset_index(drop=True)) for k, v in samples.items() if v.sum() >= 30},
+        # cumulative FCF over 2020Q1-2021Q2 (raw, and relative to the run-rate); the worst-cumulative versions, which
+        # for firms with positive cash flow reduce to the first quarter, are kept as a robustness check
+        "covid": {k: covid_section(xs[v].reset_index(drop=True), RAW) for k, v in samples.items() if v.sum() >= 30},
         "covid_abnormal": {
-            k: covid_section(xs[v].reset_index(drop=True), "real_abn_burn") for k, v in samples.items() if v.sum() >= 30
+            k: covid_section(xs[v].reset_index(drop=True), ABN) for k, v in samples.items() if v.sum() >= 30
+        },
+        "covid_worst": {
+            k: covid_section(xs[v].reset_index(drop=True), "real_burn") for k, v in samples.items() if v.sum() >= 30
         },
         "bankruptcy_2020": distress.bankruptcy_2020(xs, B),
         "bankruptcy_panel": distress.bankruptcy_panel(panel, B_PANEL),
