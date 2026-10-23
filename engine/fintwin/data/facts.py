@@ -23,11 +23,17 @@ from .edgar import ticker_to_cik
 
 @lru_cache(maxsize=2)
 def company_facts(cik: int) -> dict:
-    return _company_facts(cik)
+    """XBRL company facts, completed from each filing's own XBRL where the SEC API lacks a periodic filing."""
+    from .xbrl_fallback import augment
+
+    tags = {t for tags in (*DURATION.values(), *INSTANT.values()) for t in tags} | set(MATURITY_TAGS)
+    return augment(cik, _company_facts(cik), tags)
 
 
 FORMS = {"10-K", "10-Q", "10-K/A", "10-Q/A", "10-KT", "20-F", "40-F"}
-QUARTER_DAYS = (75, 105)
+# A fiscal quarter is 12-14 weeks, but 52/53-week retailers run one 16- or 17-week quarter a year (Kroger's first,
+# Costco's and AutoZone's fourth): anything from 11 to 18 weeks is one quarter.
+QUARTER_DAYS = (75, 126)
 ALIGN_TOLERANCE_DAYS = 12
 
 # field -> ordered tag fallbacks. Duration concepts are flows over a period, instants are balances.
@@ -39,6 +45,15 @@ DURATION = {
         "SalesRevenueServicesGross",
         "RevenueFromContractWithCustomerIncludingAssessedTax",
         "SalesRevenueGoodsNet",
+        # industry-specific totals, used only for periods that none of the tags above covers (found in the audit of
+        # the remaining gaps: services firms, utilities, oil and gas producers, real estate, contractors)
+        "SalesRevenueServicesNet",
+        "RegulatedAndUnregulatedOperatingRevenue",
+        "ElectricUtilityRevenue",
+        "OilAndGasRevenue",
+        "OilAndGasSalesRevenue",
+        "RealEstateRevenueNet",
+        "ContractsRevenue",
     ],
     "operating_income": ["OperatingIncomeLoss"],
     "pretax_income": [

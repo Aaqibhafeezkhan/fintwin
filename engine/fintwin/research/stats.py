@@ -16,6 +16,8 @@ import pandas as pd
 from scipy.stats import rankdata, spearmanr
 
 OUT = Path(__file__).resolve().parents[3] / "docs" / "paper" / "research.json"
+DATA = Path(__file__).resolve().parents[1] / "data"
+MIN_LOG_REV = float(np.log(50e6))  # $50M trailing revenue at the cutoff
 B = 2000
 B_PANEL = 500  # firm-clustered panel bootstraps are slower
 RNG = np.random.default_rng(20200220)
@@ -74,7 +76,9 @@ def rho(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def _clusters(firms: np.ndarray) -> list[np.ndarray]:
-    return [np.flatnonzero(firms == f) for f in pd.unique(firms)]
+    codes = pd.factorize(firms)[0]
+    order = np.argsort(codes, kind="stable")
+    return np.split(order, np.flatnonzero(np.diff(codes[order])) + 1)
 
 
 def boot(stat, cols: list[np.ndarray], firms: np.ndarray | None = None, b: int = B) -> np.ndarray:
@@ -155,20 +159,73 @@ def resid_on_sector(x: np.ndarray, sector: np.ndarray) -> np.ndarray:
 
 
 # ---------------------------------------------------------------- loading
+def membership() -> dict[str, dict[int, str]]:
+    """CIK -> GICS sector for today's S&P 500 sample and the 20 February 2020 constituents; legacy 2020 sample."""
+    out: dict[str, dict[int, str]] = {}
+    for name, f in (("sp_today", "universe_sp500.csv"), ("sp2020", "sp500_2020-02-20.csv")):
+        d = pd.read_csv(DATA / f).dropna(subset=["cik"])
+        out[name] = dict(zip(d["cik"].astype(int), d["sector"], strict=True))
+    bk = pd.read_csv(DATA / "bankruptcies_2020.csv")
+    out["legacy_bk"] = dict(zip(bk["cik"].astype(int), bk["sector"], strict=True))
+    return out
+
+
+def bankruptcy_dates() -> dict[int, list[pd.Timestamp]]:
+    """CIK -> filing dates of every 8-K with Item 1.03 (Chapter 11 / 7 petitions), from the EDGAR census."""
+    f = DATA / "universe_edgar.csv"
+    if not f.exists():
+        return {}
+    u = pd.read_csv(f, dtype={"bankruptcy_8k": str})
+    return {
+        int(c): petitions([pd.Timestamp(x) for x in str(d).split(";")])
+        for c, d in zip(u["cik"], u["bankruptcy_8k"], strict=True)
+        if isinstance(d, str) and d
+    }
+
+
+def petitions(dates: list[pd.Timestamp], gap_days: int = 1095) -> list[pd.Timestamp]:
+    """Item 1.03 is also filed for plan confirmations and other steps of the same case: keep the first filing of each
+    case, a filing more than three years after the previous one starting a new case."""
+    out: list[pd.Timestamp] = []
+    for d in sorted(dates):
+        if not out or (d - out[-1]).days > gap_days:
+            out.append(d)
+    return out
+
+
+def bk_event(dates: list[pd.Timestamp], origin: str, days: int = 730) -> float:
+    """1 if a bankruptcy 8-K follows the cutoff within `days`; NaN if one was filed in the two years before it."""
+    o = pd.Timestamp(origin)
+    if any(o - pd.Timedelta(days=730) < d <= o for d in dates):
+        return np.nan
+    return float(any(o < d <= o + pd.Timedelta(days=days) for d in dates))
+
+
 def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     xs, panel, fc, errors = [], [], [], {}
+    mem, bkd = membership(), bankruptcy_dates()
     for f in sorted(cache.glob("*.json")):
         r = json.loads(f.read_text(encoding="utf-8"))
         if r.get("errors"):
             errors[r["ticker"]] = r["errors"]
+        cik = r.get("cik")
+        flags = {k: (cik in v) if cik is not None else False for k, v in mem.items()}
+        gics = next((v[cik] for v in mem.values() if cik in v), None)
+        dates = bkd.get(cik, []) if cik is not None else []
         c = r.get("covid")
         if c:
             row = {
                 "ticker": c["ticker"],
+                "cik": cik,
                 "name": c["name"],
                 "sector": c["sector"] or "Unknown",
+                "gics": gics,
                 "bankrupt": r.get("bankrupt_2020", False),
+                **flags,
+                "bk_2020": bk_event(dates, "2020-02-20", 680),  # filings to the end of 2021
             }
+            row |= {f"grid_{k}": v for k, v in (c.get("depth_grid") or {}).items()}
+            row["st"] = c.get("structural") or {}
             row |= {f"h_{k}": v["health"] for k, v in c["scenarios"].items()}
             row |= {f"pb_{k}": v["p_breach"] for k, v in c["scenarios"].items()}
             row |= {f"abl_{k}": v["health"] for k, v in c["ablations"].items()}
@@ -178,10 +235,19 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             row["h_sector_adj"] = c["sector_adjusted"]["health"]
             row |= c["features"]
             row |= {f"real_{k}": v for k, v in (c.get("realized") or {}).items()}
-            row |= {f"s_{k}": v for k, v in (c.get("structural") or {}).items()}
             xs.append(row)
         for pr in r.get("panel", []):
-            row = {"ticker": r["ticker"], "year": int(pr["origin"][:4])}
+            row = {
+                "ticker": r["ticker"],
+                "cik": cik,
+                "year": int(pr["origin"][:4]),
+                "industry": (c or {}).get("sector") or _industry(r["ticker"]),
+                **flags,
+                "y_bk8": bk_event(dates, pr["origin"]),
+                "y_bk4": bk_event(dates, pr["origin"], 365),
+                "st": pr.get("structural") or {},
+            }
+            row |= {f"dg_{k}": v for k, v in (pr.get("depth_grid") or {}).items()}
             row |= {
                 "h_base": pr["base"]["health"],
                 "pb_base": pr["base"]["p_breach"],
@@ -190,17 +256,56 @@ def load(cache: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
             }
             row |= pr["features"]
             row |= {f"y_{k}": v for k, v in (pr.get("outcome") or {}).items()}
-            row |= {f"s_{k}": v for k, v in (pr.get("structural") or {}).items()}
             panel.append(row)
         for fr in r.get("forecasts", []):
             fc.append({"ticker": r["ticker"], **fr})
     return pd.DataFrame(xs), pd.DataFrame(panel), pd.DataFrame(fc), errors
 
 
+def size_screen(df: pd.DataFrame) -> pd.DataFrame:
+    """Point-in-time size screen: $50M trailing revenue at the cutoff."""
+    if "log_rev" not in df:
+        return df
+    return df[df["log_rev"].astype(float) >= MIN_LOG_REV].reset_index(drop=True)
+
+
+def _secondary_pvalues(res: dict) -> dict[str, float]:
+    """p-values of the secondary comparisons, for a Holm adjustment (the H2 rule is the only confirmatory test)."""
+    out: dict[str, float] = {}
+    tp = res.get("transmission", {}).get("panel", {})
+    for var in ("cfo", "fcf"):
+        h = tp.get(var, {}).get("hybrid", {})
+        for k in ("N3+T1_vs_N3+N1", "N3+T1_vs_N3+N5", "N3+T1_vs_N3+N6"):
+            if k in h:
+                out[f"hybrid_{var}_{k}"] = h[k]["p"]
+    for e, d in tp.get("decisions", {}).items():
+        if d.get("oos"):
+            out[f"decision_{e}"] = d["oos"]["delta_twin"]["p"]
+    for e, d in res.get("panel", {}).items():
+        if isinstance(d, dict) and d.get("out_of_sample"):
+            out[f"panel_{e}"] = d["out_of_sample"]["delta_twin_beyond_formula"]["p"]
+    for sub in ("all", "weak"):
+        tm = res.get("bankruptcy_panel", {}).get(sub, {}).get("predictors", {}).get("formula", {}).get("twin_minus")
+        if tm:
+            out[f"bankruptcy_{sub}_twin_minus_formula"] = tm["p"]
+    return out
+
+
+def _industry(key: str) -> str:
+    from ..universe import classify
+
+    try:
+        return classify(key)[0] or "Unknown"
+    except Exception:
+        return "Unknown"
+
+
 # ---------------------------------------------------------------- COVID cross-section
 def covid_section(xs: pd.DataFrame, outcome: str = "real_burn") -> dict:
-    """outcome: `real_burn` (raw worst cumulative FCF) or `real_abn_burn` (relative to the pre-2020 run-rate)."""
-    sp = xs[~xs["bankrupt"] & xs[outcome].notna()].reset_index(drop=True)
+    """outcome: `real_burn` (raw worst cumulative FCF) or `real_abn_burn` (relative to the pre-2020 run-rate).
+
+    `xs` is the sample to use (the EDGAR universe alive on the cutoff, or the S&P 500 of that day, or today's)."""
+    sp = xs[xs[outcome].notna()].reset_index(drop=True)
     sev = -sp[outcome].to_numpy(float)  # positive = more cash burned
     severe = (sp[outcome] < -10).to_numpy(float)
     R = risk_frame(sp, "h_pandemic", "pb_pandemic")
@@ -261,12 +366,8 @@ def covid_section(xs: pd.DataFrame, outcome: str = "real_burn") -> dict:
         "n": int(full.nobs),
     }
 
-    # robustness: drop the five companies added because they mattered in 2020; drop capex-heavy utilities
-    extras = {"AAL", "M", "KSS", "WYNN", "INTC"}
-    subsets = {
-        "without_added_companies": ~sp["ticker"].isin(extras).to_numpy(),
-        "without_utilities": (sp["sector"] != "Utilities").to_numpy(),
-    }
+    # robustness: drop capex-heavy utilities
+    subsets = {"without_utilities": (sp["sector"] != "Utilities").to_numpy()}
     out["robustness"] = {}
     for name, keep in subsets.items():
         b_sub = max(bench_avail, key=lambda k: rho(R[k].to_numpy(float)[keep], sev[keep]))
@@ -357,78 +458,7 @@ def covid_section(xs: pd.DataFrame, outcome: str = "real_burn") -> dict:
     return out
 
 
-# ---------------------------------------------------------------- 2020 bankruptcies
-def bankruptcy_section(xs: pd.DataFrame) -> dict:
-    df = xs.reset_index(drop=True)
-    y = df["bankrupt"].to_numpy(float)
-    R = risk_frame(df, "h_pandemic", "pb_pandemic")
-    R["twin_base"] = -df["h_base"].astype(float)
-    out: dict = {"n_bankrupt": int(y.sum()), "n_survivors": int((1 - y).sum())}
-    twin = R["twin"].to_numpy(float)
-    res = {}
-    for k in R.columns:
-        x = R[k].to_numpy(float)
-        both = np.isfinite(x)
-        if both.sum() < 20:
-            continue
-        res[k] = {
-            "label": LABELS[k],
-            "auc": auc(x, y),
-            "auc_ci": ci(boot(auc, [x, y])),
-            "n_bankrupt": int((both & (y == 1)).sum()),
-            "twin_minus": None if k == "twin" else paired(auc, twin, x, y),
-        }
-    out["predictors"] = res
-    sp = df[~df["bankrupt"]]
-    pct_rank = [float((sp["h_pandemic"] < h).mean()) for h in df.loc[df["bankrupt"], "h_pandemic"]]
-    out["percentile_in_sp500"] = pct_rank  # share of S&P companies the twin rated *more* fragile
-    out["share_in_most_fragile_decile"] = float(np.mean(np.array(pct_rank) <= 0.10))
-    out["share_in_most_fragile_quintile"] = float(np.mean(np.array(pct_rank) <= 0.20))
-    sec = df["sector"].isin(df.loc[df["bankrupt"], "sector"].value_counts().index[:2])
-    out["sector_matched"] = {
-        "sectors": list(df.loc[df["bankrupt"], "sector"].value_counts().index[:2]),
-        "auc_twin": auc(twin[sec.to_numpy()], y[sec.to_numpy()]),
-        "auc_altman": auc(R["altman_z2"].to_numpy(float)[sec.to_numpy()], y[sec.to_numpy()]),
-        "n": int(sec.sum()),
-    }
-    out["firms"] = df.loc[
-        df["bankrupt"], ["ticker", "name", "sector", "h_pandemic", "h_base", "z2", "log_rev"]
-    ].to_dict("records")
-    # S&P 500 members are large, so size alone separates them from 2020 bankrupts: compare like with like
-    size = df["log_rev"].to_numpy(float)
-    cap = np.nanpercentile(size[y == 1], 90)
-    small = size <= cap
-    out["size_matched"] = {
-        "max_log_rev": float(cap),
-        "n_survivors": int((small & (y == 0)).sum()),
-        "n_bankrupt": int((small & (y == 1)).sum()),
-        "auc": {k: auc(R[k].to_numpy(float)[small], y[small]) for k in R.columns if k in res},
-        "auc_ci": {k: ci(boot(auc, [R[k].to_numpy(float)[small], y[small]])) for k in ("twin", "twin_base")},
-        "paired": {
-            f"{a}_minus_{b}": paired(auc, R[a].to_numpy(float)[small], R[b].to_numpy(float)[small], y[small])
-            for a in ("twin", "twin_base")
-            for b in ("altman_z2", "icr", "size", "fcf_margin", *(["formula"] if "formula" in res else []))
-        },
-    }
-    out["stress_minus_baseline"] = paired(auc, twin, R["twin_base"].to_numpy(float), y)
-    import statsmodels.api as sm
-
-    X = pd.DataFrame({"twin": pct(R["twin_base"].to_numpy(float)), "size": pct(R["size"].to_numpy(float))})
-    X["altman_z2"] = pct(R["altman_z2"].to_numpy(float))
-    X = X.fillna(0.5)
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            m = sm.Logit(y, sm.add_constant(X)).fit(disp=False, cov_type="HC1")
-        out["logit_with_size"] = {
-            k: {"coef": float(m.params[k]), "z": float(m.tvalues[k]), "p": float(m.pvalues[k])} for k in X.columns
-        }
-    except Exception as e:
-        out["logit_with_size"] = {"error": f"{type(e).__name__}: {e}"}
-    return out
-
-
-# ---------------------------------------------------------------- 2013-2023 distress panel
+# ---------------------------------------------------------------- distress panel
 def _events(p: pd.DataFrame) -> dict[str, np.ndarray]:
     icr0, icrmin = p["y_icr0"].to_numpy(float), p["y_icr_min"].to_numpy(float)
     cov = np.where(icr0 >= 1.5, (icrmin < 1.5).astype(float), np.nan)
@@ -441,6 +471,8 @@ def _events(p: pd.DataFrame) -> dict[str, np.ndarray]:
         "abnormal_burn": np.where(np.isfinite(abn), (abn < -10).astype(float), np.nan),
         "coverage_collapse": cov,
         "dividend_cut": div,
+        # Chapter 11 / 7 petition (8-K Item 1.03) within eight quarters, from the EDGAR census
+        "bankruptcy": _col(p, "y_bk8").to_numpy(float),
     }
 
 
@@ -511,7 +543,7 @@ def panel_section(p: pd.DataFrame) -> dict:
             if sel.sum() < 20:  # predictor not available in this run
                 continue
             entry: dict = {"auc": auc(x[sel], y[sel]), "n": int(sel.sum())}
-            if name in ("severe_burn", "abnormal_burn"):
+            if name in ("severe_burn", "abnormal_burn", "bankruptcy"):
                 entry["auc_ci"] = ci(boot(auc, [x[sel], y[sel]], firms[sel], b=B_PANEL))
                 if k != "twin":
                     entry["twin_minus"] = paired(auc, twin, x, y, firms, B_PANEL)
@@ -638,81 +670,57 @@ def forecast_section(fc: pd.DataFrame) -> dict:
     return out
 
 
-def structural_section(df: pd.DataFrame, by_year: bool = False) -> dict:
-    """Realized revenue fed into the twin: does it translate revenue into cash better than simple pass-through rules?
-
-    For each cash measure (free cash flow, operating cash flow) the twin's worst cumulative value is compared with
-    the realized one and with two rules that see the same realized revenue: the trailing margin applied to it and,
-    for free cash flow, the trailing run-rate. The incremental test correlates the twin's deviation from the margin
-    rule with the realized deviation from the margin rule, i.e. whether the twin knows where pass-through fails.
-    """
-    if "s_real_fcf" not in df:
-        return {}
-    d = df[df["s_real_fcf"].notna()].reset_index(drop=True)
-    firms = d["ticker"].to_numpy() if by_year else None
-    b_ = B_PANEL if by_year else B
-    out: dict = {"n": int(len(d)), "n_firms": int(d["ticker"].nunique())}
-    subsets = {"all": np.ones(len(d), bool), "revenue_down_10pct": (d["s_rev_change"] < -10).to_numpy()}
-    for name, keep in subsets.items():
-        g = d[keep].reset_index(drop=True)
-        f = None if firms is None else firms[keep]
-        res: dict = {"n": int(len(g))}
-        for var in ("fcf", "cfo"):
-            real, twin, marg = (g[f"s_{k}_{var}"].to_numpy(float) for k in ("real", "twin", "margin"))
-            e: dict = {
-                "rho_twin": rho(twin, real),
-                "rho_margin": rho(marg, real),
-                "twin_minus_margin": paired(rho, twin, marg, real, f, b_),
-                "mae_twin": float(np.nanmedian(np.abs(twin - real))),
-                "mae_margin": float(np.nanmedian(np.abs(marg - real))),
-                "rho_incremental": rho(twin - marg, real - marg),
-                "rho_incremental_ci": ci(boot(rho, [twin - marg, real - marg], f, b=b_)),
-            }
-            err_t, err_m = np.abs(twin - real), np.abs(marg - real)
-            e["share_twin_closer"] = float(np.nanmean(err_t < err_m))
-            if var == "fcf":
-                rr = g["s_runrate_fcf"].to_numpy(float)
-                e["rho_runrate"] = rho(rr, real)
-                e["twin_minus_runrate"] = paired(rho, twin, rr, real, f, b_)
-            res[var] = e
-        out[name] = res
-    if by_year:
-        out["by_year"] = {
-            int(y): {
-                "n": int(len(gy)),
-                "rho_incremental_cfo": rho(
-                    (gy["s_twin_cfo"] - gy["s_margin_cfo"]).to_numpy(float),
-                    (gy["s_real_cfo"] - gy["s_margin_cfo"]).to_numpy(float),
-                ),
-                "mae_twin_cfo": float(np.nanmedian(np.abs(gy["s_twin_cfo"] - gy["s_real_cfo"]))),
-                "mae_margin_cfo": float(np.nanmedian(np.abs(gy["s_margin_cfo"] - gy["s_real_cfo"]))),
-            }
-            for y, gy in d.groupby("year")
-        }
-    return out
-
-
 def main(cache: Path) -> dict:
-    xs, panel, fc, errors = load(cache)
+    from . import calibration, distress, transmission
+
+    xs, panel_all, fc, errors = load(cache)
+    RAW = "real_cum_fcf" if "real_cum_fcf" in xs else "real_burn"
+    ABN = "real_abn_cum_fcf" if "real_abn_cum_fcf" in xs else "real_abn_burn"
+    xs, panel = size_screen(xs), size_screen(panel_all)
+    samples = {
+        "edgar": np.ones(len(xs), bool),
+        "sp2020": xs["sp2020"].to_numpy(bool),
+        "sp_today": xs["sp_today"].to_numpy(bool),
+    }
     res: dict = {
         "n_files": len(list(cache.glob("*.json"))),
-        "covid": covid_section(xs),
-        **({"covid_abnormal": covid_section(xs, "real_abn_burn")} if "real_abn_burn" in xs else {}),
-        "bankruptcy": bankruptcy_section(xs),
+        "samples": {
+            "covid": {k: int(v.sum()) for k, v in samples.items()},
+            "panel_firm_years": int(len(panel)),
+            "panel_firms": int(panel["ticker"].nunique()) if len(panel) else 0,
+        },
+        # cumulative FCF over 2020Q1-2021Q2 (raw, and relative to the run-rate); the worst-cumulative versions, which
+        # for firms with positive cash flow reduce to the first quarter, are kept as a robustness check
+        "covid": {k: covid_section(xs[v].reset_index(drop=True), RAW) for k, v in samples.items() if v.sum() >= 30},
+        "covid_abnormal": {
+            k: covid_section(xs[v].reset_index(drop=True), ABN) for k, v in samples.items() if v.sum() >= 30
+        },
+        "covid_worst": {
+            k: covid_section(xs[v].reset_index(drop=True), "real_burn") for k, v in samples.items() if v.sum() >= 30
+        },
+        "bankruptcy_2020": distress.bankruptcy_2020(xs, B),
+        "bankruptcy_panel": distress.bankruptcy_panel(panel, B_PANEL),
+        "exposure": distress.exposure(xs, B),
         "panel": panel_section(panel),
-        "structural": {
-            "covid": structural_section(xs[~xs["bankrupt"]].reset_index(drop=True)),
-            "panel": structural_section(panel, by_year=True),
+        "panel_sp": panel_section(sp.reset_index(drop=True))
+        if len(sp := panel[panel["sp_today"] | panel["sp2020"]]) >= 300
+        else {},
+        "transmission": {
+            "panel": transmission.section(panel, B_PANEL),
+            "covid": transmission.section(xs, B, panel=False),
         },
         "forecasts": forecast_section(fc),
+        "calibration": calibration.section(fc, panel),
         "errors": errors,
     }
+    from . import plan2
+
+    res["plan2"] = plan2.section(panel_all, panel, fc, B_PANEL)
+    res["plan2"]["verdicts"] = plan2.verdicts(res)
+    res["plan2"]["holm"] = plan2.holm(_secondary_pvalues(res))
     from ..export import _clean
 
     OUT.write_text(json.dumps(_clean(res), indent=1), encoding="utf-8")
-    c, b = res["covid"], res["bankruptcy"]
-    print(
-        f"covid n={c['n']} rho twin={c['predictors']['twin']['rho']:.3f} within-sector={c['predictors']['twin']['rho_within_sector']:.3f}"
-    )
-    print(f"bankruptcy AUC twin={b['predictors']['twin']['auc']:.3f} altman={b['predictors']['altman_z2']['auc']:.3f}")
+    v = res["transmission"]["panel"].get("verdict", {})
+    print(json.dumps(res["samples"]), "\nverdict:", json.dumps(v, default=str))
     return res

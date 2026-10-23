@@ -9,6 +9,8 @@ from pathlib import Path
 import pandas as pd
 import requests
 
+VINTAGES = Path(__file__).with_name("gdp_vintages.csv")
+
 CACHE_DIR = Path(__file__).resolve().parents[2] / ".cache" / "fred"
 SERIES = {
     "short_rate": "DGS3MO",  # 3-month Treasury, % p.a.
@@ -39,6 +41,24 @@ def macro_quarterly(asof: str | None = None) -> pd.DataFrame:
     return df.resample("QE").mean().dropna()
 
 
+def gdp_vintage(asof: str) -> pd.Series | None:
+    """Nominal GDP as published on `asof` (Philadelphia Fed Real-Time Data Set, vintages from 2010).
+
+    A quarterly vintage is dated about the middle of the quarter's second month; it is used from the 20th.
+    """
+    if not VINTAGES.exists():
+        return None
+    v = pd.read_csv(VINTAGES, index_col=0)
+    t = pd.Timestamp(asof)
+    dated = {c: pd.Timestamp(int(c[:4]), 3 * int(c[-1]) - 1, 20) for c in v.columns}
+    usable = [c for c, d in dated.items() if d <= t]
+    if not usable:
+        return None
+    s = v[max(usable, key=lambda c: dated[c])].dropna()
+    s.index = pd.PeriodIndex(s.index.str.replace(":", ""), freq="Q").to_timestamp(how="end").normalize()
+    return s.astype(float)
+
+
 def recession_regime(asof: str | None = None) -> dict:
     """Markov recession regime from NBER-dated US recessions (FRED USREC) and nominal GDP, post-1947.
 
@@ -47,6 +67,9 @@ def recession_regime(asof: str | None = None) -> dict:
     """
     rec = (fred_series("USREC") * 100).resample("QE").max()
     gdp = (fred_series("GDP") * 100).resample("QE").last()
+    vint = gdp_vintage(asof) if asof else None
+    if vint is not None:  # point in time: the GDP history as it was published on the cutoff, not today's revision
+        gdp = vint
     if asof:
         rec, gdp = rec[rec.index <= pd.Timestamp(asof)], gdp[gdp.index <= pd.Timestamp(asof)]
     rec = rec[rec.index >= "1947-01-01"]

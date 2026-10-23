@@ -46,6 +46,10 @@ def tickers() -> list[str]:
 
 def classify(ticker: str) -> tuple[str, str]:
     """(GICS sector, GICS sub-industry) for a ticker; empty strings if unknown (live API tickers)."""
+    if ticker.upper().startswith("CIK"):  # EDGAR research universe: Fama-French 12 industry from the SIC code
+        u = _edgar()
+        hit = u[u["key"] == ticker.upper()]
+        return (str(hit["industry"].iloc[0]), "") if len(hit) else ("", "")
     if "~" in ticker:  # delisted 2020 Chapter 11 filers used in the research sample
         bk = pd.read_csv(Path(__file__).with_name("data") / "bankruptcies_2020.csv")
         hit = bk[bk["key"] == ticker.upper()]
@@ -55,6 +59,11 @@ def classify(ticker: str) -> tuple[str, str]:
     if row.empty:
         return "", ""
     return str(row["sector"].iloc[0]), str(row["industry"].iloc[0])
+
+
+@lru_cache(maxsize=1)
+def _edgar() -> pd.DataFrame:
+    return pd.read_csv(HERE / "data" / "universe_edgar.csv")
 
 
 @lru_cache(maxsize=1)

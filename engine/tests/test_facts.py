@@ -42,3 +42,62 @@ def test_season_handles_52_53_week_calendars():
     # Apple-style fiscal quarter ending on April 1 belongs with March quarter ends.
     assert season_of(pd.Timestamp("2023-04-01")) == season_of(pd.Timestamp("2024-03-30"))
     assert season_of(pd.Timestamp("2023-12-30")) == season_of(pd.Timestamp("2022-12-31"))
+
+
+def test_sixteen_week_quarters_are_kept():
+    # Kroger-style 52-week year: a 16-week first quarter, then three 12-week quarters
+    rows = [
+        fact("2024-02-04", "2024-05-25", 160, "2024-06-20"),
+        fact("2024-02-04", "2024-08-17", 280, "2024-09-20"),  # 28-week YTD
+        fact("2024-05-26", "2024-08-17", 120, "2024-09-20"),
+        fact("2024-02-04", "2024-11-09", 400, "2024-12-10"),  # 40-week YTD
+        fact("2024-02-04", "2025-02-01", 520, "2025-04-01", form="10-K"),
+    ]
+    q = duration_quarters(gaap("X", rows), "X")
+    assert [v[0] for _, v in sorted(q.items())] == [160, 120, 120, 120]
+    # Costco-style: the fourth quarter is 16 weeks and exists only as FY minus 36-week YTD
+    rows = [
+        fact("2023-09-04", "2023-11-26", 120, "2023-12-20"),
+        fact("2023-09-04", "2024-02-18", 240, "2024-03-10"),
+        fact("2023-09-04", "2024-05-12", 360, "2024-06-10"),
+        fact("2023-09-04", "2024-09-01", 520, "2024-10-10", form="10-K"),
+    ]
+    q = duration_quarters(gaap("X", rows), "X")
+    assert q[pd.Timestamp("2024-09-01")][0] == 160 and len(q) == 4
+
+
+def test_xbrl_instance_fallback_parses_entity_wide_usd_facts():
+    from fintwin.data.xbrl_fallback import parse_instance
+
+    doc = b"""<?xml version="1.0"?>
+<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025"
+  xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xmlns:iso4217="http://www.xbrl.org/2003/iso4217">
+ <xbrli:context id="q"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier></xbrli:entity>
+  <xbrli:period><xbrli:startDate>2026-04-01</xbrli:startDate><xbrli:endDate>2026-06-30</xbrli:endDate></xbrli:period></xbrli:context>
+ <xbrli:context id="seg"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier>
+  <xbrli:segment><xbrldi:explicitMember dimension="a">b</xbrldi:explicitMember></xbrli:segment></xbrli:entity>
+  <xbrli:period><xbrli:startDate>2026-04-01</xbrli:startDate><xbrli:endDate>2026-06-30</xbrli:endDate></xbrli:period></xbrli:context>
+ <xbrli:context id="i"><xbrli:entity><xbrli:identifier scheme="x">1</xbrli:identifier></xbrli:entity>
+  <xbrli:period><xbrli:instant>2026-06-30</xbrli:instant></xbrli:period></xbrli:context>
+ <xbrli:unit id="usd"><xbrli:measure>iso4217:USD</xbrli:measure></xbrli:unit>
+ <us-gaap:Revenues contextRef="q" unitRef="usd" decimals="-6">100000000</us-gaap:Revenues>
+ <us-gaap:Revenues contextRef="seg" unitRef="usd" decimals="-6">40000000</us-gaap:Revenues>
+ <us-gaap:Revenues contextRef="q" unitRef="usd" decimals="-6">100000000</us-gaap:Revenues>
+ <us-gaap:CashAndCashEquivalentsAtCarryingValue contextRef="i" unitRef="usd">7000000</us-gaap:CashAndCashEquivalentsAtCarryingValue>
+ <us-gaap:NetIncomeLoss contextRef="q" unitRef="usd">5</us-gaap:NetIncomeLoss>
+</xbrli:xbrl>"""
+    out = parse_instance(doc, {"Revenues", "CashAndCashEquivalentsAtCarryingValue"}, "a-1", "10-Q", "2026-07-29")
+    assert out["Revenues"] == [
+        {
+            "start": "2026-04-01",
+            "end": "2026-06-30",
+            "val": 1e8,
+            "accn": "a-1",
+            "form": "10-Q",
+            "filed": "2026-07-29",
+            "fy": None,
+            "fp": None,
+        }
+    ]  # segment and duplicate dropped
+    assert out["CashAndCashEquivalentsAtCarryingValue"][0]["end"] == "2026-06-30"
+    assert "NetIncomeLoss" not in out  # not requested

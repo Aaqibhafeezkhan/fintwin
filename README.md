@@ -15,28 +15,30 @@
 
 ![Stress lab demo](docs/demo.gif)
 
-> **30-second pitch.** A flight simulator for corporate finance. It reads 15 years of a company's official filings and learns how its finances behave: fixed vs variable costs, how fast customers pay, when its debt matures. Then it replays the future 5,000 times under any crisis you pick, live in the browser. Then I tested it the hard way. Frozen in February 2020, it beat the Altman, Ohlson and Zmijewski scores at ranking who would burn cash, but a simple trailing cash-flow margin beat it, and neither it nor the classic scores predicted who the shock would actually hit. What the twin does well is the other half of a stress test: given the revenue that actually happened, it knows where cash departs from a simple margin rule, consistently over ten years. It covers 390+ companies and rebuilds itself from the latest filings every week.
+> **30-second pitch.** A flight simulator for corporate finance. It reads 15 years of a company's official filings and learns how its finances behave: fixed vs variable costs, how fast customers pay, when its debt matures. Then it replays the future 5,000 times under any crisis you pick, live in the browser. Then I tested it the hard way, on every US non-financial SEC filer with $50M+ revenue, including the ones that went bust, against simple rules that see the same data. Most of what it seemed to know was persistence: a 16-quarter cash-flow margin predicts cash better than the twin, and the twin's score predicts bankruptcy no better than its own formula without simulation. It also over-reacted to revenue because it assumed too much fixed cost; a prior selected walk-forward fixes much of that. What survives is small and specific: given the revenue that happened, the direction of the twin's departures from that margin is informative, and for free cash flow, blending in about 15% of them lowers the error out of sample by more than any simple rule does. It covers 390+ companies on the dashboard and rebuilds itself from the latest filings every week.
 
 ## Results
 
-![The paper in one picture: who a crisis hits is mostly persistence; how a given shock becomes cash is where the twin adds information](docs/findings.png)
+![The paper in one picture: given realized revenue, the twin alone is less accurate than a 16-quarter margin but improves it when combined; in ranking bankruptcies it equals its own formula without simulation](docs/findings.png)
 
-All numbers below come from out-of-sample, point-in-time tests: the model sees only the filings that existed on the test date.
+All numbers come from out-of-sample, point-in-time tests on a survivorship-free universe: **5,220 non-financial SEC filers** (every company with $50M+ revenue in some year 2012-2024, including those later acquired, delisted or bankrupt), 21,545 firm-years 2014-2024, and a census of bankruptcy petitions (8-K Item 1.03, first filing of each case: **420 firm-years at 238 companies** followed by one within two years). The decision rule for the main test was committed before it was run; the rules for the other hypotheses were written after the first results and are treated as descriptive ([plan 1](docs/REVISION_PLAN.md), [plan 2](docs/REVISION_PLAN_2.md)).
 
 | Test | Result |
 |---|---|
-| **Transmission (structural test)**: realized revenue fed into each twin, 2,661 firm-years 2014–2023 | The twin knows where a margin pass-through rule misjudges cash flow: incremental **ρ = 0.30** (95% CI 0.25–0.36), positive in **every year**. In 2020, for companies whose revenue fell >10%, operating cash flow tracked with **ρ = 0.72 vs 0.27** for the rule (across all revenue declines in 2014–2023 the two are level, and the rule has smaller errors in levels). |
-| **Ranking before COVID**: 333 S&P 500 non-financials frozen on 20 Feb 2020 | Twin ρ = 0.40 with 2020–21 cash burn, above Altman Z″ (0.31), Ohlson, Zmijewski and every leverage/coverage ratio. **But** the trailing FCF margin reaches 0.68, and against each company's own run-rate (the shock-induced part) neither the twin nor the classic scores rank 2020; only revenue volatility and capital intensity carry weak signal. |
-| **2020 bankruptcies**: 27 Chapter 11 filers vs size-matched survivors | AUC 0.95 vs 0.88 for Altman Z″ (p = 0.02). The twin's scoring formula on the opening balance sheet does as well (0.96): the signal is in the score, not the simulation. |
-| **Revenue forecasts**: 15,112 forecast–horizon pairs, 374 companies | Scaled CRPS **27% better** than a seasonal random walk and **18% better** than ETS; Diebold–Mariano tests significant with firm × origin clustering. |
-| **Calibration**: online conformal rescaling, learned only from past cutoffs | 90%-interval coverage raised from 70% (raw) to **91%** (revenue) and from 36% to **91%** (cash). |
-| **Engineering** | Python reference engine and TypeScript browser engine agree to 1e-6 on golden runs. The balance sheet balances on every path, checked by property-based tests. |
+| **Transmission** (main test): realized revenue given to the twin and to six simple rules, 16,973 firm-years | Alone, the twin is less accurate than every simple rule (median error 11.3 pp of revenue vs **6.9** for a 16-quarter margin). The old headline statistic (0.32 against a 4-quarter margin) is exceeded by the 16-quarter margin alone (**0.39**): it measured mean reversion. The twin's departures still carry information no rule has (encompassing *t* = 9.2 with firm × year clustering; ρ 0.22 [0.19, 0.24] against the 16-quarter margin's residual). Out of sample it is worth little: margin + 10-15% of the twin cuts error by 3.6%, but a simple regression combined the same way gets 2.9%; for **free cash flow** the twin's edge over the best such combination (0.22 pp) does not survive a Holm correction. |
+| **Why it misses, and a fix** | The twin's cash flow reacts to revenue **2.3×** as much as firms' does (EBITDA 2.1×, capex 1.0×): too much assumed operating leverage. A fixed-cost prior selected walk-forward (5% instead of 35%) cuts its median error from 12.0 to 9.7 on the 2018-2024 test years with no loss in bankruptcy ranking; it is now the default. The prior was chosen at the edge of the grid, after a sensitivity analysis had pointed that way. |
+| **Bankruptcy**: petition within 8 quarters | AUC **0.86** for the twin, **0.87** for its scoring formula without simulation, 0.86 Ohlson, 0.81 Altman Z″ (within 4 quarters: 0.88, 0.89, 0.88, 0.85). Among already-weak firms (82% of petitions): 0.77 vs 0.77. Simulation adds nothing to ranking. |
+| **Downturns** (2015-16, 2020, 2022) | Under a uniform scenario nothing ranks the burn a shock causes. Given each industry's realized shock, the twin's fragility is associated with it in all three downturns (*t* = 4.3, 6.8, 5.7, industry-clustered, controlling for the FCF margin and the no-simulation formula). The shock is realized, so this is a decomposition, not a forecast. |
+| **Liquidity decisions and loops** | Given realized revenue, event probabilities add +0.01 to +0.04 AUC to a static runway rule + scores. Two of the four loops are necessary for the model to produce cash depletion and payout cuts at all, so their "gain" over a loop-free twin is mechanical; the other two are close to inert. |
+| **Forecasts and calibration** | Revenue CRPS 26% better than a seasonal random walk, 19% better than ETS. For cash the best forecast is the random walk. Conformal intervals with group scaling reach 90% coverage in every group for cash; for revenue they fail only in the 2020 stress quarters (77%). |
+| **Data** | 52/53-week fiscal calendars are read correctly; filings missing from the SEC's companyfacts API are read from their own XBRL; rating spreads and GDP are point-in-time. |
 
 Where it fails, in the paper's own words ([docs/paper/fintwin.pdf](docs/paper/fintwin.pdf)):
-- It does not predict *who* a crisis will hit: fundamentals-based fragility rankings, the twin's included, mostly measure persistent cash-flow habits.
-- Its feedback loops barely change the ranking of companies.
-- Cash forecasts lose to a random walk and to ETS; in quiet years the margin rule has smaller errors in levels.
-- The universe is today's S&P 500 (survivorship bias); the 2020 bankruptcy test addresses it for one year only.
+- It is not an early-warning system: its ranking of firms is that of its own scoring formula, and fragility rankings mostly measure persistent cash-flow habits.
+- Even corrected, it is less accurate in levels than a long-window cash-flow margin; its value is in the direction of its departures from that margin.
+- Its cash forecasts do not beat a random walk, and its revenue intervals are not calibrated in a regime break.
+- Two of its four feedback loops have no measurable effect.
+- Its transmission test conditions on eight reported quarters, which only 21% of the firm-years followed by a bankruptcy achieve.
 
 ## What it does
 
@@ -64,7 +66,7 @@ Where it fails, in the paper's own words ([docs/paper/fintwin.pdf](docs/paper/fi
 
 ```bash
 cp .env.example .env                       # SEC_USER_AGENT (required by SEC)
-cd engine && uv sync && uv run pytest -q   # 27 tests: balance-sheet identity (Hypothesis), offline XBRL end-to-end, point-in-time, CRPS, Sobol...
+cd engine && uv sync && uv run pytest -q   # 39 tests: balance-sheet identity (Hypothesis), offline XBRL end-to-end, 52/53-week calendars, point-in-time, the transmission nulls, CRPS...
 bash scripts/full_pipeline.sh              # validation (~30k forecasts) + all snapshots + backtests (hours; CI shards it)
 cd ../web && npm ci && npm test && npm run dev    # includes Python <-> TypeScript parity
 ```

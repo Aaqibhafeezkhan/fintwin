@@ -15,6 +15,29 @@ SPREADS = np.array(
 INVESTMENT_GRADE_MIN_RANK = 9  # BBB
 
 
+def spreads_asof(asof: str | None) -> list[float] | None:
+    """The rating-spread table published before `asof` (Damodaran's January tables, archived by the Wayback
+    Machine; data/rating_spreads.csv), ordered like SPREADS (D ... AAA). None if no vintage precedes `asof`."""
+    if asof is None:
+        return None
+    from pathlib import Path
+
+    import pandas as pd
+
+    f = Path(__file__).resolve().parents[1] / "data" / "rating_spreads.csv"
+    if not f.exists():
+        return None
+    t = pd.read_csv(f, dtype={"snapshot": str})
+    t = t[t["snapshot"].str[:8] <= pd.Timestamp(asof).strftime("%Y%m%d")]
+    if t.empty:
+        return None
+    row = t.sort_values("snapshot").iloc[-1]
+    return [float(row[c]) for c in reversed(ORDER_DAMODARAN)]
+
+
+ORDER_DAMODARAN = ["AAA", "AA", "A+", "A", "A-", "BBB", "BB+", "BB", "B+", "B", "B-", "CCC", "CC", "C", "D"]
+
+
 def rating_rank(icr: np.ndarray) -> np.ndarray:
     return np.searchsorted(ICR_LOWER, icr, side="right") - 1
 

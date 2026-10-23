@@ -196,6 +196,7 @@ def company_cases(ticker: str, n_paths: int = 2000) -> dict:
                         "var": var,
                         "h": h + 1,
                         "y": y,
+                        "target": str(real.index[h].date()),
                         "crps_baseline": crps_gaussian(mu_b, sd_b, y),
                     }
                     for flag, out in sims.items():
@@ -289,10 +290,13 @@ def aggregate() -> dict:
         g = g.copy()
         sc = _scores(g, "reg")
         g = g.join(sc)
-        # online conformal: scale factor for year Y uses only forecasts from origins strictly before Y
+        # online conformal: the scale factor for origin 15 Feb Y uses only forecasts whose target quarter had been
+        # reported by then (quarter end + 75 days), so no error is used before it was observable
         conf90, conf50, factors = [], [], {}
+        target = pd.to_datetime(g["target"]) if "target" in g else pd.to_datetime(g["year"].astype(str) + "-01-01")
         for year, gy in g.groupby("year"):
-            past = g[g["year"] < year]
+            seen = target + pd.Timedelta(days=90) <= pd.Timestamp(f"{year}-02-15")
+            past = g[(g["year"] < year) & seen]
             if len(past) < 40:
                 continue
             c90, c50 = float(np.quantile(past["s90"], 0.9)), float(np.quantile(past["s50"], 0.5))

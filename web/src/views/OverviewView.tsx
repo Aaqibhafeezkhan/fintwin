@@ -50,7 +50,7 @@ export function OverviewView({ index, onOpen, onGo, onStress }: { index: Index; 
         <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 8 }}>
           <Metric label="Pre-COVID fragility ranking" value={xs.spearman} format={(v) => `ρ ${v.toFixed(2)}`}
             foot={`${xs.n} companies · mostly persistence, see the paper`}
-            info="Spearman rank correlation between each company's twin health score under a demand freeze, computed from filings available on 20 Feb 2020, and its realized worst cumulative free cash flow in 2020–21." />
+            info="Spearman rank correlation between each company's twin health score under a demand freeze, computed from filings available on 20 Feb 2020, and its realized cumulative free cash flow in 2020–21." />
           <Metric label="Out-of-sample forecasts" value={cal.n_forecasts} format={(v) => Math.round(v).toLocaleString()}
             foot={`${cal.n_companies} companies, cutoffs ${cal.origins[0].slice(0, 4)}–${cal.origins[cal.origins.length - 1].slice(0, 4)}`}
             info="Every forecast uses only facts filed before its cutoff date (point-in-time vintages), so later restatements never leak in." />

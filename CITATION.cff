@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use FinTwin, please cite the accompanying paper (preferred citation) and the software."
 title: "FinTwin: a point-in-time system-dynamics digital twin for corporate liquidity stress testing"
 type: software
-version: 1.0.0
-date-released: 2026-10-16
+version: 2.0.0
+date-released: 2026-10-23
 license: MIT
 doi: 10.5281/zenodo.23434606
 identifiers:
@@ -25,7 +25,7 @@ keywords:
   - Monte Carlo simulation
 preferred-citation:
   type: article
-  title: "What Can a Financial Digital Twin Tell Us? Simulating Corporate Liquidity Stress from SEC Filings, with Out-of-Sample Evidence from COVID-19 and a Decade of Data"
+  title: "Does Simulation Add Information Beyond Persistence? A Financial Digital Twin Tested on a Survivorship-Free Panel of SEC Filers"
   authors:
     - family-names: Dimakopoulos
       given-names: Spilios
