@@ -61,4 +61,4 @@ check_untyped_defs = false
 # weekly data workflow, not by unit tests; everything else is measured.
 omit = ["fintwin/data/edgar.py", "fintwin/data/edgar_universe.py", "fintwin/data/fred.py", "fintwin/memo.py", "fintwin/api.py", "fintwin/pipeline.py",
         "fintwin/backtest/walk_forward.py", "fintwin/backtest/batch.py", "fintwin/research/experiments.py",
-        "fintwin/research/__main__.py"]
+        "fintwin/research/__main__.py", "fintwin/research/assumption_sobol.py"]

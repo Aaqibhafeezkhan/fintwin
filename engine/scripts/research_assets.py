@@ -679,6 +679,31 @@ if P2:
     table("holm", ["\\begin{tabular}{lr}", "\\toprule", "Secondary comparison & Holm-adjusted $p$ \\\\", "\\midrule",
                    *rows, "\\bottomrule", "\\end{tabular}"])
 
+# ------------------------------------------------------------------ 10. global sensitivity to the assumptions
+SOB = PAPER / "sobol_assumptions.json"
+if SOB.exists():
+    SB = json.loads(SOB.read_text(encoding="utf-8"))
+    m("SobN", SB["n_firm_years"])
+    m("SobPoints", SB["n_points"])
+    m("SobMaeMin", f1(SB["median_ae"]["min"]))
+    m("SobMaeMax", f1(SB["median_ae"]["max"]))
+    m("SobIncrMin", f2(SB["incremental"]["min"]))
+    m("SobIncrMax", f2(SB["incremental"]["max"]))
+    top = max(SB["median_ae"]["indices"], key=lambda r: r["ST"])
+    m("SobTopLabel", lower(top["label"]))
+    m("SobTopST", f2(top["ST"]))
+    rest = sum(max(r["ST"], 0) for r in SB["median_ae"]["indices"] if r is not top)
+    m("SobRestST", f2(rest))
+    rows = []
+    for a, b in zip(SB["median_ae"]["indices"], SB["incremental"]["indices"], strict=True):
+        rows.append(f"{a['label']} & {a['range'][0]:g}--{a['range'][1]:g} & {f2(max(a['S1'], 0))} & {f2(max(a['ST'], 0))} "
+                    f"{ci_txt([max(c, 0) for c in a['ST_ci']])} & {f2(max(b['S1'], 0))} & {f2(max(b['ST'], 0))} \\\\")
+    table("sobol_assumptions", ["\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrlrr}", "\\toprule",
+                                " & & \\multicolumn{2}{c}{Median error} & \\multicolumn{2}{c}{Incremental $\\rho$} \\\\",
+                                "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}",
+                                "Assumption & Range & $S_1$ & $S_T$ [95\\% CI] & $S_1$ & $S_T$ \\\\", "\\midrule", *rows,
+                                "\\bottomrule", "\\end{tabular}}"])
+
 # ------------------------------------------------------------------ figures
 by = cfo["by_year"]
 years = sorted(int(y) for y in by)

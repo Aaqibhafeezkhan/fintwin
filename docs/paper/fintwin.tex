@@ -368,7 +368,11 @@ errors are reported.
 \end{figure}
 
 \section{Sensitivity and hindsight}\label{sec:sensitivity}
-Several parameters are judgement calls rather than estimates: the credit line assumed when none is tagged, the prior on the fixed-cost share and its weight, the shrinkage of trend growth and cyclicality, the coverage thresholds of the market-access cliff, the speed of restructuring, and the rating-spread table. Table~\ref{tab:sens} varies each in turn. The incremental correlation against the four-quarter rule ranges from \SensIncrLo{} to \SensIncrHi, and the bankruptcy AUC from \SensBkLo{} to \SensBkHi. The one assumption that matters is the fixed-cost prior: with a prior of 20\% instead of 35\% the twin's median error falls to \SensMaeLow{} points, with 50\% it rises to \SensMaeHigh. The data prefer less operating leverage than the model assumes, which is the overreaction seen in Section~\ref{sec:transmission}. We report the specified model and do not retune it on the test sample.
+Several parameters are judgement calls rather than estimates: the credit line assumed when none is tagged, the prior on the fixed-cost share and its weight, the shrinkage of trend growth and cyclicality, the coverage thresholds of the market-access cliff, the speed of restructuring, and the rating-spread table. Table~\ref{tab:sens} varies each in turn. The incremental correlation against the four-quarter rule ranges from \SensIncrLo{} to \SensIncrHi, and the bankruptcy AUC from \SensBkLo{} to \SensBkHi. The one assumption that matters is the fixed-cost prior: with a prior of 20\% instead of 35\% the twin's median error falls to \SensMaeLow{} points, with 50\% it rises to \SensMaeHigh. The data prefer less operating leverage than the model assumes, which is the overreaction seen in Section~\ref{sec:transmission}. \ifdefined\SobN Varying all eight assumptions jointly over wide ranges (a Saltelli design of
+\SobPoints{} points, each recalibrating the twin for \SobN{} random firm-years; Appendix Table~\ref{tab:sobolass}), the
+median error ranges from \SobMaeMin{} to \SobMaeMax{} and the incremental correlation against the four-quarter margin from
+\SobIncrMin{} to \SobIncrMax{}; the \SobTopLabel{} alone accounts for a total-effect index of \SobTopST{} of the error's
+variance, against \SobRestST{} for all other assumptions together.\fi We report the specified model and do not retune it on the test sample.
 
 Hindsight enters in three places, each now addressed or measured. GDP enters as the vintage published on each cutoff. Rating spreads come from the version of Damodaran's table that was published before each cutoff, recovered from the Internet Archive (for 2014 and 2021, whose archived copies postdate February, the previous year's table); using the 2026 table instead, as the software does, changes nothing (Table~\ref{tab:sens}). The model's structure and priors were designed in 2026 with knowledge of the 2014--2024 data, which no backtest can undo; the decision rule for H2 was fixed before the full-sample test, and the weekly rebuild of the public twin now accumulates genuinely prospective predictions.
 
@@ -455,6 +459,20 @@ Short-rate dynamics & Vasicek fit to the 3-month Treasury bill & since 2000 \\
 \label{tab:holm}
 \input{tables/holm.tex}
 \end{table}
+
+\ifdefined\SobN
+\begin{table}[h]
+\centering\scriptsize
+\caption{Global (Sobol) sensitivity of the transmission result to the assumed parameters}
+\label{tab:sobolass}
+\input{tables/sobol_assumptions.tex}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+First-order ($S_1$) and total ($S_T$) Sobol indices of the median absolute error and of the incremental correlation
+against the four-quarter margin, over a joint uniform design; bootstrap CI over the design's base samples.
+\end{minipage}
+\end{table}
+\fi
 
 \section{Implementation}
 The Python reference engine (NumPy) performs calibration, experiments and exports. A line-for-line TypeScript port runs in a Web Worker, so the public dashboard needs no server. Golden runs exported from Python with identical pre-drawn shocks must agree to $10^{-6}$; the balance-sheet identity is checked by property-based tests; the data pipeline, including 52/53-week fiscal calendars, is tested end to end on synthetic XBRL; and a synthetic test checks that the transmission statistics reject a predictor that is merely smoother than the base rule. The research sample (\UniverseN{} companies) is run in 16 shards on free GitHub-hosted runners.
