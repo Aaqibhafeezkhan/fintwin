@@ -326,7 +326,9 @@ SENS = {"baseline": "As specified", "revolver_low": "Credit line 4\\% of revenue
         "prior_strong": "Prior weight 8 (prior dominates)", "no_shrinkage": "No shrinkage of growth and cyclicality",
         "access_strict": "Market access cut below 2.5$\\times$ / 1.5$\\times$ coverage",
         "access_lenient": "Market access cut below 1.0$\\times$ / 0.5$\\times$, milder cuts",
-        "cuts_fast": "Faster, deeper restructuring", "spreads_pit": "Rating spreads at the cutoff's Baa spread"}
+        "cuts_fast": "Faster, deeper restructuring", "spreads_pit": "Rating spreads at the cutoff's Baa spread",
+        "spreads_2026": "January 2026 rating table (as in the product)",
+        "spreads_baa": "2026 table rescaled by the cutoff's Baa spread"}
 S = T["sensitivity"]
 rows = [f"{lab} & {f1(S[k]['median_ae'])} & {f2(S[k]['incr_N1'])} & {f2(S[k]['incr_N6'])} & {f2(S[k]['auc_bk'])} & "
         f"{f2(S[k]['auc_burn'])} \\\\" for k, lab in SENS.items() if k in S]

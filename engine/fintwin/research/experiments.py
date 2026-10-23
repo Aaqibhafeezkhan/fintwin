@@ -21,10 +21,10 @@ from ..backtest.batch import _baseline, _realized
 from ..backtest.scoring import crps_gaussian, crps_samples
 from ..data.facts import CompanyData, load_company
 from ..data.fred import macro_quarterly
-from ..model.ratings import rating_rank
+from ..model.ratings import rating_rank, spreads_asof
 from ..model.sd_model import simulate
 from ..scenarios.presets import DEFAULT_LEVERS, PRESETS, build_scenario
-from ..stochastic.calibrate import calibrate
+from ..stochastic.calibrate import calibrate as _calibrate
 from ..stochastic.mc import summarize
 from ..stochastic.shocks import draw_shocks
 from ..universe import classify
@@ -44,6 +44,30 @@ ABLATIONS: dict[str, dict] = {
 H_FC = 4
 FREEZE = PRESETS["pandemic"]["knobs"]
 DEPTHS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8)
+
+
+def data_vintage(cik: int) -> dict:
+    """Which data the run used: the hash of the cached companyfacts file and the filings read by the XBRL fallback."""
+    import hashlib
+
+    from ..data import edgar
+    from ..data.facts import company_facts
+
+    path = edgar.CACHE_DIR / f"companyfacts_{cik:010d}.json.gz"
+    raw = company_facts(cik)
+    return {
+        "facts_sha256": hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None,
+        "xbrl_fallback": list(raw.get("_fallback", [])),
+    }
+
+
+def calibrate(hist: CompanyData, macro: pd.DataFrame, horizon: int = 12, assumptions: dict | None = None) -> dict:
+    """Calibration with the rating-spread table that was published at the cutoff (the product uses January 2026's)."""
+    p = _calibrate(hist, macro, horizon, assumptions)
+    pit = spreads_asof(hist.asof)
+    if pit is not None:
+        p["spreads"] = pit
+    return p
 
 
 def _f(x) -> float | None:
@@ -197,7 +221,8 @@ SENSITIVITY: dict[str, dict] = {
     "access_strict": {"p": {"access_icr": (2.5, 1.5)}},
     "access_lenient": {"p": {"access_icr": (1.0, 0.5), "access_levels": (0.8, 0.5)}},
     "cuts_fast": {"p": {"cut_delay": 1, "cut_speed": 0.08, "cut_floor": 0.75}},
-    "spreads_pit": {"p": {}},  # rating spreads rescaled to the Baa spread known at the cutoff (set at run time)
+    "spreads_2026": {"p": {}},  # the product's January 2026 rating table instead of the table published at the cutoff
+    "spreads_baa": {"p": {}},  # the 2026 table rescaled by the Baa spread known at the cutoff
 }
 EVENTS = ("cash_half", "debt_raise", "div_cut", "capex_cut")
 
@@ -342,7 +367,9 @@ def structural(hist: CompanyData, p: dict, full: pd.DataFrame, macro: pd.DataFra
             try:
                 pv = calibrate(hist, macro, T, var["calib"]) if "calib" in var else dict(p)
                 pv = {**pv, "sector_tol": 1.0, **var.get("p", {})}
-                if name == "spreads_pit":
+                if name in ("spreads_2026", "spreads_baa"):
+                    pv.pop("spreads", None)
+                if name == "spreads_baa":
                     pv["spread_scale"] = _spread_scale(str((pre.index[-1] + pd.Timedelta(days=45)).date()))
                 sim = simulate(pv, scn, draw_shocks(pv, 500, T, seed=3), DEFAULT_LEVERS)
                 base = simulate(pv, build_scenario({}, T), draw_shocks(pv, 1000, T, seed=5), DEFAULT_LEVERS)
@@ -516,6 +543,8 @@ def company(ticker: str, with_forecasts: bool = True) -> dict:
         "bankrupt_2020": is_bk,
         "errors": {},
     }
+    if full_data is not None:
+        res["data"] = data_vintage(int(full_data.cik))
     try:
         res["covid"] = covid(ticker, None if full_data is None else full_data.quarters)
     except Exception as e:

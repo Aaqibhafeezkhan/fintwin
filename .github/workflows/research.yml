@@ -37,11 +37,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+      # each shard always gets the same companies, so it keeps its own EDGAR cache between runs
       - uses: actions/cache/restore@v4
-        with: { path: engine/.cache/edgar, key: "edgar-research", restore-keys: "edgar-" }
+        with:
+          path: engine/.cache/edgar
+          key: "edgar-shard-${{ matrix.i }}-${{ github.run_id }}"
+          restore-keys: |
+            edgar-shard-${{ matrix.i }}-
+            edgar-
       - run: uv sync
       # stop cleanly before the job limit so finished companies are always uploaded
       - run: timeout 320m uv run python -m fintwin.research shard ${{ matrix.i }} $SHARDS || true
+      - uses: actions/cache/save@v4
+        if: always()
+        with: { path: engine/.cache/edgar, key: "edgar-shard-${{ matrix.i }}-${{ github.run_id }}" }
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: "research-${{ matrix.i }}", include-hidden-files: true, path: engine/.cache/research/ }
