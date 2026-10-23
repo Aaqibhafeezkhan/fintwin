@@ -524,6 +524,56 @@ def verdicts(res: dict) -> dict:
     return out
 
 
+# firm-level examples quoted in the paper: (label, CIK, cutoff year)
+EXAMPLES = [
+    ("amazon_2020", 1018724, 2020),
+    ("ge_2016", 40545, 2016),
+    ("ford_2020", 37996, 2020),
+    ("gm_2020", 1467858, 2020),
+]
+
+
+def examples(panel: pd.DataFrame) -> dict:
+    """The cases the paper describes, and how often a large departure from the 16-quarter margin has the right sign."""
+    df = frame(panel)
+    df["cik"] = panel.set_index("ticker")["cik"].groupby(level=0).first().reindex(df["ticker"]).to_numpy()
+    dep, miss = df["twin_cfo"] - df["N3_cfo"], df["real_cfo"] - df["N3_cfo"]
+    big = (dep.abs() > 8) & (np.exp(df["log_rev"]) > 2e9)
+    out: dict = {
+        "large_departures": int(big.sum()),
+        "share_right_sign": float((np.sign(dep[big]) == np.sign(miss[big])).mean()) if big.any() else None,
+    }
+    for label, cik, year in EXAMPLES:
+        row = df[(df["cik"] == cik) & (df["year"] == year)]
+        if len(row):
+            r = row.iloc[0]
+            out[label] = {
+                "rev_change": float(r["rev_change"]),
+                "rule": float(r["N3_cfo"]),
+                "twin": float(r["twin_cfo"]),
+                "real": float(r["real_cfo"]),
+            }
+    return out
+
+
+def census_check() -> dict:
+    """How many of the first version's 35 Chapter 11 filers of 2020 the 8-K census finds, and repeat filings."""
+    u = pd.read_csv(S.DATA / "universe_edgar.csv", dtype={"bankruptcy_8k": str})
+    b = pd.read_csv(S.DATA / "bankruptcies_2020.csv")
+    dates = dict(zip(u["cik"].astype(int), u["bankruptcy_8k"], strict=True))
+    found = [
+        isinstance(dates.get(int(c)), str) and any(x.startswith("2020") for x in dates[int(c)].split(";"))
+        for c in b["cik"]
+    ]
+    n = u["bankruptcy_8k"].dropna().str.split(";").map(len)
+    return {
+        "legacy": int(len(b)),
+        "found": int(sum(found)),
+        "share_repeat": float((n > 1).mean()),
+        "missing": b.loc[[not f for f in found], "name"].tolist(),
+    }
+
+
 def _safe(fn, *args) -> dict:
     """Run one analysis; a failure (e.g. outcomes missing in an older run) is recorded instead of stopping the rest."""
     try:
@@ -545,6 +595,8 @@ def section(panel_all: pd.DataFrame, panel: pd.DataFrame, fc: pd.DataFrame, b: i
         "episodes": _safe(episodes, panel, b),
         "fcf_mechanism": _safe(fcf_mechanism, df),
         "small_firms": _safe(small_firms, panel_all, b),
+        "examples": _safe(examples, panel),
+        "census": _safe(census_check),
     }
     out["two_way"] = _safe(lambda: robustness_stats(T.add_shrunk(T.frame(panel)), b))
     return out

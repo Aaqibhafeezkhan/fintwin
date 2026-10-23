@@ -528,6 +528,156 @@ if AUDIT.exists():
     m("AudFirmsNew", A["current"]["companies_with_gaps"])
     m("AudRecovered", A["companies_recovered"])
     m("AudLatest", pc(A["current"]["share_latest_matches_last_filing"]))
+    m("AudNoFiling", big(A["current"].get("gaps_no_filing") or 0))
+    m("AudUntagged", big(A["current"].get("gaps_filed_untagged") or 0))
+
+# ------------------------------------------------------------------ 9. second round (docs/REVISION_PLAN_2.md)
+P2 = R.get("plan2", {})
+if P2:
+    rs = P2["revised_spec"]["global"]
+    m("RevMaeBase", f1(rs["median_ae_baseline"]))
+    m("RevMaeNew", f1(rs["median_ae_revised"]))
+    m("RevDiff", f1(-rs["diff"]["diff"]))
+    m("RevDiffLo", f1(-rs["diff"]["ci"][1]))
+    m("RevDiffHi", f1(-rs["diff"]["ci"][0]))
+    m("RevAucBase", f3(rs["auc_bk_baseline"]))
+    m("RevAucNew", f3(rs["auc_bk_revised"]))
+    m("RevAccepted", "accepted" if rs["accepted"] else "rejected")
+    m("RevNone", f1(P2["revised_spec"]["grid_median_ae"]["prior_none"]))
+    m("RevFive", f1(P2["revised_spec"]["grid_median_ae"]["prior_share_05"]))
+    ri = P2["revised_spec"]["industry"]
+    m("RevIndMae", f1(ri["median_ae_revised"]))
+    m("RevIndAuc", f3(ri["auc_bk_revised"]))
+    ov = P2["overreaction"]
+    m("ElastCfoTwin", f2(ov["cfo"]["twin"]))
+    m("ElastCfoReal", f2(ov["cfo"]["real"]))
+    m("ElastCfoRatio", f1(ov["cfo"]["ratio"]))
+    m("ElastEbitdaRatio", f1(ov["ebitda"]["ratio"]))
+    m("ElastCapexRatio", f2(ov["capex"]["ratio"]))
+    ch = P2["cash_hybrid"]
+    if ch.get("skill_hybrid_vs_rw") is not None:
+        m("CashHybSkill", sp(ch["skill_hybrid_vs_rw"], 1))
+        m("CashHybLo", sp(ch["skill_hybrid_ci"][0], 1))
+        m("CashHybHi", sp(ch["skill_hybrid_ci"][1], 1))
+        m("CashHybVerdict", "meets" if ch["accepted"] else "misses")
+        m("CashLamLo", f2(min(ch["lambda"].values())))
+        m("CashLamHi", f2(max(ch["lambda"].values())))
+    cal2 = P2["calibration"]
+    for var, tag in (("revenue", "Rev"), ("cash_like", "Cash")):
+        c = cal2[var]
+        m(f"CalCond{tag}", pc(c["coverage"]["cond"]))
+        m(f"CalAci{tag}", pc(c["coverage"]["aci"]))
+        stx = c["by"]["stress"]["2020Q2-2021Q1"]
+        m(f"CalCond{tag}Stress", pc(stx["cond_hit"]))
+        m(f"CalAci{tag}Stress", pc(stx["aci_hit"]))
+        m(f"CalCond{tag}Ok", "meets" if c["accepted"]["cond"] else "misses")
+        m(f"CalAci{tag}Ok", "meets" if c["accepted"]["aci"] else "misses")
+    rows = []
+    for var, lab in (("revenue", "Revenue"), ("cash_like", "Cash")):
+        c = cal2[var]["by"]
+        for gname, glab in (("stress", "Target quarters"), ("size", "Size tercile"), ("volatility", "Volatility tercile")):
+            for k, v in c[gname].items():
+                kk = {"0.0": "low", "1.0": "mid", "2.0": "high"}.get(k, k)
+                rows.append(f"{lab} & {glab} & {kk} & {pc(v['cond_hit'])} & {pc(v['aci_hit'])} \\\\")
+        rows.append("\\addlinespace")
+    table("calibration2", ["\\begin{tabular}{lllrr}", "\\toprule",
+                           "Variable & Split & Group & Group-conditional & Adaptive (ACI) \\\\", "\\midrule",
+                           *rows[:-1], "\\bottomrule", "\\end{tabular}"])
+    tm = P2["timing"]
+    m("TimCashTwin", f2(tm["cash_half"]["twin"]))
+    m("TimCashNoLoops", f2(tm["cash_half"]["no_loops"]))
+    m("TimCashStatic", f2(tm["cash_half"]["static"]))
+    m("TimCashDiff", f2(tm["cash_half"]["twin_minus_no_loops"]["diff"]))
+    m("TimCashDiffLo", f2(tm["cash_half"]["twin_minus_no_loops"]["ci"][0]))
+    m("TimCashDiffHi", f2(tm["cash_half"]["twin_minus_no_loops"]["ci"][1]))
+    m("TimDebtTwin", f2(tm["debt_raise"]["twin"]))
+    m("TimDebtNoLoops", f2(tm["debt_raise"]["no_loops"]))
+    th = P2["thresholds"]
+    rows = []
+    for ev, lab in (("cash", "Cash falls below share of opening"), ("debt", "New borrowing above share of revenue"),
+                    ("div", "Dividend cut by at least"), ("capex", "Capex cut by at least")):
+        for x, v in th.get(ev, {}).items():
+            rows.append(f"{lab} & {pc(float(x))} & {pc(v['rate'])} & {f2(v['auc_twin'])} & {f2(v['auc_no_loops'])} \\\\")
+    table("thresholds", ["\\begin{tabular}{lrrrr}", "\\toprule",
+                         "Event & Threshold & Rate & Twin AUC & No loops AUC \\\\", "\\midrule", *rows,
+                         "\\bottomrule", "\\end{tabular}"])
+    ep = P2["episodes"]
+    rows = []
+    for y, lab in (("2015", "2015--16 commodity bust (cutoff Feb 2015)"), ("2020", "2020 pandemic (Feb 2020)"),
+                   ("2022", "2022 rate shock (Feb 2022)")):
+        if y not in ep:
+            continue
+        e = ep[y]
+        for o, olab in (("y_burn8", "raw"), ("y_abn_burn8", "abnormal")):
+            t = e[o]["t"]
+            rows.append(f"{lab if o == 'y_burn8' else ''} & {big(e['n']) if o == 'y_burn8' else ''} & "
+                        f"{pc(e['median_depth']) if o == 'y_burn8' else ''} & {olab} & {f1(t['exp'])} & {f1(t['twin'])} & "
+                        f"{f1(t['fcf'])} \\\\")
+        rows.append("\\addlinespace")
+    table("episodes", ["\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrlrrr}", "\\toprule",
+                       " & & Median & & \\multicolumn{3}{c}{Rank regression $t$} \\\\", "\\cmidrule(lr){5-7}",
+                       "Episode & Firms & shock & Burn & Industry shock & Twin at shock & FCF margin \\\\", "\\midrule",
+                       *rows[:-1], "\\bottomrule", "\\end{tabular}}"])
+    for y, tag in (("2015", "Fifteen"), ("2020", "Twenty"), ("2022", "TwentyTwo")):
+        if y in ep:
+            m(f"Epi{tag}T", f1(ep[y]["y_abn_burn8"]["t"]["twin"]))
+            m(f"Epi{tag}Depth", pc(ep[y]["median_depth"]))
+    m("EpiVerdict", "generalizes" if ep.get("generalizes") else "does not generalize")
+    fm = P2["fcf_mechanism"]
+    m("FcfCapexShare", pc(fm["capex_share_of_fcf_gain"]))
+    m("FcfGainFcf", f2(fm["fcf"]["gain"]))
+    m("FcfGainCfo", f2(fm["cfo"]["gain"]))
+    m("FcfGainCapex", f2(fm["capex"]["gain"]))
+    sm_ = P2["small_firms"]
+    m("SmallN", big(sm_["n"]))
+    m("SmallFirms", big(sm_["n_firms"]))
+    m("SmallAucTwin", f2(sm_["auc_bk_twin"]))
+    m("SmallAucFormula", f2(sm_["auc_bk_formula"]))
+    m("SmallBk", sm_["bk_events"])
+    m("SmallMaeTwin", f1(sm_["median_ae"]["T1"]))
+    m("SmallMaeSixteen", f1(sm_["median_ae"]["N3"]))
+    m("SmallIncr", f2(sm_["incr_twin_vs_16q"]))
+    tw = P2["two_way"]
+    m("TwoWayLo", f2(tw["ci_two_way"][0]))
+    m("TwoWayHi", f2(tw["ci_two_way"][1]))
+    v = P2["verdicts"]
+    m("HOneVerdict", "accepted" if v["H1_accepted"] else "rejected")
+    m("HThreeVerdict", "accepted" if v["H3_accepted"] else "rejected")
+    m("HThreeWins", v["H3_auc_wins"])
+    ex = P2.get("examples", {})
+    if ex.get("share_right_sign") is not None:
+        m("ExRightSign", pc(ex["share_right_sign"]))
+        for label, tag in (("amazon_2020", "Amzn"), ("ge_2016", "Ge"), ("ford_2020", "Ford"), ("gm_2020", "Gm")):
+            if label in ex:
+                e = ex[label]
+                m(f"Ex{tag}Rev", f"{e['rev_change']:.0f}\\%".replace("-", "$-$"))
+                m(f"Ex{tag}Rule", f"{e['rule']:.0f}\\%")
+                m(f"Ex{tag}Twin", f"{e['twin']:.0f}\\%".replace("-", "$-$"))
+                m(f"Ex{tag}Real", f"{e['real']:.0f}\\%".replace("-", "$-$"))
+    cc = P2.get("census", {})
+    if "found" in cc:
+        m("CensusFound", cc["found"])
+        m("CensusLegacy", cc["legacy"])
+        m("CensusRepeat", pc(cc["share_repeat"]))
+        m("CensusMissing", " and ".join(cc["missing"]).replace("&", "\\&"))
+    hl = P2["holm"]
+    HN = {"decision_capex_cut": "Liquidity: capex cut, twin added", "decision_cash_half": "Liquidity: cash halves, twin added",
+          "decision_debt_raise": "Liquidity: new borrowing, twin added", "decision_div_cut": "Liquidity: dividend cut, twin added",
+          "panel_severe_burn": "Distress: severe burn, twin beyond formula",
+          "panel_abnormal_burn": "Distress: abnormal burn, twin beyond formula",
+          "panel_coverage_collapse": "Distress: coverage collapse, twin beyond formula",
+          "panel_dividend_cut": "Distress: dividend cut, twin beyond formula",
+          "panel_bankruptcy": "Distress: bankruptcy, twin beyond formula",
+          "bankruptcy_all_twin_minus_formula": "Bankruptcy AUC: twin minus formula, all firms",
+          "bankruptcy_weak_twin_minus_formula": "Bankruptcy AUC: twin minus formula, weak firms"}
+    rows = []
+    for k, adj in sorted(hl.items(), key=lambda kv: kv[1]):
+        lab = HN.get(k, k.replace("hybrid_", "Combination: ").replace("_N3+T1_vs_", " twin vs. ").replace("N3+", "16q + ")
+                     .replace("cfo", "OCF").replace("fcf", "FCF").replace("N1", "4q").replace("N5", "regression")
+                     .replace("N6", "regression with timing"))
+        rows.append(f"{lab} & {'$<$0.001' if adj < 0.001 else f'{adj:.3f}'} \\\\")
+    table("holm", ["\\begin{tabular}{lr}", "\\toprule", "Secondary comparison & Holm-adjusted $p$ \\\\", "\\midrule",
+                   *rows, "\\bottomrule", "\\end{tabular}"])
 
 # ------------------------------------------------------------------ figures
 by = cfo["by_year"]
