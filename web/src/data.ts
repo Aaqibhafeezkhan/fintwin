@@ -102,6 +102,16 @@ function getJson<T>(path: string): Promise<T> {
 export const loadIndex = () => getJson<Index>("data/index.json");
 export const loadBacktest = () => getJson<Backtest>("data/backtest.json");
 export const loadCalibration = () => getJson<Calibration>("data/calibration.json").catch(() => null);
+
+/** Headline results of the research paper (written by engine/scripts/research_assets.py). */
+export type ResearchSummary = {
+  samples: { universe: number; firm_years: number; firms: number; transmission_firm_years: number; bankruptcies: number };
+  ladder: { key: string; label: string; median_ae: number }[];
+  incremental: { twin_vs_4q: number; "16q_vs_4q": number; twin_vs_16q: number; encompassing_t: number };
+  combination: Record<"cfo" | "fcf", Record<"N3" | "N3+N5" | "N3+T1", number>>;
+  bankruptcy: Record<"all" | "weak", Record<"twin" | "formula" | "ohlson_o" | "altman_z2", number>> & { weak_share: number };
+};
+export const loadResearch = () => getJson<ResearchSummary>("data/research_summary.json").catch(() => null);
 export const loadMemo = (t: string) => getJson<Memo>(`data/memos/${t}.json`).catch(() => null);
 
 /** Snapshot first; fall back to the optional local live API (`python -m fintwin.api`) for unseen tickers. */

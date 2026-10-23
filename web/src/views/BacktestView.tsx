@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Columns } from "../charts/Bars";
 import { FanChart, FanLegend } from "../charts/FanChart";
 import { Scatter } from "../charts/Scatter";
-import { loadBacktest, loadCalibration, type Backtest, type Calibration } from "../data";
+import { loadBacktest, loadCalibration, loadResearch, type Backtest, type Calibration, type ResearchSummary } from "../data";
 import { fixed, money, moneyTick, pct, prettyName, quarterLabel } from "../format";
 import { Metric, MetricText, Section, Skeleton } from "../ui";
 
@@ -11,8 +11,13 @@ const VARS: Record<string, string> = { revenue: "Revenue", cash_like: "Cash", to
 export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
   const [bt, setBt] = useState<Backtest | null>(null);
   const [cal, setCal] = useState<Calibration | null>(null);
+  const [res, setRes] = useState<ResearchSummary | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { loadBacktest().then(setBt).catch((e) => setErr(String(e))); loadCalibration().then(setCal); }, []);
+  useEffect(() => {
+    loadBacktest().then(setBt).catch((e) => setErr(String(e)));
+    loadCalibration().then(setCal);
+    loadResearch().then(setRes);
+  }, []);
   if (err) return <p className="callout">{err}</p>;
   if (!bt || !cal) return <Skeleton h={600} />;
 
@@ -38,7 +43,9 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
         </figure>
       </Section>
 
-      <Section eyebrow="Finding 1" title="Frozen in February 2020, it ranked cash burn, mostly through persistence">
+      {res && <ResearchFindings r={res} />}
+
+      <Section eyebrow="Illustration" title="February 2020 in the dashboard's companies: fragility, mostly persistence">
         <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 28 }}>
           <Metric label="Rank correlation" value={xs.spearman} format={(v) => `ρ ${v.toFixed(2)}`} foot={`95% CI ${fixed(xs.ci95[0], 2)}–${fixed(xs.ci95[1], 2)}`}
             info="Spearman correlation between the twin's demand-freeze health score (Feb 2020 data) and realized worst cumulative free cash flow, 2020Q1–2021Q2." />
@@ -53,13 +60,8 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
           labelIds={["CCL", "RCL", "NCLH", "BA", "AAL", "MSFT", "GOOGL", "WMT", "LVS", "EXPE", "WYNN"]} onClick={onOpen} />
         <p className="muted" style={{ marginTop: 10, maxWidth: 760 }}>Every company receives the same generic shock, so this measures structural fragility, not who the
           pandemic actually hit. Walmart is the visible miss: fragile to a demand collapse it never suffered.</p>
-        <p className="muted" style={{ marginTop: 6, maxWidth: 760 }}>The research paper tests this on every non-financial SEC filer
-          (5,220 companies, including those that later disappeared) and a census of 377 bankruptcy petitions. Most of the twin's
-          ranking skill is persistence: a trailing free-cash-flow margin ranks 2020 cash burn better, and the twin's own scoring
-          formula, without any simulation, predicts bankruptcies as well as the simulated score. Fed the revenue that actually
-          happened, the twin alone is less accurate than a 16-quarter cash-flow margin, but its departures from the margin carry
-          information the margin lacks. Out of sample that is worth little: for operating cash flow a simple regression
-          blended in the same way does almost as well, and only for free cash flow does the twin beat every simple rule.{" "}
+        <p className="muted" style={{ marginTop: 6, maxWidth: 760 }}>This is the dashboard's own sample of today's S&amp;P 500
+          companies, so it inherits survivorship bias; Findings 1 and 2 above come from the survivorship-free research sample.{" "}
           <a href="https://github.com/SpiliosDimakopoulos/fintwin/blob/main/docs/paper/fintwin.pdf">Read the paper</a>.</p>
       </Section>
 
@@ -79,12 +81,54 @@ export function BacktestView({ onOpen }: { onOpen: (t: string) => void }) {
   );
 }
 
+const SHORT: Record<string, string> = { N1: "4q margin", N2: "8q", N3: "16q", N4: "Shrunk", N5: "Regr.", N6: "Regr.+Δ",
+  T0: "Twin, no loops", T1: "Twin" };
+
+function ResearchFindings({ r }: { r: ResearchSummary }) {
+  const c = r.combination;
+  const gain = (v: "cfo" | "fcf", k: "N3+N5" | "N3+T1") => (1 - c[v][k] / c[v].N3) * 100;
+  return (
+    <>
+      <Section eyebrow="Finding 1" title="Given the revenue that happened, the twin alone is the least accurate model">
+        <p className="sub" style={{ marginBottom: 20, maxWidth: 760 }}>{r.samples.transmission_firm_years.toLocaleString()} firm-years of
+          non-financial SEC filers, 2014–2024. Each model gets the revenue each company actually reported and predicts its operating
+          cash flow over the next eight quarters.</p>
+        <div className="metrics" style={{ ["--n" as string]: 4, marginBottom: 28 }}>
+          <Metric label="Old headline statistic" value={r.incremental.twin_vs_4q} format={(v) => `ρ ${v.toFixed(2)}`}
+            foot={`a 16-quarter margin alone: ${r.incremental["16q_vs_4q"].toFixed(2)}`}
+            info="Correlation of each model's departure from a four-quarter margin with the realized departure. Any smoother estimate of the margin scores well: it measured mean reversion." />
+          <Metric label="Information beyond the best rule" value={r.incremental.twin_vs_16q} format={(v) => `ρ ${v.toFixed(2)}`}
+            foot={`encompassing t = ${r.incremental.encompassing_t.toFixed(1)}`} />
+          <Metric label="Blend into 16q margin, operating CF" value={gain("cfo", "N3+T1")} format={(v) => v.toFixed(1)} unit="% less error"
+            foot={`a simple regression blended in: ${gain("cfo", "N3+N5").toFixed(1)}%`} />
+          <Metric label="Blend into 16q margin, free CF" value={gain("fcf", "N3+T1")} format={(v) => v.toFixed(1)} unit="% less error"
+            foot={`a simple regression blended in: ${gain("fcf", "N3+N5").toFixed(1)}%`} />
+        </div>
+        <div className="chart-title">Median error by model (percentage points of trailing revenue)</div>
+        <Columns labels={r.ladder.map((m) => SHORT[m.key] ?? m.label)} values={r.ladder.map((m) => m.median_ae)} format={(x) => x.toFixed(1)}
+          highlight={(i) => (r.ladder[i].key.startsWith("T") ? "var(--s1)" : "var(--ink-2)")} />
+      </Section>
+
+      <Section eyebrow="Finding 2" title="It ranks bankruptcies well, but no better than its own score without simulation">
+        <p className="sub" style={{ marginBottom: 20, maxWidth: 760 }}>{r.samples.bankruptcies} bankruptcy petitions (8-K Item 1.03) within two
+          years of a cutoff, among {r.samples.universe.toLocaleString()} non-financial filers, including those that later disappeared.</p>
+        <div className="metrics" style={{ ["--n" as string]: 4 }}>
+          <Metric label="Twin, simulated" value={r.bankruptcy.all.twin} format={(v) => `AUC ${v.toFixed(2)}`} foot={`already-weak firms: ${r.bankruptcy.weak.twin.toFixed(2)}`} />
+          <Metric label="Twin's formula, no simulation" value={r.bankruptcy.all.formula} format={(v) => `AUC ${v.toFixed(2)}`} foot={`already-weak firms: ${r.bankruptcy.weak.formula.toFixed(2)}`} />
+          <Metric label="Ohlson O-score" value={r.bankruptcy.all.ohlson_o} format={(v) => `AUC ${v.toFixed(2)}`} foot={`already-weak firms: ${r.bankruptcy.weak.ohlson_o.toFixed(2)}`} />
+          <Metric label="Altman Z''" value={r.bankruptcy.all.altman_z2} format={(v) => `AUC ${v.toFixed(2)}`} foot={`already-weak firms: ${r.bankruptcy.weak.altman_z2.toFixed(2)}`} />
+        </div>
+      </Section>
+    </>
+  );
+}
+
 function CalibrationFinding({ cal }: { cal: Calibration }) {
   const [v, setV] = useState<"revenue" | "cash_like">("revenue");
   const c = cal.vars[v];
   const years = Object.keys(c.by_year).sort();
   return (
-    <Section eyebrow="Finding 2" title={`${cal.n_forecasts.toLocaleString()} forecasts: skilful on revenue, honest about uncertainty`}
+    <Section eyebrow="Finding 3" title={`${cal.n_forecasts.toLocaleString()} forecasts: skilful on revenue, honest about uncertainty`}
       right={<div className="segmented" role="group" aria-label="Variable">
         <button aria-pressed={v === "revenue"} onClick={() => setV("revenue")}>Revenue</button>
         <button aria-pressed={v === "cash_like"} onClick={() => setV("cash_like")}>Cash</button>
@@ -130,7 +174,7 @@ function CaseExplorer({ bt }: { bt: Backtest }) {
   const n = series?.realized.dates.length ?? 0;
   return (
     <>
-      <Section eyebrow="Finding 3" title="Case by case: forecast against what was reported"
+      <Section eyebrow="Finding 4" title="Case by case: forecast against what was reported"
         right={
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <div className="segmented" role="group" aria-label="Company">
