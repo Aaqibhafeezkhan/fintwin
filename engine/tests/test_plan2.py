@@ -50,7 +50,8 @@ def test_combo_learns_weight_from_earlier_years_only():
     base = real + 1.0
     adj = real  # the adjuster is exactly right, so lambda should go to its largest value
     out = plan2._combo(base, adj, real, years, -10, 10)
-    assert np.isnan(out[years < 2016]).all() and np.allclose(out[years >= 2017], base[years >= 2017] - 1.0, atol=0.6)
+    # trained on cutoffs up to Y-3 (outcomes known by Y); 200 firm-years first available for 2018
+    assert np.isnan(out[years < 2018]).all() and np.allclose(out[years >= 2018], base[years >= 2018] - 1.0, atol=0.6)
 
 
 def test_xbrl_fallback_merges_missing_filings(monkeypatch):
