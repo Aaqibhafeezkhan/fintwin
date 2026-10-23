@@ -197,8 +197,16 @@ def cash_hybrid(fc: pd.DataFrame) -> dict:
         lams[int(yr)] = lam
         te = oy == yr
         pred[te] = rw[te] + lam * (tw[te] - rw[te])
-    m = np.isfinite(pred)
     sd = g["rw_sd"].to_numpy(float)
+    m = (
+        np.isfinite(pred)
+        & np.isfinite(sd)
+        & (sd > 0)
+        & np.isfinite(g["crps_rw"].to_numpy(float))
+        & np.isfinite(g["crps_twin"].to_numpy(float))
+        & np.isfinite(sc)
+        & (sc > 0)
+    )
     crps_h = np.array([crps_gaussian(a, s_, t) for a, s_, t in zip(pred[m], sd[m], y[m], strict=True)])
     crps_rw = g["crps_rw"].to_numpy(float)[m]
     crps_tw = g["crps_twin"].to_numpy(float)[m]
@@ -244,21 +252,21 @@ def calibration(fc: pd.DataFrame, panel: pd.DataFrame) -> dict:
                 c90[idx] = float(np.quantile(pool["s90"], 0.9))
         d["cond_hit"] = d["s90"] <= c90
         # (b) adaptive conformal: alpha_t updated after each reported error (gamma = 0.005), quantile of past scores
-        alpha, gamma, hits, widths = 0.10, 0.005, np.full(len(d), np.nan), np.full(len(d), np.nan)
-        order = np.argsort(d["seen"].to_numpy())
-        scores_seen: list[float] = []
-        pending = list(order)
+        # forecasts are issued in yearly batches, so alpha is updated once per batch of newly reported errors with
+        # their average miscoverage (Gibbs and Candes 2021, eq. 2, with the batch error rate), gamma = 0.05
+        alpha, gamma, hits, widths = 0.10, 0.05, np.full(len(d), np.nan), np.full(len(d), np.nan)
+        seen_ts = d["seen"].to_numpy()
+        used = np.zeros(len(d), bool)
         for o in sorted(d["origin_ts"].unique()):
-            # errors reported by this origin update alpha in the order they became known
-            while pending and d.loc[pending[0], "seen"] <= o:
-                i = pending.pop(0)
-                if len(scores_seen) >= 200 and np.isfinite(widths[i]):
-                    alpha += gamma * (0.10 - (0.0 if hits[i] else 1.0))
-                scores_seen.append(float(d.loc[i, "s90"]))
+            new = (~used) & (seen_ts <= o)
+            judged = new & np.isfinite(widths)
+            if judged.any():
+                alpha = float(np.clip(alpha + gamma * (0.10 - (1 - hits[judged].astype(float)).mean()), 0.001, 0.5))
+            used |= new
             cur = np.flatnonzero((d["origin_ts"] == o).to_numpy())
-            if len(scores_seen) < 200:
+            if used.sum() < 200:
                 continue
-            q = float(np.quantile(scores_seen, min(max(1 - alpha, 0.5), 0.999)))
+            q = float(np.quantile(d.loc[used, "s90"].to_numpy(), 1 - alpha))
             widths[cur] = q
             hits[cur] = d.loc[cur, "s90"].to_numpy() <= q
         d["aci_hit"] = hits
@@ -278,9 +286,7 @@ def calibration(fc: pd.DataFrame, panel: pd.DataFrame) -> dict:
             res["by"][name] = {str(k): {c: float(v) for c, v in r.items()} for k, r in t.iterrows()}
         cells = [v for grp in res["by"].values() for v in grp.values()]
         res["accepted"] = {m: bool(all(0.85 <= c[f"{m}_hit"] <= 0.95 for c in cells)) for m in ("cond", "aci")}
-        res["width_vs_plain"] = float(
-            np.nanmean(ev["aci_w"]) / np.nanmean(np.where(np.isfinite(c90), c90, np.nan)[ev.index])
-        )
+        res["width_vs_plain"] = float(np.nanmedian(ev["aci_w"]) / np.nanmedian(c90[ev.index]))
         out[var] = res
     return out
 
