@@ -24,6 +24,7 @@ from ..data.fred import macro_quarterly
 from ..model.ratings import rating_rank, spreads_asof
 from ..model.sd_model import simulate
 from ..scenarios.presets import DEFAULT_LEVERS, PRESETS, build_scenario
+from ..stochastic.calibrate import SPECIFIED_FIXED_SHARE_PRIOR
 from ..stochastic.calibrate import calibrate as _calibrate
 from ..stochastic.mc import summarize
 from ..stochastic.shocks import draw_shocks
@@ -64,7 +65,8 @@ def data_vintage(cik: int) -> dict:
 
 def calibrate(hist: CompanyData, macro: pd.DataFrame, horizon: int = 12, assumptions: dict | None = None) -> dict:
     """Calibration with the rating-spread table that was published at the cutoff (the product uses January 2026's)."""
-    p = _calibrate(hist, macro, horizon, assumptions)
+    # research runs keep the pre-specified 35% prior; the revised value is selected walk-forward in `plan2`
+    p = _calibrate(hist, macro, horizon, {"fixed_share_prior": SPECIFIED_FIXED_SHARE_PRIOR, **(assumptions or {})})
     pit = spreads_asof(hist.asof)
     if pit is not None:
         p["spreads"] = pit

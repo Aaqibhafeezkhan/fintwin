@@ -33,7 +33,11 @@ def _seasonal(rev: pd.Series, seasons: pd.Series) -> np.ndarray:
     return s / s.mean()
 
 
-FIXED_SHARE_PRIOR = 0.35  # typical share of operating costs that does not scale with revenue
+# Prior share of operating costs that does not scale with revenue. The first version used 35%; selected walk-forward
+# on the 2014-2024 research panel (each year from earlier years only), 5% was chosen in every year and lowered the
+# twin's cash-flow error out of sample without hurting its bankruptcy ranking (docs/REVISION_PLAN_2.md, rule 1.1).
+FIXED_SHARE_PRIOR = 0.05
+SPECIFIED_FIXED_SHARE_PRIOR = 0.35  # the pre-specified value the paper's main results use
 PRIOR_WEIGHT = 2.0
 
 
