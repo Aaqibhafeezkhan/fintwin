@@ -62384,6 +62384,43 @@
    "auc_bk_formula": 0.7200658398,
    "bk_events": 21
   },
+  "examples": {
+   "large_departures": 3544,
+   "share_right_sign": 0.5775959368,
+   "amazon_2020": {
+    "rev_change": 52.5524,
+    "rule": 38.65416128,
+    "twin": 63.4298,
+    "real": 40.0652
+   },
+   "ge_2016": {
+    "rev_change": -38.26155,
+    "rule": 25.95621788,
+    "twin": 15.0365,
+    "real": 7.306
+   },
+   "ford_2020": {
+    "rev_change": -15.4955,
+    "rule": 19.09883335,
+    "twin": -0.2425,
+    "real": 25.6934
+   },
+   "gm_2020": {
+    "rev_change": -19.0223,
+    "rule": 17.81414865,
+    "twin": -0.063,
+    "real": 23.2139
+   }
+  },
+  "census": {
+   "legacy": 35,
+   "found": 33,
+   "share_repeat": 0.6306695464,
+   "missing": [
+    "CEC Entertainment",
+    "Hornbeck Offshore Services"
+   ]
+  },
   "two_way": {
    "incr_twin_vs_16q": 0.2164027389,
    "ci_two_way": [

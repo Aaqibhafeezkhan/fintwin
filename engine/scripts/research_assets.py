@@ -691,13 +691,17 @@ if SOB.exists():
     m("SobIncrMax", f2(SB["incremental"]["max"]))
     top = max(SB["median_ae"]["indices"], key=lambda r: r["ST"])
     m("SobTopLabel", lower(top["label"]))
-    m("SobTopST", f2(top["ST"]))
+    m("SobTopST", f2(min(top["ST"], 1.0)))
     rest = sum(max(r["ST"], 0) for r in SB["median_ae"]["indices"] if r is not top)
     m("SobRestST", f2(rest))
     rows = []
     for a, b in zip(SB["median_ae"]["indices"], SB["incremental"]["indices"], strict=True):
-        rows.append(f"{a['label']} & {a['range'][0]:g}--{a['range'][1]:g} & {f2(max(a['S1'], 0))} & {f2(max(a['ST'], 0))} "
-                    f"{ci_txt([max(c, 0) for c in a['ST_ci']])} & {f2(max(b['S1'], 0))} & {f2(max(b['ST'], 0))} \\\\")
+        def cl(x, hi=1.0):
+            return min(max(x, 0.0), hi)
+
+        rows.append(f"{a['label']} & {a['range'][0]:g}--{a['range'][1]:g} & {f2(cl(a['S1'], cl(a['ST'])))} & "
+                    f"{f2(cl(a['ST']))} {ci_txt([cl(c) for c in a['ST_ci']])} & {f2(cl(b['S1'], cl(b['ST'])))} & "
+                    f"{f2(cl(b['ST']))} \\\\")
     table("sobol_assumptions", ["\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{lrrlrr}", "\\toprule",
                                 " & & \\multicolumn{2}{c}{Median error} & \\multicolumn{2}{c}{Incremental $\\rho$} \\\\",
                                 "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}",
