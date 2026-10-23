@@ -1,1 +1,1 @@
-{"generated":"2026-10-17","failed":{"FDXF":"IndexError: single positional indexer is out-of-bounds","VYLR":"IndexError: single positional indexer is out-of-bounds","APA":"ValueError: APA: non-finite calibrated parameters ['v', 'cash_floor']"},"n_companies":394}
+{"generated":"2026-10-19","failed":{"FDXF":"IndexError: single positional indexer is out-of-bounds","VYLR":"IndexError: single positional indexer is out-of-bounds","APA":"ValueError: APA: non-finite calibrated parameters ['v', 'cash_floor']"},"n_companies":394}
