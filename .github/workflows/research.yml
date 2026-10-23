@@ -6,7 +6,7 @@ name: research
 on:
   workflow_dispatch:
     inputs:
-      mode: { description: "research, or audit (data completeness only)", default: research }
+      mode: { description: "research, audit (data completeness) or sobol (global sensitivity)", default: research }
 permissions: { contents: read, actions: read }
 env:
   SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
@@ -26,8 +26,44 @@ jobs:
       - run: uv sync && uv run python scripts/data_audit.py
       - uses: actions/upload-artifact@v4
         with: { name: data-audit, path: docs/paper/data_audit.json }
+  sobol-shard:
+    if: ${{ inputs.mode == 'sobol' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix: { i: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] }
+    defaults: { run: { working-directory: engine } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/cache/restore@v4
+        with:
+          path: engine/.cache/edgar
+          key: "edgar-shard-${{ matrix.i }}-${{ github.run_id }}"
+          restore-keys: |
+            edgar-shard-${{ matrix.i }}-
+            edgar-
+      - run: uv sync
+      - run: timeout 320m uv run python -m fintwin.research sobol-shard ${{ matrix.i }} 16 || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: "sobol-${{ matrix.i }}", include-hidden-files: true, path: engine/.cache/sobol/ }
+  sobol-stats:
+    needs: sobol-shard
+    if: ${{ !cancelled() && inputs.mode == 'sobol' }}
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: engine } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/download-artifact@v4
+        with: { pattern: "sobol-*", merge-multiple: true, path: engine/.cache/sobol }
+      - run: uv sync && uv run python -m fintwin.research sobol-stats
+      - uses: actions/upload-artifact@v4
+        with: { name: sobol-assumptions, path: docs/paper/sobol_assumptions.json }
   shard:
-    if: ${{ inputs.mode != 'audit' }}
+    if: ${{ inputs.mode != 'audit' && inputs.mode != 'sobol' }}
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
@@ -56,7 +92,7 @@ jobs:
         with: { name: "research-${{ matrix.i }}", include-hidden-files: true, path: engine/.cache/research/ }
   stats:
     needs: shard
-    if: ${{ !cancelled() && inputs.mode != 'audit' }}
+    if: ${{ !cancelled() && inputs.mode != 'audit' && inputs.mode != 'sobol' }}
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: engine } }
     steps:

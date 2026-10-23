@@ -77,6 +77,16 @@ if __name__ == "__main__":
         prefetch()
     elif sys.argv[1] == "shard":
         shard(int(sys.argv[2]), int(sys.argv[3]))
+    elif sys.argv[1] == "sobol-shard":
+        from .assumption_sobol import shard as sobol_shard
+
+        sobol_shard(int(sys.argv[2]), int(sys.argv[3]))
+    elif sys.argv[1] == "sobol-stats":
+        import json as _json
+
+        from .assumption_sobol import stats as sobol_stats
+
+        print(_json.dumps({k: v for k, v in sobol_stats().items() if k != "indices"}, default=str)[:2000])
     elif sys.argv[1] == "stats":
         from .stats import main
 
