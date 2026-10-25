@@ -9,8 +9,8 @@ jobs:
     steps:
       - uses: actions/first-interaction@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-message: |
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: |
             Thanks for opening your first issue in FinTwin. I usually reply within a couple of days. If it's a question about the method or the paper, [Discussions](https://github.com/SpiliosDimakopoulos/fintwin/discussions) is also a good place.
-          pr-message: |
+          pr_message: |
             Thanks for your first pull request to FinTwin! CI runs once a maintainer approves it for first-time contributors. Please check the [contributing guide](https://github.com/SpiliosDimakopoulos/fintwin/blob/main/CONTRIBUTING.md), especially the note on keeping the Python and TypeScript models in sync.
